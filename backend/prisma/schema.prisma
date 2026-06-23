@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id               Int      @id @default(autoincrement())
+  name             String
+  description      String?
+  long_description String?  @db.Text
+  competencies     String[] // Solo en PostgreSQL
+  price            Float
+  image_url        String?
+  link             String?
+  is_active        Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Lead {
+  id            Int            @id @default(autoincrement())
+  platform      String         // "whatsapp", "instagram", "messenger"
+  phone_or_id   String         @unique
+  name          String?
+  email         String?
+  status        String         @default("new") // "new", "contacted", "converted"
+  conversations Conversation[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  leadId    Int
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  message   String
+  sender    String   // "user" o "ai"
+  timestamp DateTime @default(now())
+}
+
+model Setting {
+  id            Int      @id @default(autoincrement())
+  key           String   @unique
+  value         String
+  description   String?
+  updatedAt     DateTime @updatedAt
+}

@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #f8f9fa;
+    color: #1f2937; /* gray-800 */
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  
+  /* Sobrescribir el estilo de autocompletado del navegador para mantener el fondo guinda y texto blanco */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px #6b2143 inset !important;
+      -webkit-text-fill-color: white !important;
+      transition: background-color 5000s ease-in-out 0s;
+  }
+}
