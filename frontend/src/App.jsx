@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import SplashScreen from './components/SplashScreen';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 
 // Vistas Públicas
 import Home from './pages/public/Home';
+import Cursos from './pages/public/Cursos';
+import Contacto from './pages/public/Contacto';
 import Login from './pages/auth/Login';
 
 // Vistas del Estudiante
@@ -35,9 +38,12 @@ function AdminLayout({ children }) {
 function App() {
   return (
     <Router>
+      <SplashScreen />
       <Routes>
         {/* ZONA PÚBLICA (Tienda) */}
         <Route path="/" element={<Home />} />
+        <Route path="/cursos" element={<Cursos />} />
+        <Route path="/contacto" element={<Contacto />} />
         <Route path="/login" element={<Login />} />
 
         {/* ZONA ESTUDIANTE */}
