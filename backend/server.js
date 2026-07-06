@@ -93,11 +93,24 @@ app.post('/api/chat', async (req, res) => {
   try {
     const { history, message } = req.body;
     
-    // Si no hay API KEY, devolver un mensaje mock
+    // Si no hay API KEY, utilizar un chatbot local interactivo basado en reglas de palabras clave (Fallback local)
     if (!process.env.GEMINI_API_KEY) {
-      return res.json({ 
-        reply: "Hola! Soy el asistente virtual (Modo de Prueba). Por el momento, el administrador de la página no ha configurado la API Key de inteligencia artificial. Si buscas cursos, puedes explorar los enlaces más abajo." 
-      });
+      const msg = message.toLowerCase();
+      let reply = "¡Hola! Soy el asistente virtual de GardeaH. 👋 Actualmente estoy en modo de prueba local. Escribe 'cursos' para ver la lista de capacitaciones, o pregunta por temas específicos como 'OPUS', 'CFE', 'Neodata' o 'contacto'.";
+      
+      if (msg.includes('curso') || msg.includes('ver') || msg.includes('lista') || msg.includes('aprender') || msg.includes('capacitacion')) {
+        reply = "Ofrecemos 3 cursos especializados en ingeniería de costos:\n\n1️⃣ **Precios Unitarios OPUS 22/24, Neodata y Excel**\n2️⃣ **Cómo Presentar Concursos para CFE con OPUS 2020**\n3️⃣ **OPUS 2020 - Análisis de Precios Unitarios**\n\n¿De cuál te gustaría recibir más detalles?";
+      } else if (msg.includes('opus 22') || msg.includes('opus 24') || msg.includes('neodata') || msg.includes('excel') || msg.includes('1')) {
+        reply = "¡Excelente! El curso **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel** te enseña desde cero a estructurar presupuestos y APUs.\n👉 Detalles e Inscripción: https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/";
+      } else if (msg.includes('cfe') || msg.includes('concurso') || msg.includes('licitacion') || msg.includes('2')) {
+        reply = "El curso **Cómo Presentar Concursos para CFE desde cero con OPUS 2020** es una guía metodológica completa para armar propuestas técnico-económicas de licitación.\n👉 Detalles e Inscripción: https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/";
+      } else if (msg.includes('analisis') || msg.includes('precios') || msg.includes('unitarios') || msg.includes('3') || msg.includes('fsr')) {
+        reply = "La especialización **OPUS 2020 - Análisis de Precios Unitarios** se enfoca en el cálculo de FSR, costos directos, indirectos y presupuestación bajo normativa.\n👉 Detalles e Inscripción: https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/";
+      } else if (msg.includes('contacto') || msg.includes('hablar') || msg.includes('erick') || msg.includes('soporte') || msg.includes('consultoria') || msg.includes('precio') || msg.includes('correo')) {
+        reply = "Para consultorías personalizadas o hablar directamente con Erick Torua, por favor escríbenos a contacto@gardeah.com o utiliza los enlaces de redes sociales.";
+      }
+      
+      return res.json({ reply });
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);

@@ -4,7 +4,7 @@ import { MessageSquare, X, Send, Bot, User } from 'lucide-react';
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'model', text: '¡Hola! Soy tu asistente virtual. ¿Te gustaría saber más sobre nuestros cursos o servicios de construcción?' }
+    { role: 'model', text: '¡Hola! Te doy la bienvenida a GardeaH, tu plataforma especializada en Ingeniería de Costos y Licitaciones de Obra. 🏗️ Soy tu asistente y puedo ayudarte a resolver tus dudas sobre los cursos de OPUS, Neodata, preparación de concursos para CFE o servicios de consultoría personalizada. ¿En qué te puedo asesorar hoy?' }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -80,7 +80,7 @@ export default function ChatbotWidget() {
         <div className="flex items-center justify-between px-4 py-3 bg-[#1a4a49] text-white rounded-t-2xl">
           <div className="flex items-center gap-2">
             <Bot className="w-5 h-5" />
-            <h3 className="font-semibold">Asistente de Ventas</h3>
+            <h3 className="font-semibold">Asistente GardeaH</h3>
           </div>
           <button 
             onClick={() => setIsOpen(false)}

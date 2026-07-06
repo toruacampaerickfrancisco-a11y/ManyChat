@@ -14,10 +14,11 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 left-0 right-0 h-[80px] bg-white px-6 flex items-center justify-between shadow-sm z-50">
       <div className="flex items-center">
-        <Link to="/">
-          <h1 className="text-[32px] font-bold tracking-tight text-[#1a4a49]">
-            C<span className="text-[#c0392b]">O</span>STOS
-          </h1>
+        <Link to="/" className="flex items-center gap-3">
+          <img src="/logo.png" alt="GardeaH Logo" className="h-10 w-10 object-contain rounded-lg" />
+          <span className="text-2xl font-extrabold tracking-tight text-[#1a4a49]">
+            Gardea<span className="text-[#c0392b]">H</span>
+          </span>
         </Link>
       </div>
 

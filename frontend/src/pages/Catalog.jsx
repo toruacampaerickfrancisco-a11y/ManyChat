@@ -6,11 +6,11 @@ export default function Catalog() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const products = [
-    { id: '483B20BB76F1F136B88D', name: 'Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel', status: 'ACTIVO', category: 'CURSO', type: 'DIGITAL', author: 'TORUA CAMPA ERICK FRANCISCO', created: '18/6/2026', url: 'https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/', description: 'Curso completo enfocado en estructurar presupuestos y análisis de precios unitarios (APU) desde cero, dominando OPUS (versiones 22 y 24), Neodata y Excel.' },
-    { id: 'CE4F47D87E543CA1CB75', name: 'Cómo Presentar Concursos para CFE desde cero con OPUS 2020', status: 'ACTIVO', category: 'CURSO', type: 'DIGITAL', author: 'TORUA CAMPA ERICK FRANCISCO', created: '18/6/2026', url: 'https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/', description: 'Guía práctica y metodológica para armar y presentar propuestas de licitaciones técnico-económicas para la Comisión Federal de Electricidad (CFE) en México usando OPUS 2020.' },
-    { id: '37ABE3618B5C83C37D65', name: 'OPUS 2020 - Análisis de Precios Unitarios', status: 'ACTIVO', category: 'CURSO', type: 'DIGITAL', author: 'TORUA CAMPA ERICK FRANCISCO', created: '18/6/2026', url: 'https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/', description: 'Curso de especialización dedicado al dominio del análisis de costos directos, indirectos, cálculo de factor de salario integrado (FSR) y presupuestación en la versión 2020 de OPUS.' },
-  ];
+    const products = [
+      { id: '483B20BB76F1F136B88D', name: 'Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel', status: 'ACTIVO', category: 'CURSO', type: 'DIGITAL', author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ', created: '18/6/2026', url: 'https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/', description: 'Curso completo enfocado en estructurar presupuestos y análisis de precios unitarios (APU) desde cero, dominando OPUS (versiones 22 y 24), Neodata y Excel.' },
+      { id: 'CE4F47D87E543CA1CB75', name: 'Cómo Presentar Concursos para CFE desde cero con OPUS 2020', status: 'ACTIVO', category: 'CURSO', type: 'DIGITAL', author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ', created: '18/6/2026', url: 'https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/', description: 'Guía práctica y metodológica para armar y presentar propuestas de licitaciones técnico-económicas para la Comisión Federal de Electricidad (CFE) en México usando OPUS 2020.' },
+      { id: '37ABE3618B5C83C37D65', name: 'OPUS 2020 - Análisis de Precios Unitarios', status: 'ACTIVO', category: 'CURSO', type: 'DIGITAL', author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ', created: '18/6/2026', url: 'https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/', description: 'Curso de especialización dedicado al dominio del análisis de costos directos, indirectos, cálculo de factor de salario integrado (FSR) y presupuestación en la versión 2020 de OPUS.' },
+    ];
 
   return (
     <div className="max-w-[1400px] mx-auto animate-in fade-in duration-500">
