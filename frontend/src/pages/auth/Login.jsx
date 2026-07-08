@@ -1,8 +1,22 @@
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Eye, ArrowLeft } from 'lucide-react';
+import { User, Eye, ArrowLeft, Palette } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
+  const [bgColor, setBgColor] = useState('#6b2143');
+
+  // Cargar el color guardado desde los settings del backend
+  useEffect(() => {
+    fetch('http://localhost:3000/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.login_bg_color) {
+          setBgColor(data.login_bg_color);
+        }
+      })
+      .catch(err => console.error('Error fetching settings:', err));
+  }, []);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -10,7 +24,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#6b2143] flex font-sans text-white overflow-hidden relative">
+    <div 
+      className="min-h-screen flex font-sans text-white overflow-hidden relative transition-colors duration-300"
+      style={{ backgroundColor: bgColor }}
+    >
+      <style>{`
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 30px ${bgColor} inset !important;
+          -webkit-text-fill-color: white !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+      `}</style>
+
       {/* Botón de regresar */}
       <Link
         to="/"
@@ -87,7 +115,8 @@ export default function Login() {
             <div className="pt-8 flex justify-center">
               <button
                 type="submit"
-                className="bg-white text-[#6b2143] px-12 py-2.5 rounded-full font-bold text-sm hover:bg-gray-100 transition-colors"
+                className="bg-white px-12 py-2.5 rounded-full font-bold text-sm hover:bg-gray-100 transition-colors"
+                style={{ color: bgColor }}
               >
                 Iniciar sesión
               </button>

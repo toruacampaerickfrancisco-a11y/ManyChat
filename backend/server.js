@@ -139,6 +139,60 @@ Si preguntan por servicios o consultorías, invítalos a contactarte por Instagr
   }
 });
 
+// --- RUTAS PARA CONFIGURACIÓN (SETTINGS) ---
+
+// Memoria temporal por si no hay base de datos conectada aún
+let inMemorySettings = {
+  podcast_is_live: 'false',
+  podcast_live_url: '',
+  login_bg_color: '#6b2143'
+};
+
+// 4. Obtener configuraciones (Podcast, etc.)
+app.get('/api/settings', async (req, res) => {
+  try {
+    if (process.env.DATABASE_URL) {
+      const settings = await prisma.setting.findMany();
+      const settingsMap = {};
+      settings.forEach(s => {
+        settingsMap[s.key] = s.value;
+      });
+      return res.json(settingsMap);
+    }
+    throw new Error("No hay DATABASE_URL configurada");
+  } catch (error) {
+    // Fallback local
+    res.json(inMemorySettings);
+  }
+});
+
+// 5. Guardar configuraciones
+app.post('/api/settings', async (req, res) => {
+  try {
+    const { settings } = req.body;
+    
+    if (process.env.DATABASE_URL) {
+      // Iteramos y guardamos o actualizamos cada llave en la BD
+      for (const [key, value] of Object.entries(settings)) {
+        await prisma.setting.upsert({
+          where: { key },
+          update: { value: String(value) },
+          create: { key, value: String(value) }
+        });
+      }
+      return res.json({ success: true });
+    }
+    throw new Error("No hay DATABASE_URL configurada");
+  } catch (error) {
+    // Fallback local
+    const { settings } = req.body;
+    for (const [key, value] of Object.entries(settings)) {
+      inMemorySettings[key] = String(value);
+    }
+    res.json({ success: true, warning: 'Usando memoria temporal por falta de base de datos' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

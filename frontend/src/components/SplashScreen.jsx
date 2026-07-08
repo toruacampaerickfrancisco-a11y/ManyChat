@@ -31,12 +31,9 @@ export default function SplashScreen() {
       }`}
     >
       <div className="flex flex-col items-center animate-pulse">
-        <div className="w-24 h-24 bg-gradient-to-tr from-[#1a4a49] to-[#2a7a78] rounded-2xl flex items-center justify-center shadow-2xl mb-6 shadow-[#1a4a49]/50 border border-white/10 overflow-hidden">
-          <img src="/logo.png" alt="GardeaH Logo" className="w-full h-full object-contain p-2" />
+        <div className="w-72 h-40 bg-white rounded-2xl flex items-center justify-center shadow-2xl mb-6 shadow-[#1a4a49]/50 border border-white/10 overflow-hidden">
+          <img src="/logomarca.jpeg" alt="Clipop Logo" className="w-full h-full object-contain p-2" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-black text-white tracking-[0.2em] uppercase drop-shadow-lg">
-          GardeaH
-        </h1>
         <p className="text-[#8cb8b8] mt-3 tracking-[0.3em] text-sm md:text-base font-medium">
           INGENIERÍA & COSTOS ESTRATÉGICOS
         </p>

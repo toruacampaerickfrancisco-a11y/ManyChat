@@ -6,10 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-            <img src="/logo.png" alt="GardeaH Logo" className="h-8 w-8 object-contain rounded-md brightness-90" />
-            <span className="text-xl font-bold tracking-tight text-gray-300">
-              Gardea<span className="text-[#c0392b]">H</span>
-            </span>
+            <img src="/logomarca.jpeg" alt="Clipop Logo" className="h-10 object-contain rounded-md" />
           </div>
           <p className="text-sm text-gray-500">
             © {new Date().getFullYear()} Todos los derechos reservados.
