@@ -8,7 +8,7 @@ export default function Leads() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/leads')
+    fetch('/api/leads')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

@@ -8,7 +8,7 @@ export default function Navbar() {
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/settings')
+    fetch('/api/settings')
       .then(res => res.json())
       .then(data => setIsLive(data.podcast_is_live === 'true'))
       .catch(err => console.error(err));

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 const { Pool } = require('pg');
 const { PrismaPg } = require('@prisma/adapter-pg');
@@ -191,6 +192,12 @@ app.post('/api/settings', async (req, res) => {
     }
     res.json({ success: true, warning: 'Usando memoria temporal por falta de base de datos' });
   }
+});
+
+// --- SERVIR EL FRONTEND (PÁGINA WEB) ---
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 const PORT = process.env.PORT || 3000;

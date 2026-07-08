@@ -6,7 +6,7 @@ export default function Podcast() {
   const [liveUrl, setLiveUrl] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/settings')
+    fetch('/api/settings')
       .then(res => res.json())
       .then(data => {
         setIsLive(data.podcast_is_live === 'true');

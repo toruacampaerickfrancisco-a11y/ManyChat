@@ -8,7 +8,7 @@ export default function Login() {
 
   // Cargar el color guardado desde los settings del backend
   useEffect(() => {
-    fetch('http://localhost:3000/api/settings')
+    fetch('/api/settings')
       .then(res => res.json())
       .then(data => {
         if (data.login_bg_color) {

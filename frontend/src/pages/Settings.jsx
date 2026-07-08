@@ -10,7 +10,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/settings')
+    fetch('/api/settings')
       .then(res => res.json())
       .then(data => {
         setPodcastIsLive(data.podcast_is_live === 'true');
@@ -23,7 +23,7 @@ export default function Settings() {
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
-      await fetch('http://localhost:3000/api/settings', {
+      await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
