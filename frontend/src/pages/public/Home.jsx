@@ -6,9 +6,11 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 
 const CAROUSEL_IMAGES = [
-  "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&h=900&fit=crop", // Planos / escritorio
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&h=900&fit=crop", // Construcción / Estructura (Corregida)
-  "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1600&h=900&fit=crop"  // Trabajadores / Obra
+  "/Banner1.jpeg",
+  "/Banner2.jpeg",
+  "/Banner3.jpeg",
+  "/Banner4.jpeg",
+  "/Banner5.jpeg"
 ];
 
 export default function Home() {
