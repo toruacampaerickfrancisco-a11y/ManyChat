@@ -15,7 +15,7 @@ export default function Footer() {
         <div className="flex gap-4 text-sm text-gray-400">
           <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
           <Link to="/terminos" className="hover:text-white transition-colors">Términos</Link>
-          <a href="mailto:contacto@gardeah.com" className="hover:text-white transition-colors">Contacto</a>
+          <a href="mailto:clipopoficial@gmail.com" className="hover:text-white transition-colors">Contacto</a>
         </div>
       </div>
     </footer>

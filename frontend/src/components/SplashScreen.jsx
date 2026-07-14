@@ -26,16 +26,16 @@ export default function SplashScreen() {
 
   return (
     <div 
-      className={`fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[#0d2625] transition-all duration-1000 ease-in-out ${
-        isAnimatingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      className={`fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-white transition-all duration-1000 ease-in-out ${
+        isAnimatingOut ? 'opacity-0 pointer-events-none scale-105' : 'opacity-100'
       }`}
     >
       <div className="flex flex-col items-center animate-pulse">
-        <div className="w-72 h-40 bg-white rounded-2xl flex items-center justify-center shadow-2xl mb-6 shadow-[#1a4a49]/50 border border-white/10 overflow-hidden">
-          <img src="/logomarca.jpeg" alt="Clipop Logo" className="w-full h-full object-contain p-2" />
+        <div className="w-72 h-40 flex items-center justify-center mb-4 overflow-hidden">
+          <img src="/logomarca.jpeg" alt="Clipop Logo" className="w-full h-full object-contain" />
         </div>
-        <p className="text-[#8cb8b8] mt-3 tracking-[0.3em] text-sm md:text-base font-medium">
-          INGENIERÍA & COSTOS ESTRATÉGICOS
+        <p className="text-gray-500 mt-2 tracking-[0.25em] text-xs md:text-sm font-bold text-center uppercase">
+          Consultoría, Proyectos y Construcción
         </p>
       </div>
     </div>

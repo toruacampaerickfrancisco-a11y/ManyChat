@@ -7,7 +7,6 @@ import Topbar from './components/Topbar';
 import Home from './pages/public/Home';
 import Cursos from './pages/public/Cursos';
 import Contacto from './pages/public/Contacto';
-import Podcast from './pages/public/Podcast';
 import Login from './pages/auth/Login';
 
 // Vistas del Estudiante
@@ -45,7 +44,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/cursos" element={<Cursos />} />
         <Route path="/contacto" element={<Contacto />} />
-        <Route path="/podcast" element={<Podcast />} />
         <Route path="/login" element={<Login />} />
 
         {/* ZONA ESTUDIANTE */}

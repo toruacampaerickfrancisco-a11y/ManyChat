@@ -24,7 +24,10 @@ export default function Navbar() {
     <header className="sticky top-0 left-0 right-0 h-[80px] bg-white px-6 flex items-center justify-between shadow-sm z-50">
       <div className="flex items-center">
         <Link to="/" className="flex items-center gap-3">
-          <img src="/logomarca.jpeg" alt="Clipop Logo" className="h-14 object-contain rounded-lg" />
+          <img src="/logomarca.jpeg" alt="Clipop Logo" className="h-14 object-contain" />
+          <span className="text-gray-400 text-xs font-semibold tracking-wider border-l border-gray-200 pl-3 hidden sm:inline-block">
+            RFC: CCE2602093B3
+          </span>
         </Link>
       </div>
 
@@ -32,16 +35,6 @@ export default function Navbar() {
         <Link to="/" className={getLinkClass('/')}>Inicio</Link>
         <Link to="/cursos" className={getLinkClass('/cursos')}>Cursos</Link>
         <Link to="/contacto" className={getLinkClass('/contacto')}>Contacto</Link>
-        
-        <Link to="/podcast" className={`${getLinkClass('/podcast')} flex items-center gap-2`}>
-          Podcast
-          {isLive && (
-            <span className="relative flex h-3 w-3" title="En Vivo">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-            </span>
-          )}
-        </Link>
 
         <Link
           to="/login"
