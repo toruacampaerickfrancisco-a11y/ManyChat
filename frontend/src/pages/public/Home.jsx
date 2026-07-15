@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Target, Eye, BookOpen, Award, Calculator, TrendingUp } from 'lucide-react';
+import { Target, Eye } from 'lucide-react';
 import ChatbotWidget from '../../components/ChatbotWidget';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -15,22 +15,58 @@ const CAROUSEL_IMAGES = [
 
 const CONCURSOS = [
   {
-    imagen: "/concurso_subestacion.png",
-    numeroConcurso: "Licitación CFE: LO-019GYR021-E286-2022",
-    titulo: "Subestación de Distribución Sonora",
-    descripcion: "Presupuestación integral y análisis de precios unitarios con OPUS para la licitación de la Subestación de Potencia de 115 kV."
+    imagen: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80",
+    numeroConcurso: "CFE-0003-CACON-0040-2023",
+    titulo: "S.E. Donato Guerra (Reactores de Potencia)",
+    cliente: "AT PROYECTOS Y SERVICIOS ELECTROCIVILES SA DE CV",
+    descripcion: "Construcción de la Obra Civil y Electromecánica para la SE Donato Guerra para el montaje de 2 reactores trifásicos de potencia de 35 MVAr, incluye traslado y montaje de equipo primario.",
+    monto: "$37,643,399.50",
+    status: "Adjudicado"
   },
   {
-    imagen: "/concurso_lineas.png",
-    numeroConcurso: "Licitación CFE: LO-019GYR021-E310-2023",
-    titulo: "Línea de Transmisión 115kV Chihuahua",
-    descripcion: "Estructuración de la propuesta técnico-económica y cálculo del factor de salario integrado (FSR) bajo normatividad CFE."
+    imagen: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80",
+    numeroConcurso: "CFE-0003-CACON-0037-2023",
+    titulo: "L.T. Atlacomulco Potencia – Almoloya",
+    cliente: "AT PROYECTOS Y SERVICIOS ELECTROCIVILES SA DE CV",
+    descripcion: "Construcción de obra civil y electromecánica del proyecto Línea de Transmisión Atlacomulco Potencia – Almoloya, integrando alcances de ampliación de subestaciones.",
+    monto: "$113,477,895.68",
+    status: "Adjudicado"
   },
   {
-    imagen: "/concurso_redes.png",
-    numeroConcurso: "Licitación CFE: LO-019GYR021-E412-2024",
-    titulo: "Red de Distribución Subterránea",
-    descripcion: "Modelado del catálogo de conceptos y análisis de costos indirectos con Neodata para electrificación en zonas urbanas históricas."
+    imagen: "https://images.unsplash.com/photo-1540324155974-72413d90f414?auto=format&fit=crop&w=1200&q=80",
+    numeroConcurso: "CFE-0003-CACOT-0004-2024",
+    titulo: "Obras de Refuerzo CCC González Ortega",
+    cliente: "ELECTRICA ASELCO SA DE CV",
+    descripcion: "Obras de Refuerzo Asociadas a la Central de Ciclo Combinado González Ortega (Segunda convocatoria).",
+    monto: "$2,998,072,323.78",
+    status: "Adjudicado"
+  },
+  {
+    imagen: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80",
+    numeroConcurso: "CFE-0111-CACON-0001-2024",
+    titulo: "R.E.I. Subestaciones Sonora Norte",
+    cliente: "SIR ENERGY / MAJOFER CONSTRUCCIONES",
+    descripcion: "Restablecimiento, eficiencia e infraestructura en subestaciones de subtransmisión de la Zona Sonora Norte.",
+    monto: "$8,692,452.60",
+    status: "Adjudicado"
+  },
+  {
+    imagen: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?auto=format&fit=crop&w=1200&q=80",
+    numeroConcurso: "CFE-0115-CACON-0033-2024",
+    titulo: "Torres de Telecomunicaciones Golfo Norte",
+    cliente: "SYNCOM INTERNATIONAL SA DE CV",
+    descripcion: "Construcción de obra civil y electromecánica para la instalación de torres de telecomunicaciones en el ámbito de la División Golfo Norte, paquete 04, Quinta Fase.",
+    monto: "$5,979,642.43",
+    status: "Adjudicado"
+  },
+  {
+    imagen: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+    numeroConcurso: "CFE-0709-CSCON-0001-2024",
+    titulo: "Mantenimiento Almacén 1 Emilio Portes Gil",
+    cliente: "QUETZAL CONSTRUCCION Y ESTRUCTURAS SA DE CV",
+    descripcion: "Obra de mantenimiento a almacén no. 1 de cambio de techumbre de la Central Termoeléctrica Emilio Portes Gil.",
+    monto: "$1,632,234.63",
+    status: "Adjudicado"
   }
 ];
 
@@ -165,7 +201,7 @@ export default function Home() {
               <div className="w-20 h-20 bg-[#1a4a49]/5 text-[#1a4a49] rounded-full flex items-center justify-center mb-6">
                 <Target size={40} />
               </div>
-              <h3 className="text-3xl font-bold text-[#1a4a49] mb-4">Nuestra Misión</h3>
+              <h3 className="text-3xl font-bold text-[#1a4a49] mb-4">Misión</h3>
               <p className="text-gray-600 text-lg leading-relaxed max-w-md">
                 Capacitar a los profesionales de la construcción con herramientas tecnológicas avanzadas como OPUS y Neodata, garantizando la elaboración de presupuestos y licitaciones altamente competitivas, precisas y rentables.
               </p>
@@ -176,7 +212,7 @@ export default function Home() {
               <div className="w-20 h-20 bg-[#1a4a49]/5 text-[#1a4a49] rounded-full flex items-center justify-center mb-6">
                 <Eye size={40} />
               </div>
-              <h3 className="text-3xl font-bold text-[#1a4a49] mb-4">Nuestra Visión</h3>
+              <h3 className="text-3xl font-bold text-[#1a4a49] mb-4">Visión</h3>
               <p className="text-gray-600 text-lg leading-relaxed max-w-md">
                 Ser la plataforma líder en formación continua para la industria de la construcción, destacando por la excelencia académica, la actualización constante de normativas y el éxito profesional de nuestros egresados.
               </p>
@@ -190,7 +226,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto flex flex-col">
 
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-[#1a4a49] mb-4">Portafolio de Licitaciones</h2>
+              <h2 className="text-4xl font-bold text-[#1a4a49] mb-4">Casos de Exito en Licitaciones</h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
                 Casos de éxito y concursos de infraestructura coordinados por nuestro equipo
               </p>
@@ -217,11 +253,16 @@ export default function Home() {
                   </div>
 
                   {/* Contenido Dinámico (Parte Inferior) */}
-                  <div className="absolute bottom-0 left-0 w-full p-8 text-white z-20">
-                    <h4 className="text-xl md:text-2xl font-bold mb-3 drop-shadow-md">
+                  <div className="absolute bottom-0 left-0 w-full p-8 text-white z-20 bg-gradient-to-t from-black/95 via-black/75 to-transparent flex flex-col justify-end min-h-[160px]">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white/70">
+                      <span>Cliente: <strong className="text-white font-extrabold">{concurso.cliente}</strong></span>
+                      <span className="w-1.5 h-1.5 bg-white/30 rounded-full"></span>
+                      <span className="text-emerald-400 font-extrabold">{concurso.status}</span>
+                    </div>
+                    <h4 className="text-xl md:text-2xl font-extrabold mb-2 drop-shadow-md tracking-tight">
                       {concurso.titulo}
                     </h4>
-                    <p className="text-white/90 text-sm md:text-base leading-relaxed max-w-3xl drop-shadow-sm">
+                    <p className="text-white/85 text-xs md:text-sm leading-relaxed max-w-3xl drop-shadow-sm font-medium">
                       {concurso.descripcion}
                     </p>
                   </div>
@@ -262,63 +303,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Sección Aprendizajes y Habilidades */}
-        <section className="py-24 px-6 bg-gray-50 border-t border-gray-200">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-[#1a4a49] mb-4">¿Qué Habilidades Obtendrás?</h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Domina las herramientas indispensables para triunfar en la industria y asegura la precisión absoluta de tus presupuestos.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {/* Skill 1 */}
-              <div className="flex flex-col group p-2">
-                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
-                  <BookOpen size={28} />
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">Dominio de Software</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Aprende a estructurar presupuestos y APUs desde cero con las versiones más actualizadas de OPUS y Neodata.
-                </p>
-              </div>
-
-              {/* Skill 2 */}
-              <div className="flex flex-col group p-2">
-                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
-                  <Award size={28} />
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">Licitaciones CFE</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Arma y presenta propuestas técnico-económicas ganadoras cumpliendo rigurosamente toda la normativa vigente.
-                </p>
-              </div>
-
-              {/* Skill 3 */}
-              <div className="flex flex-col group p-2">
-                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
-                  <Calculator size={28} />
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">Análisis de Costos</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Especialízate en el cálculo del factor de salario integrado (FSR), control de costos directos e indirectos.
-                </p>
-              </div>
-
-              {/* Skill 4 */}
-              <div className="flex flex-col group p-2">
-                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
-                  <TrendingUp size={28} />
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">Rentabilidad Total</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Optimiza tus recursos, evita fugas de capital y garantiza la rentabilidad absoluta de cada proyecto.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       <Footer />

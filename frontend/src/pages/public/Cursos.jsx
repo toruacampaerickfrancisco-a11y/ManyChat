@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Star, Users, MessageSquare, ChevronLeft, ChevronRight, BookOpen, Quote, Award } from 'lucide-react';
+import { Star, Users, MessageSquare, ChevronLeft, ChevronRight, BookOpen, Quote, Award, Calculator, TrendingUp } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ChatbotWidget from '../../components/ChatbotWidget';
@@ -33,16 +33,29 @@ const CURSOS_DATA = [
   },
   {
     id: 3,
-    titulo: "Análisis de Precios Unitarios - OPUS 2020 (Gratuito)",
+    titulo: "OPUS. ANALISIS DE PRECIOS UNITARIOS. GRATIS!!",
     tag: "CURSO INTRODUCTORIO",
-    descripcion: "Curso de especialización dedicado al dominio del análisis de costos directos, indirectos, cálculo de factor de salario integrado (FSR) y presupuestación esencial.",
-    enlace: "https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/",
+    descripcion: "Curso de especialización introductorio y dinámico para aprender a trabajar con la CFE, abordando la elaboración de licitaciones, concursos y análisis de precios unitarios utilizando OPUS.",
+    enlace: "https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED",
     imagen: "/concurso_redes.png",
     rating: "4.6",
-    valoraciones: "115",
-    estudiantes: "650",
+    valoraciones: "62",
+    estudiantes: "754",
     badge: "Acceso Gratuito",
     badgeColor: "bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]", // Verde
+  },
+  {
+    id: 4,
+    titulo: "Análisis de Precios Unitarios 100% Práctico. OPUS 2025",
+    tag: "OPUS 2025 / LICITACIONES CFE",
+    descripcion: "Curso del Ing. Francisco Gardea enfocado en el manejo de OPUS 2025, estructuración de concursos de CFE, elaboración de precios unitarios conforme a especificaciones vigentes y desarrollo de entregables y anexos económicos con ejemplos prácticos de Líneas de Transmisión de CFE.",
+    enlace: "https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F",
+    imagen: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+    rating: "5.0",
+    valoraciones: "2",
+    estudiantes: "3",
+    badge: "Nuevo Curso",
+    badgeColor: "bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]", // Verde Esmeralda
   }
 ];
 
@@ -56,31 +69,66 @@ const TESTIMONIOS_DATA = [
   },
   {
     id: 2,
+    nombre: "Juan Carlos",
+    rating: 5,
+    comentario: "Excelente presentación. Es un gran tema para aprender precios unitarios el elegir formas de licitaciones y concursos de CFE para el desarrollo de sus obras. Considero que el instructor esta consciente de que es un tema de gran interés y su preparación y conocimiento lleva de la mano.",
+    curso: "APU 100% Práctico. OPUS 2025"
+  },
+  {
+    id: 3,
     nombre: "Ana Laura Gutiérrez",
     rating: 5,
     comentario: "La comparación y uso práctico entre OPUS, Neodata y Excel es fantástica. El instructor tiene un dominio completo del tema y aclara dudas rápidamente. Me ayudó mucho en mi trabajo.",
     curso: "Precios Unitarios OPUS, Neodata y Excel"
   },
   {
-    id: 3,
+    id: 4,
+    nombre: "Francisco",
+    rating: 5,
+    comentario: "Excelente curso del Ing. Francisco Gardea. Como siempre, comparte información muy valiosa y aplicable al trabajo diario. Destaco especialmente el manejo de OPUS 2025, la estructuración de concursos de CFE y el desarrollo de anexos económicos con ejemplos prácticos.",
+    curso: "APU 100% Práctico. OPUS 2025"
+  },
+  {
+    id: 5,
+    nombre: "Yinet",
+    rating: 5,
+    comentario: "Fue muy útil y fácil de seguir. La explicación de los conceptos fue clara y el desarrollo de un ejemplo práctico permitió comprender mejor el uso de las herramientas y funciones principales del programa. Excelente para iniciar en OPUS.",
+    curso: "APU OPUS (Gratis)"
+  },
+  {
+    id: 6,
     nombre: "Ing. Roberto Solís",
     rating: 5,
     comentario: "Explicaciones claras y objetivas. Un curso sumamente práctico para quienes nos dedicamos a la formulación de ofertas de concursos públicos y privados. Gran inversión.",
     curso: "Cómo Presentar Concursos para CFE"
   },
   {
-    id: 4,
+    id: 7,
+    nombre: "Hugo",
+    rating: 5,
+    comentario: "GRACIAS Ing. FRANCISCO GARDEA y a SIR ENERGY por este excelente curso dinámico. Con la mayoría de parámetros se aprende a trabajar con la CFE de manera profesional. Invito a más ingenieros y arquitectos a participar.",
+    curso: "APU OPUS (Gratis)"
+  },
+  {
+    id: 8,
     nombre: "Jorge T. Valdez",
     rating: 5,
     comentario: "Muy buena metodología de enseñanza. Ideal tanto para quienes inician en análisis de precios unitarios como para los que ya tenemos experiencia y buscamos optimizar tiempos con OPUS.",
     curso: "Precios Unitarios OPUS, Neodata y Excel"
   },
   {
-    id: 5,
+    id: 9,
+    nombre: "David Alirio Sandoval",
+    rating: 5,
+    comentario: "Buen curso, se explica bien el tema de los análisis de precios unitarios con OPUS, adicionalmente hace una revisión general del alcance del programa para generación de entregables en procesos de licitación y contratos.",
+    curso: "APU OPUS (Gratis)"
+  },
+  {
+    id: 10,
     nombre: "Esteban R. H.",
     rating: 4,
     comentario: "Excelente curso introductorio y gratuito. Explica muy bien los conceptos de FSR y costos indirectos de forma muy clara. Muy agradecido por este material.",
-    curso: "Análisis de Precios Unitarios (Gratis)"
+    curso: "APU OPUS (Gratis)"
   }
 ];
 
@@ -295,8 +343,8 @@ export default function Cursos() {
                 <div
                   key={testimonio.id}
                   className={`transition-all duration-500 ease-in-out ${index === currentTestimonio
-                      ? 'block opacity-100 translate-x-0 relative z-10'
-                      : 'hidden opacity-0 translate-x-4'
+                    ? 'block opacity-100 translate-x-0 relative z-10'
+                    : 'hidden opacity-0 translate-x-4'
                     }`}
                 >
                   {/* Estrellas */}
@@ -357,6 +405,64 @@ export default function Cursos() {
                     aria-label={`Ir a reseña ${idx + 1}`}
                   />
                 ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Sección Aprendizajes y Habilidades */}
+        <section className="py-20 px-6 bg-white border-t border-gray-150">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-[#1a4a49] mb-4">¿Qué Habilidades Obtendrás?</h2>
+              <p className="text-gray-500 text-sm md:text-base max-w-2xl mx-auto">
+                Domina las herramientas indispensables para triunfar en la industria y asegura la precisión absoluta de tus presupuestos.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Skill 1 */}
+              <div className="flex flex-col group p-2">
+                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
+                  <BookOpen size={28} />
+                </div>
+                <h4 className="text-xl font-bold text-gray-800 mb-3">Dominio de Software</h4>
+                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
+                  Aprende a estructurar presupuestos y APUs desde cero con las versiones más actualizadas de OPUS y Neodata.
+                </p>
+              </div>
+
+              {/* Skill 2 */}
+              <div className="flex flex-col group p-2">
+                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
+                  <Award size={28} />
+                </div>
+                <h4 className="text-xl font-bold text-gray-800 mb-3">Licitaciones CFE</h4>
+                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
+                  Arma y presenta propuestas técnico-económicas ganadoras cumpliendo rigurosamente toda la normativa vigente.
+                </p>
+              </div>
+
+              {/* Skill 3 */}
+              <div className="flex flex-col group p-2">
+                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
+                  <Calculator size={28} />
+                </div>
+                <h4 className="text-xl font-bold text-gray-800 mb-3">Análisis de Costos</h4>
+                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
+                  Especialízate en el cálculo del factor de salario integrado (FSR), control de costos directos e indirectos.
+                </p>
+              </div>
+
+              {/* Skill 4 */}
+              <div className="flex flex-col group p-2">
+                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
+                  <TrendingUp size={28} />
+                </div>
+                <h4 className="text-xl font-bold text-gray-800 mb-3">Rentabilidad Total</h4>
+                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
+                  Optimiza tus recursos, evita fugas de capital y garantiza la rentabilidad absoluta de cada proyecto.
+                </p>
               </div>
             </div>
           </div>
