@@ -4,6 +4,7 @@ import { Target, Eye } from 'lucide-react';
 import ChatbotWidget from '../../components/ChatbotWidget';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import ColaboradoresMarquee from '../../components/ColaboradoresMarquee';
 
 const CAROUSEL_IMAGES = [
   "/Banner1.jpeg",
@@ -117,6 +118,15 @@ export default function Home() {
               <img
                 src={img}
                 alt={`Slide ${index + 1}`}
+                onError={(e) => {
+                  if (img.endsWith('.jpeg')) {
+                    e.target.src = img.replace('.jpeg', '.jpg');
+                  } else if (img.endsWith('.jpg')) {
+                    e.target.src = img.replace('.jpg', '.png');
+                  } else {
+                    e.target.src = '/Banner1.jpeg';
+                  }
+                }}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/60"></div>
@@ -242,6 +252,9 @@ export default function Home() {
                   <img
                     src={concurso.imagen}
                     alt={concurso.titulo}
+                    onError={(e) => {
+                      e.target.src = `/Banner${(index % 5) + 1}.jpeg`;
+                    }}
                     className="w-full h-full object-cover"
                   />
                   {/* Filtro oscuro para legibilidad */}
@@ -305,6 +318,7 @@ export default function Home() {
 
       </main>
 
+      <ColaboradoresMarquee />
       <Footer />
       <ChatbotWidget />
     </div>

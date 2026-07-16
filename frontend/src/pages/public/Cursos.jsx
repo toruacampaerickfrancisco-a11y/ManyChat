@@ -3,6 +3,7 @@ import { Star, Users, MessageSquare, ChevronLeft, ChevronRight, BookOpen, Quote,
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ChatbotWidget from '../../components/ChatbotWidget';
+import ColaboradoresMarquee from '../../components/ColaboradoresMarquee';
 
 const CURSOS_DATA = [
   {
@@ -216,6 +217,18 @@ export default function Cursos() {
                   <img
                     src={curso.imagen}
                     alt={curso.titulo}
+                    onError={(e) => {
+                      const img = curso.imagen;
+                      if (img.endsWith('.jpeg')) {
+                        e.target.src = img.replace('.jpeg', '.jpg');
+                      } else if (img.endsWith('.png')) {
+                        e.target.src = img.replace('.png', '.jpg');
+                      } else if (img.endsWith('.jpg')) {
+                        e.target.src = img.replace('.jpg', '.png');
+                      } else {
+                        e.target.src = `/Banner${(index % 5) + 1}.jpeg`;
+                      }
+                    }}
                     className="w-full h-full object-cover"
                   />
                   {/* Gradiente oscuro superior y lateral para excelente legibilidad */}
@@ -410,65 +423,10 @@ export default function Cursos() {
           </div>
         </section>
 
-        {/* Sección Aprendizajes y Habilidades */}
-        <section className="py-20 px-6 bg-white border-t border-gray-150">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-[#1a4a49] mb-4">¿Qué Habilidades Obtendrás?</h2>
-              <p className="text-gray-500 text-sm md:text-base max-w-2xl mx-auto">
-                Domina las herramientas indispensables para triunfar en la industria y asegura la precisión absoluta de tus presupuestos.
-              </p>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {/* Skill 1 */}
-              <div className="flex flex-col group p-2">
-                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
-                  <BookOpen size={28} />
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">Dominio de Software</h4>
-                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
-                  Aprende a estructurar presupuestos y APUs desde cero con las versiones más actualizadas de OPUS y Neodata.
-                </p>
-              </div>
-
-              {/* Skill 2 */}
-              <div className="flex flex-col group p-2">
-                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
-                  <Award size={28} />
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">Licitaciones CFE</h4>
-                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
-                  Arma y presenta propuestas técnico-económicas ganadoras cumpliendo rigurosamente toda la normativa vigente.
-                </p>
-              </div>
-
-              {/* Skill 3 */}
-              <div className="flex flex-col group p-2">
-                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
-                  <Calculator size={28} />
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">Análisis de Costos</h4>
-                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
-                  Especialízate en el cálculo del factor de salario integrado (FSR), control de costos directos e indirectos.
-                </p>
-              </div>
-
-              {/* Skill 4 */}
-              <div className="flex flex-col group p-2">
-                <div className="w-14 h-14 bg-[#1a4a49]/5 text-[#1a4a49] rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#1a4a49] group-hover:text-white transition-colors">
-                  <TrendingUp size={28} />
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">Rentabilidad Total</h4>
-                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
-                  Optimiza tus recursos, evita fugas de capital y garantiza la rentabilidad absoluta de cada proyecto.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
+      <ColaboradoresMarquee />
       <Footer />
       <ChatbotWidget />
     </div>

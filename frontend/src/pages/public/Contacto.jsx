@@ -1,6 +1,7 @@
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ChatbotWidget from '../../components/ChatbotWidget';
+import ColaboradoresMarquee from '../../components/ColaboradoresMarquee';
 import { useState } from 'react';
 
 export default function Contacto() {
@@ -146,6 +147,7 @@ export default function Contacto() {
         </div>
       </main>
 
+      <ColaboradoresMarquee />
       <Footer />
       <ChatbotWidget />
     </div>

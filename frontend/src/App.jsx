@@ -6,6 +6,7 @@ import Topbar from './components/Topbar';
 // Vistas Públicas
 import Home from './pages/public/Home';
 import Cursos from './pages/public/Cursos';
+import Servicios from './pages/public/Servicios';
 import Contacto from './pages/public/Contacto';
 import Login from './pages/auth/Login';
 
@@ -43,6 +44,7 @@ function App() {
         {/* ZONA PÚBLICA (Tienda) */}
         <Route path="/" element={<Home />} />
         <Route path="/cursos" element={<Cursos />} />
+        <Route path="/servicios" element={<Servicios />} />
         <Route path="/contacto" element={<Contacto />} />
         <Route path="/login" element={<Login />} />
 
