@@ -16,7 +16,7 @@ const CAROUSEL_IMAGES = [
 
 const CONCURSOS = [
   {
-    imagen: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80",
+    imagen: "/carrusel-exitos/Carrusel_Exitos1.jpeg",
     numeroConcurso: "CFE-0003-CACON-0040-2023",
     titulo: "S.E. Donato Guerra (Reactores de Potencia)",
     cliente: "AT PROYECTOS Y SERVICIOS ELECTROCIVILES SA DE CV",
@@ -25,7 +25,7 @@ const CONCURSOS = [
     status: "Adjudicado"
   },
   {
-    imagen: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80",
+    imagen: "/carrusel-exitos/Carrusel_Exitos2.jpeg",
     numeroConcurso: "CFE-0003-CACON-0037-2023",
     titulo: "L.T. Atlacomulco Potencia – Almoloya",
     cliente: "AT PROYECTOS Y SERVICIOS ELECTROCIVILES SA DE CV",
@@ -34,7 +34,7 @@ const CONCURSOS = [
     status: "Adjudicado"
   },
   {
-    imagen: "https://images.unsplash.com/photo-1540324155974-72413d90f414?auto=format&fit=crop&w=1200&q=80",
+    imagen: "/carrusel-exitos/Carrusel_Exitos3.jpeg",
     numeroConcurso: "CFE-0003-CACOT-0004-2024",
     titulo: "Obras de Refuerzo CCC González Ortega",
     cliente: "ELECTRICA ASELCO SA DE CV",
@@ -43,7 +43,7 @@ const CONCURSOS = [
     status: "Adjudicado"
   },
   {
-    imagen: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80",
+    imagen: "/carrusel-exitos/Carrusel_Exitos4.jpeg",
     numeroConcurso: "CFE-0111-CACON-0001-2024",
     titulo: "R.E.I. Subestaciones Sonora Norte",
     cliente: "SIR ENERGY / MAJOFER CONSTRUCCIONES",
@@ -52,7 +52,7 @@ const CONCURSOS = [
     status: "Adjudicado"
   },
   {
-    imagen: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?auto=format&fit=crop&w=1200&q=80",
+    imagen: "/carrusel-exitos/Carrusel_Exitos5.jpeg",
     numeroConcurso: "CFE-0115-CACON-0033-2024",
     titulo: "Torres de Telecomunicaciones Golfo Norte",
     cliente: "SYNCOM INTERNATIONAL SA DE CV",
@@ -61,7 +61,7 @@ const CONCURSOS = [
     status: "Adjudicado"
   },
   {
-    imagen: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+    imagen: "/carrusel-exitos/Carrusel_Exitos6.jpeg",
     numeroConcurso: "CFE-0709-CSCON-0001-2024",
     titulo: "Mantenimiento Almacén 1 Emilio Portes Gil",
     cliente: "QUETZAL CONSTRUCCION Y ESTRUCTURAS SA DE CV",
@@ -266,12 +266,7 @@ export default function Home() {
                   </div>
 
                   {/* Contenido Dinámico (Parte Inferior) */}
-                  <div className="absolute bottom-0 left-0 w-full p-8 text-white z-20 bg-gradient-to-t from-black/95 via-black/75 to-transparent flex flex-col justify-end min-h-[160px]">
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white/70">
-                      <span>Cliente: <strong className="text-white font-extrabold">{concurso.cliente}</strong></span>
-                      <span className="w-1.5 h-1.5 bg-white/30 rounded-full"></span>
-                      <span className="text-emerald-400 font-extrabold">{concurso.status}</span>
-                    </div>
+                  <div className="absolute bottom-0 left-0 w-full p-8 text-white z-20 bg-gradient-to-t from-black/95 via-black/75 to-transparent flex flex-col justify-end min-h-[140px]">
                     <h4 className="text-xl md:text-2xl font-extrabold mb-2 drop-shadow-md tracking-tight">
                       {concurso.titulo}
                     </h4>
