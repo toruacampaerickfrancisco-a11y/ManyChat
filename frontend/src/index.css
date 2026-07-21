@@ -27,6 +27,24 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes dashFlow {
+  from { stroke-dashoffset: 40; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
 @utility animate-marquee {
   animation: marquee 25s linear infinite;
+}
+
+.animate-dash-flow {
+  animation: dashFlow 1.5s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
 }
