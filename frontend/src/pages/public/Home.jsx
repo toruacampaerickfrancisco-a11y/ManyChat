@@ -213,7 +213,7 @@ export default function Home() {
               </div>
               <h3 className="text-3xl font-bold text-[#1a4a49] mb-4">Misión</h3>
               <p className="text-gray-600 text-lg leading-relaxed max-w-md">
-                Capacitar a los profesionales de la construcción con herramientas tecnológicas avanzadas como OPUS y Neodata, garantizando la elaboración de presupuestos y licitaciones altamente competitivas, precisas y rentables.
+                Ayuda a profesionistas, emprendedores y empresarios a participar en concursos de CFE en los diferentes procedimientos, adquisiciones, servicios, mantenimiento y construcccion de proyectos que ayuden a la red electrica nacional.
               </p>
             </div>
 
@@ -224,7 +224,7 @@ export default function Home() {
               </div>
               <h3 className="text-3xl font-bold text-[#1a4a49] mb-4">Visión</h3>
               <p className="text-gray-600 text-lg leading-relaxed max-w-md">
-                Ser la plataforma líder en formación continua para la industria de la construcción, destacando por la excelencia académica, la actualización constante de normativas y el éxito profesional de nuestros egresados.
+                Crear una comunidad de profesionistas, emprendedores y empresarios que trabajando en equipo lleven acabo proyectos que ayuden a la mejora de la red electrica nacional, desarrollando y ejecutando proyectos de generacion, transmision o distribucion de energia electrica.
               </p>
             </div>
 
