@@ -1,6 +1,7 @@
 import React from 'react';
 import atProyectos from '../assets/logos-colaboradores/ATPROYECTOS.jpeg';
 import diproelec from '../assets/logos-colaboradores/DIPROELEC.jpeg';
+import ingenieriaElectrica from '../assets/logos-colaboradores/INGENIERIAELECTRICA.jpeg';
 import industream from '../assets/logos-colaboradores/Industream.jpeg';
 import logocolaboradores from '../assets/logos-colaboradores/LOGOCOLABORADORES.jpeg';
 import onetzal from '../assets/logos-colaboradores/Onetzal.jpeg';
@@ -11,6 +12,7 @@ export default function ColaboradoresMarquee() {
   const LOGOS = [
     { src: atProyectos, name: "AT Proyectos" },
     { src: diproelec, name: "Diproelec" },
+    { src: ingenieriaElectrica, name: "Ingeniería Eléctrica" },
     { src: industream, name: "Industream" },
     { src: logocolaboradores, name: "Colaboradores" },
     { src: onetzal, name: "Onetzal" },
