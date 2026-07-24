@@ -208,22 +208,28 @@ export default function Home() {
 
             {/* Misión */}
             <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-[#1a4a49]/5 text-[#1a4a49] rounded-full flex items-center justify-center mb-6">
-                <Target size={40} />
+              <div className="relative group mb-6">
+                <div className="absolute -inset-1.5 bg-gradient-to-r from-[#1a4a49] to-emerald-500 rounded-full blur opacity-40 group-hover:opacity-80 transition duration-300"></div>
+                <div className="relative w-20 h-20 bg-[#1a4a49] text-emerald-300 rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-105 transition duration-300 border-2 border-emerald-400/30">
+                  <Target size={38} className="stroke-[2]" />
+                </div>
               </div>
               <h3 className="text-3xl font-bold text-[#1a4a49] mb-4">Misión</h3>
-              <p className="text-gray-600 text-lg leading-relaxed max-w-md">
-                Ayuda a profesionistas, emprendedores y empresarios a participar en concursos de CFE en los diferentes procedimientos, adquisiciones, servicios, mantenimiento y construcccion de proyectos que ayuden a la red electrica nacional.
+              <p className="text-gray-600 text-lg leading-relaxed max-w-md" style={{ textAlign: 'justify' }}>
+                Ayudar a profesionistas, emprendedores y empresarios a participar en concursos de CFE en los diferentes procedimientos, adquisiciones, servicios, mantenimiento y construcccion de proyectos que ayuden a la red electrica nacional.
               </p>
             </div>
 
             {/* Visión */}
             <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-[#1a4a49]/5 text-[#1a4a49] rounded-full flex items-center justify-center mb-6">
-                <Eye size={40} />
+              <div className="relative group mb-6">
+                <div className="absolute -inset-1.5 bg-gradient-to-r from-[#1a4a49] to-emerald-500 rounded-full blur opacity-40 group-hover:opacity-80 transition duration-300"></div>
+                <div className="relative w-20 h-20 bg-[#1a4a49] text-emerald-300 rounded-full flex items-center justify-center shadow-xl transform group-hover:scale-105 transition duration-300 border-2 border-emerald-400/30">
+                  <Eye size={38} className="stroke-[2]" />
+                </div>
               </div>
               <h3 className="text-3xl font-bold text-[#1a4a49] mb-4">Visión</h3>
-              <p className="text-gray-600 text-lg leading-relaxed max-w-md">
+              <p className="text-gray-600 text-lg leading-relaxed max-w-md" style={{ textAlign: 'justify' }}>
                 Crear una comunidad de profesionistas, emprendedores y empresarios que trabajando en equipo lleven acabo proyectos que ayuden a la mejora de la red electrica nacional, desarrollando y ejecutando proyectos de generacion, transmision o distribucion de energia electrica.
               </p>
             </div>
@@ -236,9 +242,9 @@ export default function Home() {
           <div className="max-w-4xl mx-auto flex flex-col">
 
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-[#1a4a49] mb-4">Casos de Exito en Licitaciones</h2>
+              <h2 className="text-4xl font-bold text-[#1a4a49] mb-4">Casos de Exito</h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Casos de éxito y concursos de infraestructura coordinados por nuestro equipo
+                En concursos de infraestructura coordinados por nuestro equipo
               </p>
             </div>
 

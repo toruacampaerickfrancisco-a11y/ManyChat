@@ -373,6 +373,192 @@ Tus objetivos principales son:
   }
 });
 
+// --- RUTAS PARA PRODUCTOS / CURSOS Y CATÁLOGO ---
+
+let inMemoryProducts = [
+  {
+    id: '483B20BB76F1F136B88D',
+    name: 'Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel',
+    titulo: 'Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel',
+    status: 'ACTIVO',
+    is_active: true,
+    category: 'CURSO',
+    type: 'DIGITAL',
+    author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ',
+    created: '18/6/2026',
+    url: 'https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/',
+    enlace: 'https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/',
+    description: 'Curso completo enfocado en estructurar presupuestos y análisis de precios unitarios (APU) desde cero, dominando OPUS (versiones 22 y 24), Neodata y Excel.',
+    descripcion: 'Curso completo enfocado en estructurar presupuestos y análisis de precios unitarios (APU) desde cero, dominando OPUS (versiones 22 y 24), Neodata y Excel.',
+    imagen: '/concurso_subestacion.png',
+    rating: '4.4',
+    valoraciones: '226',
+    estudiantes: '1,244',
+    badge: 'Más Vendido',
+    badgeColor: 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]',
+    price: 0
+  },
+  {
+    id: 'CE4F47D87E543CA1CB75',
+    name: 'Cómo Presentar Concursos para CFE desde cero con OPUS 2020',
+    titulo: 'Cómo Presentar Concursos para CFE desde cero con OPUS 2020',
+    status: 'ACTIVO',
+    is_active: true,
+    category: 'CURSO',
+    type: 'DIGITAL',
+    author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ',
+    created: '18/6/2026',
+    url: 'https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/',
+    enlace: 'https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/',
+    description: 'Guía práctica y metodológica para armar y presentar propuestas de licitaciones técnico-económicas para la Comisión Federal de Electricidad (CFE) en México usando OPUS 2020.',
+    descripcion: 'Guía práctica y metodológica para armar y presentar propuestas de licitaciones técnico-económicas para la Comisión Federal de Electricidad (CFE) en México usando OPUS 2020.',
+    imagen: '/concurso_lineas.png',
+    rating: '4.9',
+    valoraciones: '24',
+    estudiantes: '77',
+    badge: 'Mejor Valorado',
+    badgeColor: 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]',
+    price: 0
+  },
+  {
+    id: '37ABE3618B5C83C37D65',
+    name: 'OPUS 2020 - Análisis de Precios Unitarios',
+    titulo: 'OPUS 2020 - Análisis de Precios Unitarios',
+    status: 'ACTIVO',
+    is_active: true,
+    category: 'CURSO',
+    type: 'DIGITAL',
+    author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ',
+    created: '18/6/2026',
+    url: 'https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/',
+    enlace: 'https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/',
+    description: 'Curso de especialización dedicado al dominio del análisis de costos directos, indirectos, cálculo de factor de salario integrado (FSR) y presupuestación en la versión 2020 de OPUS.',
+    descripcion: 'Curso de especialización dedicado al dominio del análisis de costos directos, indirectos, cálculo de factor de salario integrado (FSR) y presupuestación en la versión 2020 de OPUS.',
+    imagen: '/concurso_redes.png',
+    rating: '4.6',
+    valoraciones: '62',
+    estudiantes: '754',
+    badge: 'Acceso Gratuito',
+    badgeColor: 'bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]',
+    price: 0
+  },
+  {
+    id: '91F84A20B71E492C1012',
+    name: 'Análisis de Precios Unitarios 100% Práctico. OPUS 2025',
+    titulo: 'Análisis de Precios Unitarios 100% Práctico. OPUS 2025',
+    status: 'ACTIVO',
+    is_active: true,
+    category: 'CURSO',
+    type: 'DIGITAL',
+    author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ',
+    created: '20/6/2026',
+    url: 'https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F',
+    enlace: 'https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F',
+    description: 'Curso del Ing. Francisco Gardea enfocado en el manejo de OPUS 2025, estructuración de concursos de CFE, elaboración de precios unitarios conforme a especificaciones vigentes y desarrollo de entregables.',
+    descripcion: 'Curso del Ing. Francisco Gardea enfocado en el manejo de OPUS 2025, estructuración de concursos de CFE, elaboración de precios unitarios conforme a especificaciones vigentes y desarrollo de entregables.',
+    imagen: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+    rating: '5.0',
+    valoraciones: '2',
+    estudiantes: '3',
+    badge: 'Nuevo Curso',
+    badgeColor: 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]',
+    price: 0
+  }
+];
+
+// GET /api/products
+app.get('/api/products', async (req, res) => {
+  const { activeOnly } = req.query;
+  try {
+    if (process.env.DATABASE_URL) {
+      const where = activeOnly === 'true' ? { is_active: true } : {};
+      const products = await prisma.product.findMany({ where, orderBy: { createdAt: 'desc' } });
+      if (products.length > 0) return res.json(products);
+    }
+  } catch (err) {
+    console.error('[API Products GET Error]', err);
+  }
+  let result = inMemoryProducts;
+  if (activeOnly === 'true') {
+    result = result.filter(p => p.status === 'ACTIVO' || p.is_active === true);
+  }
+  res.json(result);
+});
+
+// POST /api/products
+app.post('/api/products', async (req, res) => {
+  const newProd = {
+    id: req.body.id || Math.random().toString(36).substring(2, 12).toUpperCase(),
+    name: req.body.name || req.body.titulo || 'Nuevo Curso',
+    titulo: req.body.name || req.body.titulo || 'Nuevo Curso',
+    status: req.body.status || 'ACTIVO',
+    is_active: req.body.status === 'ACTIVO' || req.body.is_active !== false,
+    category: req.body.category || 'CURSO',
+    type: req.body.type || 'DIGITAL',
+    author: req.body.author || 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ',
+    created: new Date().toLocaleDateString('es-MX'),
+    url: req.body.url || req.body.enlace || '#',
+    enlace: req.body.url || req.body.enlace || '#',
+    description: req.body.description || req.body.descripcion || '',
+    descripcion: req.body.description || req.body.descripcion || '',
+    imagen: req.body.imagen || req.body.image_url || '/concurso_subestacion.png',
+    rating: req.body.rating || '5.0',
+    valoraciones: '1',
+    estudiantes: '1',
+    badge: req.body.badge || 'Nuevo Curso',
+    badgeColor: 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]',
+    price: parseFloat(req.body.price) || 0
+  };
+
+  try {
+    if (process.env.DATABASE_URL) {
+      await prisma.product.create({
+        data: {
+          name: newProd.name,
+          description: newProd.description,
+          price: newProd.price,
+          image_url: newProd.imagen,
+          link: newProd.url,
+          is_active: newProd.is_active
+        }
+      });
+    }
+  } catch (err) {
+    console.error('[API Products POST Error]', err);
+  }
+
+  inMemoryProducts.unshift(newProd);
+  res.status(201).json({ success: true, product: newProd });
+});
+
+// PUT /api/products/:id
+app.put('/api/products/:id', async (req, res) => {
+  const { id } = req.params;
+  const index = inMemoryProducts.findIndex(p => String(p.id) === String(id));
+  
+  if (index !== -1) {
+    inMemoryProducts[index] = { ...inMemoryProducts[index], ...req.body };
+    if (req.body.status) {
+      inMemoryProducts[index].is_active = req.body.status === 'ACTIVO';
+    }
+    if (req.body.name) {
+      inMemoryProducts[index].titulo = req.body.name;
+    }
+    if (req.body.description) {
+      inMemoryProducts[index].descripcion = req.body.description;
+    }
+  }
+
+  res.json({ success: true, product: inMemoryProducts[index] || req.body });
+});
+
+// DELETE /api/products/:id
+app.delete('/api/products/:id', async (req, res) => {
+  const { id } = req.params;
+  inMemoryProducts = inMemoryProducts.filter(p => String(p.id) !== String(id));
+  res.json({ success: true });
+});
+
 // --- RUTAS PARA CONFIGURACIÓN (SETTINGS) ---
 
 // Memoria temporal por si no hay base de datos conectada aún

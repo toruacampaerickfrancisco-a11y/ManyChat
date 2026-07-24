@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Eye, ArrowLeft, Palette } from 'lucide-react';
+import ClipopLogo from '../../components/ClipopLogo';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function Login() {
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen flex font-sans text-white overflow-hidden relative transition-colors duration-300"
       style={{ backgroundColor: bgColor }}
     >
@@ -50,15 +51,18 @@ export default function Login() {
 
       {/* Lado Izquierdo (Textos institucionales) */}
       <div className="hidden lg:flex flex-1 flex-col justify-center items-center p-12 relative border-r border-white/20">
-        <div className="max-w-xl text-center space-y-6">
-          <h1 className="text-3xl font-bold tracking-wide">
-            PANEL DE ADMINISTRACION<br />
-          </h1>
+        <div className="max-w-xl text-center space-y-6 flex flex-col items-center">
+          
+          {/* Logo Oficial CLIPOP limpio sin contornos ni tarjetas */}
+          <div className="mb-6 flex items-center justify-center transition-transform duration-300 hover:scale-105">
+            <ClipopLogo />
+          </div>
+
           <p className="text-sm font-medium leading-relaxed px-8">
-            Sistema de organizacion para el ManyChat Boot
+            Consultoria Especializada, Proyectos y Construccion
           </p>
-          <p className="text-sm tracking-widest pt-4">
-            SISTEMA DE CAPTACION DE NUEVOS CLIENTES
+          <p className="text-sm tracking-widest pt-2">
+            Ayudamos a profesionistas a participar en concursos de CFE Nacional
           </p>
         </div>
 
@@ -73,8 +77,13 @@ export default function Login() {
       <div className="flex-1 flex flex-col justify-center items-center p-8">
         <div className="w-full max-w-sm flex flex-col items-center">
 
-          {/* Icono de Usuario circular */}
-          <div className="w-20 h-20 rounded-full border-2 border-white flex items-center justify-center mb-6">
+          {/* Logo Oficial en móvil sin contornos */}
+          <div className="lg:hidden mb-6 flex items-center justify-center">
+            <ClipopLogo size="small" />
+          </div>
+
+          {/* Icono de Usuario circular en desktop */}
+          <div className="hidden lg:flex w-20 h-20 rounded-full border-2 border-white items-center justify-center mb-6">
             <User className="w-8 h-8 text-white" />
           </div>
 

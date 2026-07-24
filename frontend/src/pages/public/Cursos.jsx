@@ -134,16 +134,43 @@ const TESTIMONIOS_DATA = [
 ];
 
 export default function Cursos() {
+  const [cursosList, setCursosList] = useState(CURSOS_DATA);
   const [currentCurso, setCurrentCurso] = useState(0);
   const [currentTestimonio, setCurrentTestimonio] = useState(0);
 
+  // Cargar cursos dinámicos desde la API de catálogo
+  useEffect(() => {
+    fetch('/api/products?activeOnly=true')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const formatted = data.map(item => ({
+            id: item.id,
+            titulo: item.titulo || item.name,
+            tag: item.tag || `${item.category || 'CURSO'} / CLIPOP`,
+            descripcion: item.descripcion || item.description || '',
+            enlace: item.enlace || item.url || item.link || '#',
+            imagen: item.imagen || item.image_url || '/concurso_subestacion.png',
+            rating: item.rating || '5.0',
+            valoraciones: item.valoraciones || '12',
+            estudiantes: item.estudiantes || '150',
+            badge: item.badge || 'Disponible',
+            badgeColor: item.badgeColor || 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]'
+          }));
+          setCursosList(formatted);
+        }
+      })
+      .catch(err => console.error('Error cargando cursos dinámicos:', err));
+  }, []);
+
   // Auto-play opcional para el carrusel de cursos (cada 8 segundos)
   useEffect(() => {
+    if (cursosList.length === 0) return;
     const interval = setInterval(() => {
-      setCurrentCurso((prev) => (prev === CURSOS_DATA.length - 1 ? 0 : prev + 1));
+      setCurrentCurso((prev) => (prev >= cursosList.length - 1 ? 0 : prev + 1));
     }, 8000);
     return () => clearInterval(interval);
-  }, []);
+  }, [cursosList.length]);
 
   // Auto-play para el carrusel de testimonios (cada 5 segundos)
   useEffect(() => {
@@ -154,11 +181,11 @@ export default function Cursos() {
   }, []);
 
   const handlePrevCurso = () => {
-    setCurrentCurso((prev) => (prev === 0 ? CURSOS_DATA.length - 1 : prev - 1));
+    setCurrentCurso((prev) => (prev === 0 ? cursosList.length - 1 : prev - 1));
   };
 
   const handleNextCurso = () => {
-    setCurrentCurso((prev) => (prev === CURSOS_DATA.length - 1 ? 0 : prev + 1));
+    setCurrentCurso((prev) => (prev === cursosList.length - 1 ? 0 : prev + 1));
   };
 
   const handlePrevTestimonio = () => {
@@ -207,9 +234,9 @@ export default function Cursos() {
             <div className="relative h-[480px] md:h-[420px] rounded-3xl overflow-hidden shadow-2xl bg-black group/carousel">
 
               {/* Slides del Carrusel */}
-              {CURSOS_DATA.map((curso, index) => (
+              {cursosList.map((curso, index) => (
                 <div
-                  key={curso.id}
+                  key={curso.id || index}
                   className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${index === currentCurso ? 'opacity-100 z-10' : 'opacity-0 z-0'
                     }`}
                 >
@@ -218,7 +245,7 @@ export default function Cursos() {
                     src={curso.imagen}
                     alt={curso.titulo}
                     onError={(e) => {
-                      const img = curso.imagen;
+                      const img = curso.imagen || '';
                       if (img.endsWith('.jpeg')) {
                         e.target.src = img.replace('.jpeg', '.jpg');
                       } else if (img.endsWith('.png')) {
@@ -310,7 +337,7 @@ export default function Cursos() {
 
               {/* Puntos Indicadores (Paginación) */}
               <div className="absolute bottom-6 right-8 z-30 flex gap-2">
-                {CURSOS_DATA.map((_, idx) => (
+                {cursosList.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentCurso(idx)}
