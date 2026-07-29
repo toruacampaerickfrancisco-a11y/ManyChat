@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Zap } from 'lucide-react';
+import { Menu, X, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function Navbar() {
@@ -23,8 +23,8 @@ export default function Navbar() {
   const getLinkClass = (path, isMobile = false) => {
     if (isMobile) {
       return currentPath === path
-        ? "text-[#c0392b] font-bold bg-[#c0392b]/10 px-4 py-3 rounded-xl transition-all"
-        : "text-gray-700 hover:text-[#c0392b] hover:bg-gray-100 px-4 py-3 rounded-xl transition-all font-semibold";
+        ? "text-[#c0392b] font-bold bg-[#c0392b]/10 px-4 py-3.5 rounded-xl transition-all block w-full text-left text-base shadow-sm"
+        : "text-gray-800 hover:text-[#c0392b] hover:bg-gray-100 px-4 py-3.5 rounded-xl transition-all font-semibold block w-full text-left text-base";
     }
     return currentPath === path
       ? "text-[#c0392b] border-b-2 border-[#c0392b] pb-1 transition-colors font-bold"
@@ -73,7 +73,7 @@ export default function Navbar() {
 
       {/* Menú Desplegable Móvil */}
       {isMobileMenuOpen && (
-        <div className="absolute top-[80px] left-0 right-0 bg-white border-b border-gray-200 shadow-2xl md:hidden flex flex-col p-4 gap-2 z-50 animate-in slide-in-from-top duration-300">
+        <div className="absolute top-[80px] left-0 right-0 bg-white border-b border-gray-200 shadow-2xl md:hidden flex flex-col p-4 gap-2 z-[9999]">
           <Link to="/" className={getLinkClass('/', true)}>Inicio</Link>
           <Link to="/servicios" className={getLinkClass('/servicios', true)}>Servicios</Link>
           <Link to="/cursos" className={getLinkClass('/cursos', true)}>Cursos</Link>
