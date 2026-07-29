@@ -135,8 +135,12 @@ export default function Home() {
 
           {/* Contenido Principal (Texto y Botones) */}
           <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-4xl pb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-8 leading-tight drop-shadow-md">
-              Clipop Consultoría Especializada, Proyectos y Construcción
+            <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-8 leading-tight drop-shadow-md">
+              <span className="inline-block">
+                <span className="text-[#325af0]">Cl</span>
+                <span className="text-[#ffd23c]">ip</span>
+                <span className="text-[#c35fe1]">op</span>
+              </span> Consultoría Especializada, Proyectos y Construcción
             </h2>
           </div>
 

@@ -33,7 +33,7 @@ function TowerIcon({ className, style }) {
   );
 }
 
-// Componente interactivo para cada Tarjeta de Servicio (estilo premium TechHmo)
+// Componente interactivo para cada Tarjeta de Servicio (Estilo unificado idéntico a Cursos.jsx)
 function ServiceCard({ title, description, badge, images, Icon, gradientId, shadowClass }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -47,9 +47,9 @@ function ServiceCard({ title, description, badge, images, Icon, gradientId, shad
   }, [images.length]);
 
   return (
-    <div className="group relative w-full h-[450px] rounded-[24px] overflow-hidden shadow-xl border border-gray-200/10 bg-[#09090b] flex flex-col justify-end transition-all duration-300">
+    <div className="group relative w-full min-h-[420px] md:h-[450px] rounded-[24px] overflow-hidden shadow-2xl border border-white/10 bg-[#09090b] flex flex-col justify-end transition-all duration-300">
       {/* Carrusel de Imágenes de Fondo */}
-      <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-[#1a4a49]/60 to-[#c0392b]/60">
+      <div className="absolute inset-0 z-0 overflow-hidden bg-black">
         {images.map((img, index) => (
           <img
             key={index}
@@ -60,39 +60,41 @@ function ServiceCard({ title, description, badge, images, Icon, gradientId, shad
             }}
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${
               index === currentIndex 
-                ? 'opacity-70 scale-100 group-hover:scale-105 transition-transform duration-[3000ms] ease-out' 
+                ? 'opacity-65 scale-100 group-hover:scale-105 transition-transform duration-[3000ms] ease-out' 
                 : 'opacity-0'
             }`}
           />
         ))}
       </div>
 
-      {/* Overlay degradado premium para asegurar la legibilidad del texto */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/95 via-black/60 to-transparent pointer-events-none"></div>
+      {/* Overlay degradado profundo y unificado para máxima legibilidad tipográfica */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/95 via-black/75 to-black/30 pointer-events-none"></div>
 
       {/* Badge en la esquina superior derecha */}
-      <div className="absolute top-6 right-6 bg-[#c0392b] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg shadow-lg z-20 transition-transform group-hover:scale-105 duration-300">
+      <div className="absolute top-6 right-6 bg-[#c0392b] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg shadow-lg z-20 transition-transform group-hover:scale-105 duration-300 border border-white/10">
         {badge}
       </div>
 
-      {/* Contenido principal en la parte inferior */}
-      <div className="absolute bottom-8 left-8 right-24 z-20 flex flex-col md:flex-row items-start md:items-end gap-5 right-8 md:bottom-8 bottom-12">
-        {/* Icono envuelto en un estilo Glassmorphism con sombra brillante interactiva */}
-        <div className={`text-white flex-shrink-0 drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)] bg-white/5 p-4 rounded-2xl backdrop-blur-md border border-white/10 transition-all duration-500 ${shadowClass}`}>
-          <Icon className="w-10 h-10" style={{ stroke: `url(#${gradientId})` }} />
+      {/* Contenido principal en la parte inferior (Unificado) */}
+      <div className="relative z-20 p-6 md:p-10 pb-12 md:pb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+        {/* Icono envuelto en estilo Glassmorphism */}
+        <div className={`text-white flex-shrink-0 drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)] bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/15 transition-all duration-500 ${shadowClass}`}>
+          <Icon className="w-9 h-9 md:w-10 md:h-10" style={{ stroke: `url(#${gradientId})` }} />
         </div>
-        <div className="flex-grow">
-          <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 drop-shadow-md tracking-tight uppercase">
+
+        {/* Textos Unificados (Tipografía idéntica a Cursos) */}
+        <div className="flex-grow max-w-4xl">
+          <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-3 drop-shadow-md tracking-tight leading-snug">
             {title}
           </h3>
-          <p className="text-gray-200/90 text-sm md:text-base max-w-[850px] drop-shadow-sm font-medium leading-relaxed">
+          <p className="text-white/90 text-sm md:text-base font-normal leading-relaxed drop-shadow-sm max-w-3xl">
             {description}
           </p>
         </div>
       </div>
 
       {/* Dots indicadores del carrusel en la parte inferior derecha */}
-      <div className="absolute bottom-8 right-8 z-20 flex gap-2">
+      <div className="absolute bottom-6 right-6 z-20 flex gap-2">
         {images.map((_, idx) => (
           <button
             key={idx}
@@ -125,7 +127,7 @@ export default function Servicios() {
     {
       title: "Elaboración de paquetes de licitaciones para CFE",
       badge: "Licitaciones",
-      description: "Manejamos la elaboración de paquetes completos de concursos de CFE: servicios, adquisiciones, obra y mantenimientos, apegado estrictamente a los requisitos y normativa vigente de CFE.",
+      description: "Manejamos la elaboración de paquetes completos de concursos de CFE: servicios, adquisiciones, obra y mantenimientos, apegados estrictamente a los requisitos y normativa vigente de CFE.",
       Icon: ClipboardCheck,
       gradientId: "grad-licitaciones",
       shadowClass: "group-hover:shadow-[0_0_30px_rgba(192,57,43,0.5)] group-hover:border-[#c0392b]/40 group-hover:bg-[#c0392b]/5",

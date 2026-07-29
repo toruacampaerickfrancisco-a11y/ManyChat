@@ -11,48 +11,48 @@ const parseMessage = (text) => {
     // Soporta tanto urls absolutas (http/https) como relativas que empiezan con /
     const markdownLinkRegex = /\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g;
     let match;
-    
+
     while ((match = markdownLinkRegex.exec(line)) !== null) {
       if (match.index > lastIndex) {
         parts.push(line.substring(lastIndex, match.index));
       }
-      
+
       const linkText = match[1];
       const linkUrl = match[2];
       const isInternal = linkUrl.startsWith('/');
       parts.push(
-        <a 
-          key={match.index} 
-          href={linkUrl} 
-          target={isInternal ? undefined : "_blank"} 
-          rel={isInternal ? undefined : "noopener noreferrer"} 
+        <a
+          key={match.index}
+          href={linkUrl}
+          target={isInternal ? undefined : "_blank"}
+          rel={isInternal ? undefined : "noopener noreferrer"}
           className="text-blue-600 hover:text-blue-800 underline font-semibold break-all"
         >
           {linkText}
         </a>
       );
-      
+
       lastIndex = markdownLinkRegex.lastIndex;
     }
-    
+
     if (lastIndex < line.length) {
       const remainingText = line.substring(lastIndex);
       const urlRegex = /(https?:\/\/[^\s]+)/g;
       let urlMatch;
       let rawLastIndex = 0;
-      
+
       while ((urlMatch = urlRegex.exec(remainingText)) !== null) {
         if (urlMatch.index > rawLastIndex) {
           parts.push(remainingText.substring(rawLastIndex, urlMatch.index));
         }
-        
+
         const url = urlMatch[1];
         parts.push(
-          <a 
-            key={lastIndex + urlMatch.index} 
-            href={url} 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            key={lastIndex + urlMatch.index}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 underline font-semibold break-all"
           >
             {url}
@@ -60,12 +60,12 @@ const parseMessage = (text) => {
         );
         rawLastIndex = urlRegex.lastIndex;
       }
-      
+
       if (rawLastIndex < remainingText.length) {
         parts.push(remainingText.substring(rawLastIndex));
       }
     }
-    
+
     const finalContent = parts.length > 0 ? parts : line;
     return (
       <span key={lineIdx}>
@@ -160,8 +160,8 @@ export default function Chats() {
             <p className="text-sm text-gray-600 mt-1">Historial de conversaciones atendidas por la IA y toma de control manual.</p>
           </div>
         </div>
-        <button 
-          onClick={() => fetchLeads(false)} 
+        <button
+          onClick={() => fetchLeads(false)}
           className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 transition-all text-xs font-semibold text-gray-700 bg-white"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Actualizar
@@ -181,14 +181,13 @@ export default function Chats() {
               <p className="text-sm text-gray-500 text-center py-4">No hay conversaciones registradas.</p>
             ) : (
               leads.map((lead) => (
-                <div 
-                  key={lead.id} 
+                <div
+                  key={lead.id}
                   onClick={() => setSelectedLeadId(lead.id)}
-                  className={`p-4 rounded border text-sm cursor-pointer transition-all ${
-                    lead.id === selectedLeadId 
-                      ? 'bg-[#1a4a49]/10 border-[#1a4a49]/30' 
+                  className={`p-4 rounded border text-sm cursor-pointer transition-all ${lead.id === selectedLeadId
+                      ? 'bg-[#1a4a49]/10 border-[#1a4a49]/30'
                       : 'bg-white border-gray-100 hover:border-gray-300 shadow-xs'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <h4 className={`font-bold ${lead.id === selectedLeadId ? 'text-[#1a4a49]' : 'text-gray-800'}`}>
@@ -197,8 +196,8 @@ export default function Chats() {
                     <span className="text-[10px] font-bold text-gray-400 uppercase">{lead.platform}</span>
                   </div>
                   <p className="text-gray-500 truncate mt-1">
-                    {lead.conversations && lead.conversations.length > 0 
-                      ? lead.conversations[lead.conversations.length - 1].message 
+                    {lead.conversations && lead.conversations.length > 0
+                      ? lead.conversations[lead.conversations.length - 1].message
                       : 'Sin mensajes aún'}
                   </p>
                 </div>
@@ -234,22 +233,20 @@ export default function Chats() {
               <div className="flex-1 overflow-auto p-6 space-y-6 bg-gray-50/30">
                 {selectedLead.conversations && selectedLead.conversations.length > 0 ? (
                   selectedLead.conversations.map((msg) => (
-                    <div 
-                      key={msg.id} 
+                    <div
+                      key={msg.id}
                       className={`flex gap-4 ${msg.sender === 'ai' ? 'flex-row-reverse' : ''}`}
                     >
-                      <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 border ${
-                        msg.sender === 'ai' 
-                          ? 'bg-[#1a4a49]/10 border-[#1a4a49]/30 text-[#1a4a49]' 
+                      <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 border ${msg.sender === 'ai'
+                          ? 'bg-[#1a4a49]/10 border-[#1a4a49]/30 text-[#1a4a49]'
                           : 'bg-gray-200 border-gray-300 text-gray-600'
-                      }`}>
+                        }`}>
                         {msg.sender === 'ai' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
                       </div>
-                      <div className={`p-3 rounded-lg text-sm max-w-[80%] shadow-xs ${
-                        msg.sender === 'ai' 
-                          ? 'bg-[#1a4a49]/5 border border-[#1a4a49]/15 text-gray-800 rounded-tr-none' 
+                      <div className={`p-3 rounded-lg text-sm max-w-[80%] shadow-xs ${msg.sender === 'ai'
+                          ? 'bg-[#1a4a49]/5 border border-[#1a4a49]/15 text-gray-800 rounded-tr-none'
                           : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'
-                      }`}>
+                        }`}>
                         {parseMessage(msg.message)}
                       </div>
                     </div>
@@ -262,14 +259,14 @@ export default function Chats() {
 
               {/* Caja de texto para responder manualmente */}
               <form onSubmit={handleSend} className="p-3 border-t border-gray-200 bg-gray-50 flex items-center gap-3">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder={`Responder manualmente a ${selectedLead.name || 'este cliente'}...`} 
-                  className="flex-1 border border-gray-300 rounded p-2 text-sm bg-white focus:outline-none focus:border-[#1a4a49] transition-all" 
+                  placeholder={`Responder manualmente a ${selectedLead.name || 'este cliente'}...`}
+                  className="flex-1 border border-gray-300 rounded p-2 text-sm bg-white focus:outline-none focus:border-[#1a4a49] transition-all"
                 />
-                <button 
+                <button
                   type="submit"
                   disabled={!inputText.trim() || sending}
                   className="bg-[#1a4a49] text-white px-4 py-2 rounded text-sm font-medium hover:bg-[#135a5b] transition-colors disabled:opacity-50 flex items-center gap-2"

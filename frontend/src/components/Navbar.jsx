@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function Navbar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const [isLive, setIsLive] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -14,16 +15,26 @@ export default function Navbar() {
       .catch(err => console.error(err));
   }, []);
 
-  const getLinkClass = (path) => {
+  // Cierra el menú móvil al cambiar de página
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [currentPath]);
+
+  const getLinkClass = (path, isMobile = false) => {
+    if (isMobile) {
+      return currentPath === path
+        ? "text-[#c0392b] font-bold bg-[#c0392b]/10 px-4 py-3 rounded-xl transition-all"
+        : "text-gray-700 hover:text-[#c0392b] hover:bg-gray-100 px-4 py-3 rounded-xl transition-all font-semibold";
+    }
     return currentPath === path
       ? "text-[#c0392b] border-b-2 border-[#c0392b] pb-1 transition-colors font-bold"
       : "hover:text-[#c0392b] border-b-2 border-transparent pb-1 transition-colors";
   };
 
   return (
-    <header className="sticky top-0 left-0 right-0 h-[80px] bg-white px-6 flex items-center justify-between shadow-sm z-50">
+    <header className="sticky top-0 left-0 right-0 h-[80px] bg-white px-4 md:px-6 flex items-center justify-between shadow-sm z-50">
       <div className="flex items-center">
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/login" title="Acceso Administrativo" className="flex items-center gap-3 group">
           <img 
             src="/logomarca.jpeg" 
             alt="Clipop Logo" 
@@ -35,7 +46,7 @@ export default function Navbar() {
                 e.target.src = '/logo.png';
               }
             }}
-            className="h-14 object-contain" 
+            className="h-12 md:h-14 object-contain transition-transform duration-200 group-hover:scale-105" 
           />
           <span className="text-gray-400 text-xs font-semibold tracking-wider border-l border-gray-200 pl-3 hidden sm:inline-block">
             RFC: CCE2602093B3
@@ -43,23 +54,32 @@ export default function Navbar() {
         </Link>
       </div>
 
+      {/* Menú de Escritorio (Inalterado) */}
       <nav className="hidden md:flex items-center gap-8 font-semibold text-gray-600">
         <Link to="/" className={getLinkClass('/')}>Inicio</Link>
         <Link to="/servicios" className={getLinkClass('/servicios')}>Servicios</Link>
         <Link to="/cursos" className={getLinkClass('/cursos')}>Cursos</Link>
         <Link to="/contacto" className={getLinkClass('/contacto')}>Contacto</Link>
-
-        <Link
-          to="/login"
-          className="px-5 py-2 bg-[#1a4a49] text-white rounded-full hover:bg-[#135a5b] transition-colors text-sm font-bold shadow-sm"
-        >
-          Iniciar sesión
-        </Link>
       </nav>
 
-      <button className="md:hidden p-2 text-gray-600">
-        <Menu className="w-6 h-6" />
+      {/* Botón de Menú Móvil */}
+      <button 
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="md:hidden p-2 text-gray-700 hover:text-[#1a4a49] focus:outline-none transition-colors"
+        aria-label="Toggle mobile menu"
+      >
+        {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
       </button>
+
+      {/* Menú Desplegable Móvil */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-[80px] left-0 right-0 bg-white border-b border-gray-200 shadow-2xl md:hidden flex flex-col p-4 gap-2 z-50 animate-in slide-in-from-top duration-300">
+          <Link to="/" className={getLinkClass('/', true)}>Inicio</Link>
+          <Link to="/servicios" className={getLinkClass('/servicios', true)}>Servicios</Link>
+          <Link to="/cursos" className={getLinkClass('/cursos', true)}>Cursos</Link>
+          <Link to="/contacto" className={getLinkClass('/contacto', true)}>Contacto</Link>
+        </div>
+      )}
     </header>
   );
 }
