@@ -28,48 +28,219 @@ app.get('/api/health', (req, res) => {
 
 // --- RUTAS PARA BOT Y LEADS ---
 
-// 1. Webhook para recibir datos de ManyChat o Bots
+// Helper function to generate AI or rule-based bot reply
+async function generateAiReply(message, history = []) {
+  const msg = (message || '').toLowerCase().trim();
+
+  if (msg === '1' || msg === 'cursos' || msg === 'catálogo') {
+    return "Aquí tienes nuestro catálogo de cursos especializados en Udemy para que formules presupuestos ganadores de obra:\n\n" +
+            "1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n" +
+            "👉 Nuevo lanzamiento: [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n" +
+            "2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n" +
+            "👉 Más Vendido: [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n" +
+            "3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n" +
+            "👉 Mejor Valorado: [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n" +
+            "4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n" +
+            "👉 Acceso Gratuito: [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n" +
+            "Escribe la palabra clave del curso para darte detalles:\n" +
+            "- Escribe **'2025'** para ver detalles de OPUS 2025\n" +
+            "- Escribe **'completo'** para ver detalles de OPUS, Neodata y Excel\n" +
+            "- Escribe **'cfe'** para ver detalles de Concursos CFE\n" +
+            "- Escribe **'gratis'** para ver el curso introductorio gratuito\n\n" +
+            "O escribe **'menu'** para volver al inicio.";
+  }
+
+  if (msg === '2025' || msg.includes('2025')) {
+    return "🏗️ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**:\n\n" +
+           "Aprende paso a paso con la versión más reciente del mercado. Este curso te guiará en el análisis de costos directos, indirectos, cálculo del Factor de Salario Real (FSR) y la estructuración de presupuestos técnico-económicos listos para concursos.\n\n" +
+           "👉 [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n" +
+           "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
+  }
+
+  if (msg === 'completo' || msg.includes('estrella') || msg.includes('neodata') || msg.includes('excel')) {
+    return "⭐ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**:\n\n" +
+           "Es nuestro curso estrella y el más vendido. En él aprenderás y compararás de forma práctica el flujo de trabajo en las tres herramientas líderes de la industria de la construcción para presupuestar obras públicas y privadas.\n\n" +
+           "👉 [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n" +
+           "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
+  }
+
+  if (msg === 'cfe' || msg.includes('concursos cfe') || msg.includes('concurso cfe')) {
+    return "⚡ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**:\n\n" +
+           "Es nuestro curso mejor valorado por los estudiantes. Aprenderás a integrar propuestas técnico-económicas completas bajo la normativa vigente de la Comisión Federal de Electricidad (CFE) utilizando herramientas del software OPUS.\n\n" +
+           "👉 [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n" +
+           "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
+  }
+
+  if (msg === 'gratis' || msg === 'gratuito') {
+    return "🎁 **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**:\n\n" +
+           "Ideal si vas empezando en la ingeniería de costos. Te familiarizarás con la interfaz de usuario de OPUS, la creación de insumos, costos directos y conceptos esenciales para la presupuestación.\n\n" +
+           "👉 [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n" +
+           "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
+  }
+
+  if (msg === '2' || msg === 'contacto' || msg === 'redes') {
+    return "¡Excelente! Elige el medio de contacto que prefieras para comunicarte con nosotros:\n\n" +
+           "🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n" +
+           "📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) (o síguenos en [@erick_torua](https://www.instagram.com/erick_torua/))\n" +
+           "🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n" +
+           "✉️ **Formulario de Correo en la Web**: [Formulario de Contacto: Haz clic aquí](/contacto) (Te redireccionará para que nos envíes un mail directo)\n\n" +
+           "Escribe **'menu'** si quieres regresar al inicio.";
+  }
+
+  if (msg === 'menu' || msg === 'inicio' || msg === 'volver') {
+    return "Elige una opción escribiendo el número correspondiente:\n\n" +
+           "1️⃣ **Cursos** (Ver nuestras especializaciones en OPUS, Neodata y CFE con descuento)\n" +
+           "2️⃣ **Contacto y Consultorías** (Hablar con nosotros o agendar servicios)";
+  }
+
+  if (!process.env.GEMINI_API_KEY) {
+    if (msg.includes('curso') || msg.includes('ver') || msg.includes('lista') || msg.includes('aprender') || msg.includes('capacitacion') || msg.includes('udemy')) {
+      return "Actualmente ofrecemos 4 cursos de especialización en Udemy para que formules presupuestos ganadores:\n\n" +
+             "1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n" +
+             "👉 Nuevo lanzamiento: https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F\n\n" +
+             "2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n" +
+             "👉 Más Vendido: https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/\n\n" +
+             "3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n" +
+             "👉 Mejor Valorado: https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/\n\n" +
+             "4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n" +
+             "👉 Acceso Gratuito: https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n" +
+             "¿Cuál de estos te interesa más para empezar a triunfar hoy?";
+    } else if (msg.includes('redes') || msg.includes('social') || msg.includes('instagram') || msg.includes('facebook') || msg.includes('ig') || msg.includes('fb') || msg.includes('contacto')) {
+      return "¡Mantente conectado con **Clipop**! Aquí tienes los accesos directos a nuestras redes:\n\n" +
+             "📸 **Instagram**: [Instagram: Haz clic aquí](https://ig.me/m/erick_torua)\n" +
+             "🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n" +
+             "🟢 **WhatsApp**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n" +
+             "✉️ **Correo**: clipopoficial@gmail.com\n\n" +
+             "¿Te gustaría agendar una consultoría personalizada para tu empresa?";
+    } else if (msg.includes('opus') || msg.includes('2025') || msg.includes('22') || msg.includes('24') || msg.includes('software')) {
+      return "OPUS es la herramienta líder para presupuestar obras. Con nuestro nuevo curso **OPUS 2025** aprenderás la metodología de análisis de precios unitarios y cálculo del FSR. ¡Es ideal para asegurar contratos! Inscríbete aquí:\n[OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)";
+    } else if (msg.includes('cfe') || msg.includes('concurso') || msg.includes('licitacion')) {
+      return "Para ganar concursos de CFE, necesitas dominar la estructuración de la propuesta técnico-económica y el cálculo del Factor de Salario Integrado (FSR). Te enseñamos todo esto paso a paso en nuestro curso mejor valorado:\n[Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)";
+    } else if (msg.includes('neodata') || msg.includes('excel')) {
+      return "Neodata es otra de las herramientas preferidas por las constructoras. En nuestro curso estrella comparamos el flujo de trabajo en OPUS, Neodata y Excel para que elijas la mejor opción:\n[Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)";
+    } else if (msg.includes('consult') || msg.includes('asesor') || msg.includes('empresa') || msg.includes('servicio') || msg.includes('obra')) {
+      return "Ofrecemos servicios de consultoría especializada en licitaciones de obra civil y electromecánica. Puedes enviarle un mensaje directo a Erick Torua en Instagram:\n[Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) para cotizar tu propuesta técnico-económica de inmediato.";
+    }
+
+    return "¡Hola! Soy el asistente virtual de **Clipop**. 🏗️ Estoy aquí para ayudarte a dominar la ingeniería de costos. Escribe **'cursos'** para ver nuestro catálogo con descuento, **'redes'** para seguirnos en Instagram y Facebook, o pregunta directamente sobre **'OPUS'**, **'CFE'**, **'Neodata'** o **'consultoría'**.";
+  }
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const systemPrompt = `Eres un asesor de ventas altamente persuasivo y experto en ingeniería de costos y licitaciones para CLIPOP (la consultora de Erick Torua).
+Tus objetivos principales son:
+1. Resolver dudas técnicas sobre OPUS, Neodata, presupuestos, cálculo de FSR (Factor de Salario Integrado), costos directos/indirectos y licitaciones para la Comisión Federal de Electricidad (CFE) en México. Simula que haces investigación web en tiempo real para dar respuestas ultra-precisas, actualizadas y profesionales que demuestren máxima autoridad técnica.
+2. Promocionar e incentivar la compra de los 4 cursos disponibles en Udemy (siempre proporciona los enlaces exactos usando obligatoriamente este formato markdown de texto 'Haz clic aquí'):
+   - "Análisis de Precios Unitarios 100% Práctico. OPUS 2025" (Curso de Lanzamiento Nuevo): [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)
+   - "Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel" (Más Vendido): [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)
+   - "Cómo Presentar Concursos para CFE desde cero con OPUS 2020" (Mejor Valorado): [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)
+   - "OPUS. ANALISIS DE PRECIOS UNITARIOS. GRATIS!!" (Acceso Gratuito): [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)
+3. Fomentar la contratación de servicios de consultoría especializada para armar licitaciones. Dirige al usuario a hablar con Erick Torua en Instagram Direct usando estrictamente este enlace: [Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) o a seguir la página de Facebook de CLIPOP usando este enlace: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145) o escribir a WhatsApp usando este enlace: [WhatsApp: Haz clic aquí](https://wa.me/526624745958).
+4. Utilizar técnicas de venta persuasiva, sé entusiasta, profesional, demuestra maestría técnica en OPUS y cierra la respuesta con un llamado a la acción enfocado a la venta o al contacto directo.`;
+
+  const chat = model.startChat({
+    history: history || [],
+    systemInstruction: systemPrompt
+  });
+
+  const result = await chat.sendMessage(message);
+  const response = await result.response;
+  return response.text();
+}
+
+// 1. Webhook para recibir datos de ManyChat o Bots (WhatsApp, Facebook, Instagram)
 app.post('/api/webhook/bot', async (req, res) => {
   try {
-    // Ejemplo de datos que enviaría ManyChat:
+    // Datos enviados desde la integración de WhatsApp / Facebook / ManyChat:
     // { platform: 'whatsapp', phone: '+5212345678', name: 'Juan', email: 'juan@mail.com', message: 'Hola' }
-    const { platform, phone, name, email, message } = req.body;
+    const { platform = 'whatsapp', phone, name, email, message } = req.body;
 
-    if (!platform || !phone) {
-      return res.status(400).json({ error: 'Faltan datos obligatorios (platform, phone)' });
+    if (!phone) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios (phone)' });
     }
 
-    // Guardar o actualizar el lead
-    const lead = await prisma.lead.upsert({
-      where: { phone_or_id: phone },
-      update: { 
-        name: name || undefined, 
-        email: email || undefined 
-      },
-      create: {
-        platform,
-        phone_or_id: phone,
-        name,
-        email
-      }
-    });
-
-    // Opcional: Guardar el mensaje en la tabla de Conversaciones
-    if (message) {
-      await prisma.conversation.create({
-        data: {
-          leadId: lead.id,
-          message,
-          sender: 'user'
+    let lead = null;
+    if (process.env.DATABASE_URL) {
+      lead = await prisma.lead.upsert({
+        where: { phone_or_id: phone },
+        update: { 
+          name: name || undefined, 
+          email: email || undefined 
+        },
+        create: {
+          platform,
+          phone_or_id: phone,
+          name,
+          email
         }
       });
+
+      if (message) {
+        await prisma.conversation.create({
+          data: {
+            leadId: lead.id,
+            message,
+            sender: 'user'
+          }
+        });
+      }
+    } else {
+      lead = inMemoryLeads.find(l => l.phone_or_id === phone);
+      if (!lead) {
+        lead = {
+          id: inMemoryLeads.length + 101,
+          name: name || `Usuario ${phone}`,
+          platform,
+          phone_or_id: phone,
+          email: email || '',
+          status: 'NUEVO',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          conversations: []
+        };
+        inMemoryLeads.push(lead);
+      }
+      if (message) {
+        lead.conversations.push({
+          id: lead.conversations.length + 1,
+          leadId: lead.id,
+          message,
+          sender: 'user',
+          timestamp: new Date().toISOString()
+        });
+      }
     }
 
-    console.log(`[Bot] Nuevo Lead procesado: ${name || phone}`);
-    res.status(200).json({ success: true, lead });
+    // Generar respuesta automática del Bot si hay mensaje
+    let reply = null;
+    if (message) {
+      reply = await generateAiReply(message);
+
+      if (process.env.DATABASE_URL && lead) {
+        await prisma.conversation.create({
+          data: {
+            leadId: lead.id,
+            message: reply,
+            sender: 'ai'
+          }
+        });
+      } else if (lead) {
+        lead.conversations.push({
+          id: lead.conversations.length + 1,
+          leadId: lead.id,
+          message: reply,
+          sender: 'ai',
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    console.log(`[Bot Webhook] Mensaje procesado para ${name || phone} (${platform})`);
+    res.status(200).json({ success: true, reply, text: reply, response: reply, lead });
   } catch (error) {
     console.error('[Bot Webhook Error]', error);
-    res.status(500).json({ error: 'Error interno guardando el lead' });
+    res.status(500).json({ error: 'Error interno procesando el bot' });
   }
 });
 
@@ -235,138 +406,11 @@ app.post('/api/leads/:leadId/conversations', async (req, res) => {
 app.post('/api/chat', async (req, res) => {
   try {
     const { history, message } = req.body;
-    const msg = message.toLowerCase().trim();
-
-    // Interceptar de forma estricta las opciones del menú guiado para responder al instante
-    if (msg === '1' || msg === 'cursos' || msg === 'catálogo') {
-      const reply = "Aquí tienes nuestro catálogo de cursos especializados en Udemy para que formules presupuestos ganadores de obra:\n\n" +
-              "1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n" +
-              "👉 Nuevo lanzamiento: [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n" +
-              "2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n" +
-              "👉 Más Vendido: [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n" +
-              "3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n" +
-              "👉 Mejor Valorado: [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n" +
-              "4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n" +
-              "👉 Acceso Gratuito: [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n" +
-              "Escribe la palabra clave del curso para darte detalles:\n" +
-              "- Escribe **'2025'** para ver detalles de OPUS 2025\n" +
-              "- Escribe **'completo'** para ver detalles de OPUS, Neodata y Excel\n" +
-              "- Escribe **'cfe'** para ver detalles de Concursos CFE\n" +
-              "- Escribe **'gratis'** para ver el curso introductorio gratuito\n\n" +
-              "O escribe **'menu'** para volver al inicio.";
-      return res.json({ reply });
+    if (!message) {
+      return res.status(400).json({ error: 'El mensaje es requerido' });
     }
-
-    if (msg === '2025' || msg.includes('2025')) {
-      const reply = "🏗️ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**:\n\n" +
-                    "Aprende paso a paso con la versión más reciente del mercado. Este curso te guiará en el análisis de costos directos, indirectos, cálculo del Factor de Salario Real (FSR) y la estructuración de presupuestos técnico-económicos listos para concursos.\n\n" +
-                    "👉 [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n" +
-                    "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
-      return res.json({ reply });
-    }
-
-    if (msg === 'completo' || msg.includes('estrella') || msg.includes('neodata') || msg.includes('excel')) {
-      const reply = "⭐ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**:\n\n" +
-                    "Es nuestro curso estrella y el más vendido. En él aprenderás y compararás de forma práctica el flujo de trabajo en las tres herramientas líderes de la industria de la construcción para presupuestar obras públicas y privadas.\n\n" +
-                    "👉 [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n" +
-                    "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
-      return res.json({ reply });
-    }
-
-    if (msg === 'cfe' || msg.includes('concursos cfe') || msg.includes('concurso cfe')) {
-      const reply = "⚡ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**:\n\n" +
-                    "Es nuestro curso mejor valorado por los estudiantes. Aprenderás a integrar propuestas técnico-económicas completas bajo la normativa vigente de la Comisión Federal de Electricidad (CFE) utilizando herramientas del software OPUS.\n\n" +
-                    "👉 [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n" +
-                    "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
-      return res.json({ reply });
-    }
-
-    if (msg === 'gratis' || msg === 'gratuito') {
-      const reply = "🎁 **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**:\n\n" +
-                    "Ideal si vas empezando en la ingeniería de costos. Te familiarizarás con la interfaz de usuario de OPUS, la creación de insumos, costos directos y conceptos esenciales para la presupuestación.\n\n" +
-                    "👉 [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n" +
-                    "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
-      return res.json({ reply });
-    }
-
-    if (msg === '2' || msg === 'contacto' || msg === 'redes') {
-      const reply = "¡Excelente! Elige el medio de contacto que prefieras para comunicarte con nosotros:\n\n" +
-              "🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/521234567890)\n" +
-              "📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) (o síguenos en [@erick_torua](https://www.instagram.com/erick_torua/))\n" +
-              "🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591764152849)\n" +
-              "✉️ **Formulario de Correo en la Web**: [Formulario de Contacto: Haz clic aquí](/contacto) (Te redireccionará para que nos envíes un mail directo)\n\n" +
-              "Escribe **'menu'** si quieres regresar al inicio.";
-      return res.json({ reply });
-    }
-
-    if (msg === 'menu' || msg === 'inicio' || msg === 'volver') {
-      const reply = "Elige una opción escribiendo el número correspondiente:\n\n" +
-                    "1️⃣ **Cursos** (Ver nuestras especializaciones en OPUS, Neodata y CFE con descuento)\n" +
-                    "2️⃣ **Contacto y Consultorías** (Hablar con nosotros o agendar servicios)";
-      return res.json({ reply });
-    }
-    
-    // Si no hay API KEY, utilizar un chatbot local interactivo basado en reglas de palabras clave (Fallback local)
-    if (!process.env.GEMINI_API_KEY) {
-      const msg = message.toLowerCase();
-      let reply = "¡Hola! Soy el asistente virtual de **Clipop**. 🏗️ Estoy aquí para ayudarte a dominar la ingeniería de costos. Escribe **'cursos'** para ver nuestro catálogo con descuento, **'redes'** para seguirnos en Instagram y Facebook, o pregunta directamente sobre **'OPUS'**, **'CFE'**, **'Neodata'** o **'consultoría'**.";
-      
-      if (msg.includes('curso') || msg.includes('ver') || msg.includes('lista') || msg.includes('aprender') || msg.includes('capacitacion') || msg.includes('udemy')) {
-        reply = "Actualmente ofrecemos 4 cursos de especialización en Udemy para que formules presupuestos ganadores:\n\n" +
-                "1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n" +
-                "👉 Nuevo lanzamiento: https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F\n\n" +
-                "2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n" +
-                "👉 Más Vendido: https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/\n\n" +
-                "3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n" +
-                "👉 Mejor Valorado: https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/\n\n" +
-                "4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n" +
-                "👉 Acceso Gratuito: https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n" +
-                "¿Cuál de estos te interesa más para empezar a triunfar hoy?";
-      } else if (msg.includes('redes') || msg.includes('social') || msg.includes('instagram') || msg.includes('facebook') || msg.includes('ig') || msg.includes('fb') || msg.includes('contacto')) {
-        reply = "¡Mantente conectado con **Clipop**! Aquí tienes los accesos directos a nuestras redes:\n\n" +
-                "📸 **Instagram**: [Instagram: Haz clic aquí](https://ig.me/m/erick_torua)\n" +
-                "🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591764152849)\n" +
-                "🟢 **WhatsApp**: [WhatsApp: Haz clic aquí](https://wa.me/521234567890)\n" +
-                "✉️ **Correo**: clipopoficial@gmail.com\n\n" +
-                "¿Te gustaría agendar una consultoría personalizada para tu empresa?";
-      } else if (msg.includes('opus') || msg.includes('2025') || msg.includes('22') || msg.includes('24') || msg.includes('software')) {
-        reply = "OPUS es la herramienta líder para presupuestar obras. Con nuestro nuevo curso **OPUS 2025** aprenderás la metodología de análisis de precios unitarios y cálculo del FSR. ¡Es ideal para asegurar contratos! Inscríbete aquí:\n[OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)";
-      } else if (msg.includes('cfe') || msg.includes('concurso') || msg.includes('licitacion')) {
-        reply = "Para ganar concursos de CFE, necesitas dominar la estructuración de la propuesta técnico-económica y el cálculo del Factor de Salario Integrado (FSR). Te enseñamos todo esto paso a paso en nuestro curso mejor valorado:\n[Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)";
-      } else if (msg.includes('neodata') || msg.includes('excel')) {
-        reply = "Neodata es otra de las herramientas preferidas por las constructoras. En nuestro curso estrella comparamos el flujo de trabajo en OPUS, Neodata y Excel para que elijas la mejor opción:\n[Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)";
-      } else if (msg.includes('consult') || msg.includes('asesor') || msg.includes('empresa') || msg.includes('servicio') || msg.includes('obra')) {
-        reply = "Ofrecemos servicios de consultoría especializada en licitaciones de obra civil y electromecánica. Puedes enviarle un mensaje directo a Erick Torua en Instagram:\n[Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) para cotizar tu propuesta técnico-económica de inmediato.";
-      }
-      
-      return res.json({ reply });
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // Instrucciones base para vender
-    const systemPrompt = `Eres un asesor de ventas altamente persuasivo y experto en ingeniería de costos y licitaciones para CLIPOP (la consultora de Erick Torua).
-Tus objetivos principales son:
-1. Resolver dudas técnicas sobre OPUS, Neodata, presupuestos, cálculo de FSR (Factor de Salario Integrado), costos directos/indirectos y licitaciones para la Comisión Federal de Electricidad (CFE) en México. Simula que haces investigación web en tiempo real para dar respuestas ultra-precisas, actualizadas y profesionales que demuestren máxima autoridad técnica.
-2. Promocionar e incentivar la compra de los 4 cursos disponibles en Udemy (siempre proporciona los enlaces exactos usando obligatoriamente este formato markdown de texto 'Haz clic aquí'):
-   - "Análisis de Precios Unitarios 100% Práctico. OPUS 2025" (Curso de Lanzamiento Nuevo): [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)
-   - "Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel" (Más Vendido): [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)
-   - "Cómo Presentar Concursos para CFE desde cero con OPUS 2020" (Mejor Valorado): [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)
-   - "OPUS. ANALISIS DE PRECIOS UNITARIOS. GRATIS!!" (Acceso Gratuito): [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)
-3. Fomentar la contratación de servicios de consultoría especializada para armar licitaciones. Dirige al usuario a hablar con Erick Torua en Instagram Direct usando estrictamente este enlace: [Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) o a seguir la página de Facebook de CLIPOP usando este enlace: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591764152849) o escribir a WhatsApp usando este enlace: [WhatsApp: Haz clic aquí](https://wa.me/521234567890).
-4. Utilizar técnicas de venta persuasiva, sé entusiasta, profesional, demuestra maestría técnica en OPUS y cierra la respuesta con un llamado a la acción enfocado a la venta o al contacto directo.`;
-
-    const chat = model.startChat({
-      history: history || [],
-      systemInstruction: systemPrompt
-    });
-
-    const result = await chat.sendMessage(message);
-    const response = await result.response;
-    const text = response.text();
-
-    res.json({ reply: text });
+    const reply = await generateAiReply(message, history);
+    res.json({ reply });
   } catch (error) {
     console.error('[Chatbot Error]', error);
     res.status(500).json({ error: 'Error procesando el mensaje del chat.' });

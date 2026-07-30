@@ -29,7 +29,7 @@ export default function Footer() {
         <div className="flex items-center gap-4">
           {/* WhatsApp */}
           <a 
-            href="https://wa.me/?text=Hola%20Clipop,%20me%20gustaría%20recibir%20información" 
+            href="https://wa.me/526624745958?text=Hola%20Clipop,%20me%20gustaría%20recibir%20información" 
             target="_blank" 
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-all duration-300"
@@ -53,7 +53,7 @@ export default function Footer() {
           </a>
           {/* Facebook */}
           <a 
-            href="https://www.facebook.com/profile.php?id=61591764152849" 
+            href="https://www.facebook.com/profile.php?id=61591801231145" 
             target="_blank" 
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-all duration-300"

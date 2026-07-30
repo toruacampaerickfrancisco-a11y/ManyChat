@@ -111,14 +111,14 @@ export default function Contacto() {
                 </a>
 
                 {/* Facebook */}
-                <a href="https://www.facebook.com/profile.php?id=61591764152849" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center text-gray-400 hover:text-[#1877F2] transition-all hover:-translate-y-1 hover:scale-110" title="Facebook">
+                <a href="https://www.facebook.com/profile.php?id=61591801231145" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center text-gray-400 hover:text-[#1877F2] transition-all hover:-translate-y-1 hover:scale-110" title="Facebook">
                   <svg viewBox="0 0 24 24" width="38" height="38" fill="currentColor">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
                 </a>
 
                 {/* WhatsApp */}
-                <a href="https://wa.me/?text=Hola%20Clipop,%20me%20gustaría%20recibir%20información" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center text-gray-400 hover:text-[#25D366] transition-all hover:-translate-y-1 hover:scale-110" title="WhatsApp">
+                <a href="https://wa.me/526624745958?text=Hola%20Clipop,%20me%20gustaría%20recibir%20información" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center text-gray-400 hover:text-[#25D366] transition-all hover:-translate-y-1 hover:scale-110" title="WhatsApp">
                   <svg viewBox="0 0 24 24" width="38" height="38" fill="currentColor">
                     <path d="M12.013 2.007a9.92 9.92 0 00-8.487 15.084L2 22l5.05-1.328a9.932 9.932 0 0014.862-8.665A9.926 9.926 0 0012.013 2.007zM17.48 15.4c-.21.595-1.246 1.139-1.706 1.196-.425.053-.967.14-2.775-.609-2.184-.906-3.593-3.136-3.7-3.279-.107-.142-.884-1.178-.884-2.247 0-1.068.55-1.594.75-1.808.2-.213.434-.266.577-.266.142 0 .284 0 .408.006.133.006.31-.053.486.37.186.444.603 1.472.656 1.579.053.106.09.23.018.373-.071.141-.106.23-.213.337-.107.106-.226.23-.319.319-.106.107-.221.225-.097.438.124.213.551.912 1.185 1.478.818.73 1.503.953 1.716 1.06.213.106.337.088.462-.053.124-.142.533-.621.675-.834.142-.213.284-.177.479-.106.195.071 1.243.585 1.456.691.213.106.355.16.408.248.053.089.053.514-.157 1.109z"/>
                   </svg>
