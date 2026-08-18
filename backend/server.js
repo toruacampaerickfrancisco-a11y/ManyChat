@@ -81,7 +81,7 @@ async function generateAiReply(message, history = []) {
   if (msg === '2' || msg === 'contacto' || msg === 'redes') {
     return "¡Excelente! Elige el medio de contacto que prefieras para comunicarte con nosotros:\n\n" +
            "🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n" +
-           "📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) (o síguenos en [@erick_torua](https://www.instagram.com/erick_torua/))\n" +
+           "📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx) (o síguenos en [@ing.pako.pansho](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx))\n" +
            "🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n" +
            "✉️ **Formulario de Correo en la Web**: [Formulario de Contacto: Haz clic aquí](/contacto) (Te redireccionará para que nos envíes un mail directo)\n\n" +
            "Escribe **'menu'** si quieres regresar al inicio.";
@@ -107,7 +107,7 @@ async function generateAiReply(message, history = []) {
              "¿Cuál de estos te interesa más para empezar a triunfar hoy?";
     } else if (msg.includes('redes') || msg.includes('social') || msg.includes('instagram') || msg.includes('facebook') || msg.includes('ig') || msg.includes('fb') || msg.includes('contacto')) {
       return "¡Mantente conectado con **Clipop**! Aquí tienes los accesos directos a nuestras redes:\n\n" +
-             "📸 **Instagram**: [Instagram: Haz clic aquí](https://ig.me/m/erick_torua)\n" +
+             "📸 **Instagram**: [Instagram: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n" +
              "🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n" +
              "🟢 **WhatsApp**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n" +
              "✉️ **Correo**: clipopoficial@gmail.com\n\n" +
@@ -119,7 +119,7 @@ async function generateAiReply(message, history = []) {
     } else if (msg.includes('neodata') || msg.includes('excel')) {
       return "Neodata es otra de las herramientas preferidas por las constructoras. En nuestro curso estrella comparamos el flujo de trabajo en OPUS, Neodata y Excel para que elijas la mejor opción:\n[Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)";
     } else if (msg.includes('consult') || msg.includes('asesor') || msg.includes('empresa') || msg.includes('servicio') || msg.includes('obra')) {
-      return "Ofrecemos servicios de consultoría especializada en licitaciones de obra civil y electromecánica. Puedes enviarle un mensaje directo a Erick Torua en Instagram:\n[Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) para cotizar tu propuesta técnico-económica de inmediato.";
+      return "Ofrecemos servicios de consultoría especializada en licitaciones de obra civil y electromecánica. Puedes enviarle un mensaje directo a Ing. Francisco Gardea en Instagram:\n[Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx) para cotizar tu propuesta técnico-económica de inmediato.";
     }
 
     return "¡Hola! Soy el asistente virtual de **Clipop**. 🏗️ Estoy aquí para ayudarte a dominar la ingeniería de costos. Escribe **'cursos'** para ver nuestro catálogo con descuento, **'redes'** para seguirnos en Instagram y Facebook, o pregunta directamente sobre **'OPUS'**, **'CFE'**, **'Neodata'** o **'consultoría'**.";
@@ -136,7 +136,7 @@ Tus objetivos principales son:
    - "Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel" (Más Vendido): [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)
    - "Cómo Presentar Concursos para CFE desde cero con OPUS 2020" (Mejor Valorado): [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)
    - "OPUS. ANALISIS DE PRECIOS UNITARIOS. GRATIS!!" (Acceso Gratuito): [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)
-3. Fomentar la contratación de servicios de consultoría especializada para armar licitaciones. Dirige al usuario a hablar con Erick Torua en Instagram Direct usando estrictamente este enlace: [Instagram Direct: Haz clic aquí](https://ig.me/m/erick_torua) o a seguir la página de Facebook de CLIPOP usando este enlace: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145) o escribir a WhatsApp usando este enlace: [WhatsApp: Haz clic aquí](https://wa.me/526624745958).
+3. Fomentar la contratación de servicios de consultoría especializada para armar licitaciones. Dirige al usuario a hablar en Instagram Direct usando estrictamente este enlace: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx) o a seguir la página de Facebook de CLIPOP usando este enlace: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145) o escribir a WhatsApp usando este enlace: [WhatsApp: Haz clic aquí](https://wa.me/526624745958).
 4. Utilizar técnicas de venta persuasiva, sé entusiasta, profesional, demuestra maestría técnica en OPUS y cierra la respuesta con un llamado a la acción enfocado a la venta o al contacto directo.`;
 
   const chat = model.startChat({

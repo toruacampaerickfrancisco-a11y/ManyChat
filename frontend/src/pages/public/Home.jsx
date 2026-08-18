@@ -72,8 +72,8 @@ const CONCURSOS = [
 ];
 
 export default function Home() {
-  const INSTAGRAM_USER = "erick_torua";
-  const getInstagramLink = () => `https://ig.me/m/${INSTAGRAM_USER}`;
+  const INSTAGRAM_USER = "ing.pako.pansho";
+  const getInstagramLink = () => "https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx";
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentConcursoIndex, setCurrentConcursoIndex] = useState(0);
@@ -248,7 +248,7 @@ export default function Home() {
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-[#1a4a49] mb-4">Casos de Exito</h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                En concursos de infraestructura coordinados por nuestro equipo
+                Proyectos en los que han participado nuestro equipo de ingenieria de costos
               </p>
             </div>
 

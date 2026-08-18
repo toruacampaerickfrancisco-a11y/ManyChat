@@ -41,7 +41,7 @@ export default function Footer() {
           </a>
           {/* Instagram */}
           <a 
-            href="https://ig.me/m/erick_torua" 
+            href="https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx" 
             target="_blank" 
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-pink-600/20 text-pink-400 hover:bg-pink-600 hover:text-white flex items-center justify-center transition-all duration-300"

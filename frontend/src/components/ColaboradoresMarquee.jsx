@@ -24,16 +24,17 @@ export default function ColaboradoresMarquee() {
     <section className="py-12 bg-white border-t border-b border-gray-100 overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 mb-8 text-center">
         <span className="text-[#1a4a49] text-xs font-bold uppercase tracking-widest bg-[#1a4a49]/10 px-4 py-1.5 rounded-full inline-block">
-          Nuestros Clientes y Colaboradores
+          Nuestros Clientes
+
         </span>
       </div>
 
       {/* Contenedor de marquesina con desvanecimiento suave en los laterales */}
       <div className="relative w-full overflow-hidden flex before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-24 before:bg-gradient-to-r before:from-white before:to-transparent after:absolute after:right-0 after:top-0 after:z-10 after:h-full after:w-24 after:bg-gradient-to-l after:from-white after:to-transparent">
-        
+
         {/* El contenedor principal animado que se traslada de forma infinita */}
         <div className="flex w-max gap-16 animate-marquee py-2 select-none pointer-events-auto">
-          
+
           {/* Primer conjunto de logos */}
           <div className="flex gap-16 items-center">
             {LOGOS.map((logo, idx) => (
@@ -57,7 +58,7 @@ export default function ColaboradoresMarquee() {
               />
             ))}
           </div>
-          
+
         </div>
       </div>
     </section>

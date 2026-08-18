@@ -39,16 +39,15 @@ export default function SplashScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-white transition-all duration-800 ease-in-out select-none ${
-        isAnimatingOut ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
-      }`}
+      className={`fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-white transition-all duration-800 ease-in-out select-none ${isAnimatingOut ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
+        }`}
     >
       {/* Contenedor Principal Centrado */}
       <div className="flex flex-col items-center max-w-xl px-6 text-center">
-        
+
         {/* ANIMACIÓN VECTORIAL DE SUBESTACIÓN DE POTENCIA Y TENSIÓN CON COLORES DE LA MARCA (#1a4a49 y #c0392b) */}
         <div className="relative w-full max-w-md h-40 mb-6 flex items-center justify-center">
-          
+
           <svg viewBox="0 0 500 200" className="w-full h-full drop-shadow-sm">
             {/* Suelo de Subestación */}
             <line x1="40" y1="170" x2="460" y2="170" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="4 4" />
@@ -60,7 +59,7 @@ export default function SplashScreen() {
               <line x1="82" y1="110" x2="108" y2="110" />
               <line x1="88" y1="80" x2="102" y2="80" />
               <line x1="77" y1="140" x2="113" y2="140" />
-              
+
               <line x1="77" y1="140" x2="108" y2="110" strokeWidth="1" opacity="0.5" />
               <line x1="113" y1="140" x2="82" y2="110" strokeWidth="1" opacity="0.5" />
               <line x1="82" y1="110" x2="102" y2="80" strokeWidth="1" opacity="0.5" />
@@ -81,7 +80,7 @@ export default function SplashScreen() {
               <line x1="392" y1="110" x2="418" y2="110" />
               <line x1="398" y1="80" x2="412" y2="80" />
               <line x1="387" y1="140" x2="423" y2="140" />
-              
+
               <line x1="387" y1="140" x2="418" y2="110" strokeWidth="1" opacity="0.5" />
               <line x1="423" y1="140" x2="392" y2="110" strokeWidth="1" opacity="0.5" />
               <line x1="392" y1="110" x2="412" y2="80" strokeWidth="1" opacity="0.5" />
@@ -157,9 +156,9 @@ export default function SplashScreen() {
         {/* LOGO DE LA EMPRESA & MARCA */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-56 h-20 flex items-center justify-center mb-3">
-            <img 
-              src="/logomarca.jpeg" 
-              alt="Clipop Logo" 
+            <img
+              src="/logomarca.jpeg"
+              alt="Clipop Logo"
               className="w-full h-full object-contain"
             />
           </div>
@@ -172,7 +171,7 @@ export default function SplashScreen() {
             </span> Consultoría Especializada
           </h2>
           <p className="text-gray-500 text-xs md:text-sm font-bold tracking-widest uppercase">
-            Proyectos, Construcción y Subestaciones
+            Proyectos y Construcción
           </p>
         </div>
 
