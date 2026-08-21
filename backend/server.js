@@ -6,12 +6,92 @@ const { Pool } = require('pg');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { PrismaClient } = require('@prisma/client');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const whatsappService = require('./whatsappService');
 
 const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 const app = express();
+
+// Inicializar el manejador de mensajes de WhatsApp Web (Baileys)
+whatsappService.setMessageHandler(async ({ from, senderName, text }) => {
+  console.log(`[WhatsApp QR Recibido] de ${senderName} (${from}): ${text}`);
+  const phone = from.split('@')[0];
+
+  let lead = null;
+  if (process.env.DATABASE_URL) {
+    lead = await prisma.lead.upsert({
+      where: { phone_or_id: phone },
+      update: { name: senderName || undefined },
+      create: {
+        platform: 'whatsapp',
+        phone_or_id: phone,
+        name: senderName
+      }
+    });
+
+    await prisma.conversation.create({
+      data: {
+        leadId: lead.id,
+        message: text,
+        sender: 'user'
+      }
+    });
+  } else {
+    lead = inMemoryLeads.find(l => l.phone_or_id === phone);
+    if (!lead) {
+      lead = {
+        id: inMemoryLeads.length + 101,
+        name: senderName || `WhatsApp ${phone}`,
+        platform: 'whatsapp',
+        phone_or_id: phone,
+        email: '',
+        status: 'NUEVO',
+        bot_paused: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        conversations: []
+      };
+      inMemoryLeads.push(lead);
+    }
+    lead.conversations.push({
+      id: lead.conversations.length + 1,
+      leadId: lead.id,
+      message: text,
+      sender: 'user',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Si el bot no está pausado para este lead, generar respuesta automática
+  const isPaused = lead ? lead.bot_paused : false;
+  if (!isPaused) {
+    const reply = await generateAiReply(text);
+
+    if (process.env.DATABASE_URL && lead) {
+      await prisma.conversation.create({
+        data: {
+          leadId: lead.id,
+          message: reply,
+          sender: 'ai'
+        }
+      });
+    } else if (lead) {
+      lead.conversations.push({
+        id: lead.conversations.length + 1,
+        leadId: lead.id,
+        message: reply,
+        sender: 'ai',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Enviar respuesta directa a WhatsApp
+    await whatsappService.sendWhatsAppDirectMessage(from, reply);
+  }
+});
+
 
 // Middlewares
 app.use(cors());
@@ -26,128 +106,243 @@ app.get('/api/health', (req, res) => {
 // app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/products', require('./routes/products'));
 
-// --- RUTAS PARA BOT Y LEADS ---
+// --- RUTAS Y MOTOR PARA BOT, LIVE CHAT Y LEADS ESTILO MANYCHAT ---
 
-// Helper function to generate AI or rule-based bot reply
-async function generateAiReply(message, history = []) {
-  const msg = (message || '').toLowerCase().trim();
-
-  if (msg === '1' || msg === 'cursos' || msg === 'catálogo') {
-    return "Aquí tienes nuestro catálogo de cursos especializados en Udemy para que formules presupuestos ganadores de obra:\n\n" +
-            "1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n" +
-            "👉 Nuevo lanzamiento: [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n" +
-            "2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n" +
-            "👉 Más Vendido: [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n" +
-            "3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n" +
-            "👉 Mejor Valorado: [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n" +
-            "4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n" +
-            "👉 Acceso Gratuito: [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n" +
-            "Escribe la palabra clave del curso para darte detalles:\n" +
-            "- Escribe **'2025'** para ver detalles de OPUS 2025\n" +
-            "- Escribe **'completo'** para ver detalles de OPUS, Neodata y Excel\n" +
-            "- Escribe **'cfe'** para ver detalles de Concursos CFE\n" +
-            "- Escribe **'gratis'** para ver el curso introductorio gratuito\n\n" +
-            "O escribe **'menu'** para volver al inicio.";
-  }
-
-  if (msg === '2025' || msg.includes('2025')) {
-    return "🏗️ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**:\n\n" +
-           "Aprende paso a paso con la versión más reciente del mercado. Este curso te guiará en el análisis de costos directos, indirectos, cálculo del Factor de Salario Real (FSR) y la estructuración de presupuestos técnico-económicos listos para concursos.\n\n" +
-           "👉 [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n" +
-           "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
-  }
-
-  if (msg === 'completo' || msg.includes('estrella') || msg.includes('neodata') || msg.includes('excel')) {
-    return "⭐ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**:\n\n" +
-           "Es nuestro curso estrella y el más vendido. En él aprenderás y compararás de forma práctica el flujo de trabajo en las tres herramientas líderes de la industria de la construcción para presupuestar obras públicas y privadas.\n\n" +
-           "👉 [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n" +
-           "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
-  }
-
-  if (msg === 'cfe' || msg.includes('concursos cfe') || msg.includes('concurso cfe')) {
-    return "⚡ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**:\n\n" +
-           "Es nuestro curso mejor valorado por los estudiantes. Aprenderás a integrar propuestas técnico-económicas completas bajo la normativa vigente de la Comisión Federal de Electricidad (CFE) utilizando herramientas del software OPUS.\n\n" +
-           "👉 [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n" +
-           "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
-  }
-
-  if (msg === 'gratis' || msg === 'gratuito') {
-    return "🎁 **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**:\n\n" +
-           "Ideal si vas empezando en la ingeniería de costos. Te familiarizarás con la interfaz de usuario de OPUS, la creación de insumos, costos directos y conceptos esenciales para la presupuestación.\n\n" +
-           "👉 [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n" +
-           "Escribe **'cursos'** para ver otros temas o **'menu'** para volver.";
-  }
-
-  if (msg === '2' || msg === 'contacto' || msg === 'redes') {
-    return "¡Excelente! Elige el medio de contacto que prefieras para comunicarte con nosotros:\n\n" +
-           "🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n" +
-           "📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx) (o síguenos en [@ing.pako.pansho](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx))\n" +
-           "🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n" +
-           "✉️ **Formulario de Correo en la Web**: [Formulario de Contacto: Haz clic aquí](/contacto) (Te redireccionará para que nos envíes un mail directo)\n\n" +
-           "Escribe **'menu'** si quieres regresar al inicio.";
-  }
-
-  if (msg === 'menu' || msg === 'inicio' || msg === 'volver') {
-    return "Elige una opción escribiendo el número correspondiente:\n\n" +
-           "1️⃣ **Cursos** (Ver nuestras especializaciones en OPUS, Neodata y CFE con descuento)\n" +
-           "2️⃣ **Contacto y Consultorías** (Hablar con nosotros o agendar servicios)";
-  }
-
-  if (!process.env.GEMINI_API_KEY) {
-    if (msg.includes('curso') || msg.includes('ver') || msg.includes('lista') || msg.includes('aprender') || msg.includes('capacitacion') || msg.includes('udemy')) {
-      return "Actualmente ofrecemos 4 cursos de especialización en Udemy para que formules presupuestos ganadores:\n\n" +
-             "1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n" +
-             "👉 Nuevo lanzamiento: https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F\n\n" +
-             "2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n" +
-             "👉 Más Vendido: https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/\n\n" +
-             "3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n" +
-             "👉 Mejor Valorado: https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/\n\n" +
-             "4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n" +
-             "👉 Acceso Gratuito: https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n" +
-             "¿Cuál de estos te interesa más para empezar a triunfar hoy?";
-    } else if (msg.includes('redes') || msg.includes('social') || msg.includes('instagram') || msg.includes('facebook') || msg.includes('ig') || msg.includes('fb') || msg.includes('contacto')) {
-      return "¡Mantente conectado con **Clipop**! Aquí tienes los accesos directos a nuestras redes:\n\n" +
-             "📸 **Instagram**: [Instagram: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n" +
-             "🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n" +
-             "🟢 **WhatsApp**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n" +
-             "✉️ **Correo**: clipopoficial@gmail.com\n\n" +
-             "¿Te gustaría agendar una consultoría personalizada para tu empresa?";
-    } else if (msg.includes('opus') || msg.includes('2025') || msg.includes('22') || msg.includes('24') || msg.includes('software')) {
-      return "OPUS es la herramienta líder para presupuestar obras. Con nuestro nuevo curso **OPUS 2025** aprenderás la metodología de análisis de precios unitarios y cálculo del FSR. ¡Es ideal para asegurar contratos! Inscríbete aquí:\n[OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)";
-    } else if (msg.includes('cfe') || msg.includes('concurso') || msg.includes('licitacion')) {
-      return "Para ganar concursos de CFE, necesitas dominar la estructuración de la propuesta técnico-económica y el cálculo del Factor de Salario Integrado (FSR). Te enseñamos todo esto paso a paso en nuestro curso mejor valorado:\n[Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)";
-    } else if (msg.includes('neodata') || msg.includes('excel')) {
-      return "Neodata es otra de las herramientas preferidas por las constructoras. En nuestro curso estrella comparamos el flujo de trabajo en OPUS, Neodata y Excel para que elijas la mejor opción:\n[Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)";
-    } else if (msg.includes('consult') || msg.includes('asesor') || msg.includes('empresa') || msg.includes('servicio') || msg.includes('obra')) {
-      return "Ofrecemos servicios de consultoría especializada en licitaciones de obra civil y electromecánica. Puedes enviarle un mensaje directo a Ing. Francisco Gardea en Instagram:\n[Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx) para cotizar tu propuesta técnico-económica de inmediato.";
-    }
-
-    return "¡Hola! Soy el asistente virtual de **Clipop**. 🏗️ Estoy aquí para ayudarte a dominar la ingeniería de costos. Escribe **'cursos'** para ver nuestro catálogo con descuento, **'redes'** para seguirnos en Instagram y Facebook, o pregunta directamente sobre **'OPUS'**, **'CFE'**, **'Neodata'** o **'consultoría'**.";
-  }
-
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-  const systemPrompt = `Eres un asesor de ventas altamente persuasivo y experto en ingeniería de costos y licitaciones para CLIPOP (la consultora de Erick Torua).
+const DEFAULT_SYSTEM_PROMPT = `Eres el asistente virtual oficial de CLIPOP (Consultoría y Capacitación en Ingeniería de Costos y Licitaciones, fundada por el Ing. Francisco Gardea).
 Tus objetivos principales son:
-1. Resolver dudas técnicas sobre OPUS, Neodata, presupuestos, cálculo de FSR (Factor de Salario Integrado), costos directos/indirectos y licitaciones para la Comisión Federal de Electricidad (CFE) en México. Simula que haces investigación web en tiempo real para dar respuestas ultra-precisas, actualizadas y profesionales que demuestren máxima autoridad técnica.
-2. Promocionar e incentivar la compra de los 4 cursos disponibles en Udemy (siempre proporciona los enlaces exactos usando obligatoriamente este formato markdown de texto 'Haz clic aquí'):
-   - "Análisis de Precios Unitarios 100% Práctico. OPUS 2025" (Curso de Lanzamiento Nuevo): [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)
+1. Brindar orientación técnica de excelencia sobre análisis de precios unitarios (APU), cálculo de Factor de Salario Real (FSR), costos directos, indirectos, financiamiento, utilidad y estructuración de propuestas técnico-económicas para licitaciones públicas (CFE, SICT, dependencias estatales) y privadas en México.
+2. Promocionar e incentivar la inscripción en los 4 cursos oficiales disponibles en Udemy:
+   - "Análisis de Precios Unitarios 100% Práctico. OPUS 2025" (Nuevo Lanzamiento): [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)
    - "Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel" (Más Vendido): [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)
    - "Cómo Presentar Concursos para CFE desde cero con OPUS 2020" (Mejor Valorado): [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)
-   - "OPUS. ANALISIS DE PRECIOS UNITARIOS. GRATIS!!" (Acceso Gratuito): [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)
-3. Fomentar la contratación de servicios de consultoría especializada para armar licitaciones. Dirige al usuario a hablar en Instagram Direct usando estrictamente este enlace: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx) o a seguir la página de Facebook de CLIPOP usando este enlace: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145) o escribir a WhatsApp usando este enlace: [WhatsApp: Haz clic aquí](https://wa.me/526624745958).
-4. Utilizar técnicas de venta persuasiva, sé entusiasta, profesional, demuestra maestría técnica en OPUS y cierra la respuesta con un llamado a la acción enfocado a la venta o al contacto directo.`;
+   - "OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!" (Acceso Gratuito): [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)
+3. Fomentar la contratación de servicios de consultoría especializada para licitaciones y auditoría de presupuestos. Dirige al usuario a:
+   - WhatsApp Directo: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)
+   - Instagram Direct: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)
+   - Facebook: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)
+   - Formulario Web: [Formulario de Contacto: Haz clic aquí](/contacto)
+4. Responder siempre con tono profesional, claro, entusiasta y con autoridad técnica en ingeniería de costos. Al final de tu respuesta técnica, incluye siempre una recomendación o enlace a los cursos relevantes o al menú principal.`;
 
-  const chat = model.startChat({
-    history: history || [],
-    systemInstruction: systemPrompt
-  });
+let inMemoryBotRules = [
+  // Flujo 0: Menú Principal y Saludo Inicial
+  {
+    id: 1,
+    keyword: "menu",
+    match_type: "exact",
+    response: "👋 ¡Hola! Bienvenido a **CLIPOP** 🏗️ *Ingeniería de Costos y Licitaciones*, con el **Ing. Francisco Gardea**.\n\n¿En qué podemos apoyarte hoy? Elige una opción escribiendo el número o la palabra clave:\n\n1️⃣ **Cursos Especializados** (OPUS 2025, Neodata, Concursos CFE y Gratis)\n2️⃣ **Consultoría & Licitaciones** (Armado de propuestas y asesoría de obra)\n3️⃣ **Hablar con un Asesor Humano** (Atención personalizada)\n4️⃣ **Dudas Frecuentes & Soporte**\n\n💡 *Puedes escribir '1', '2', '3' o tocar los botones directos abajo.*",
+    is_active: true
+  },
+  {
+    id: 2,
+    keyword: "hola",
+    match_type: "exact",
+    response: "👋 ¡Hola! Qué gusto saludarte. Bienvenido a **CLIPOP** 🏗️ *Ingeniería de Costos y Licitaciones*.\n\n¿En qué te podemos asesorar hoy?\n\n1️⃣ **Cursos Especializados** (OPUS 2025, Neodata, CFE y Gratis)\n2️⃣ **Consultoría & Licitaciones** (Propuestas técnico-económicas)\n3️⃣ **Hablar con un Asesor Humano** (Atención directa)\n\nEscribe el número de la opción o la palabra clave que deseas consultar.",
+    is_active: true
+  },
+  {
+    id: 3,
+    keyword: "inicio",
+    match_type: "exact",
+    response: "👋 ¡Hola! Bienvenido al menú principal de **CLIPOP** 🏗️\n\n1️⃣ **Cursos** (OPUS 2025, Neodata, Concursos CFE y Gratis)\n2️⃣ **Consultorías** (Servicios de licitaciones y presupuestos)\n3️⃣ **Asesor Humano** (Hablar con nuestro equipo)\n\n¿Qué opción deseas explorar?",
+    is_active: true
+  },
 
-  const result = await chat.sendMessage(message);
-  const response = await result.response;
-  return response.text();
+  // Flujo 1: Cursos de Capacitación
+  {
+    id: 4,
+    keyword: "1",
+    match_type: "exact",
+    response: "🎓 **Catálogo Oficial de Cursos Especializados en Udemy**\nFormulados por el **Ing. Francisco Gardea** con descuento promocional:\n\n1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n🔥 *Nuevo Lanzamiento*: Domina la versión más reciente, FSR, costos directos e indirectos.\n👉 [Inscribirme a OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n⭐ *Más Vendido*: Comparativa integral de las 3 herramientas líderes de la industria.\n👉 [Inscribirme a OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n⚡ *Mejor Valorado*: Normativas vigentes CFE, armado técnico-económico de propuestas.\n👉 [Inscribirme a Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n🎁 *Acceso Gratuito*: Ideal para iniciarte sin costo en la estructuración de costos.\n👉 [Acceder al Curso Gratis: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n💡 *Escribe '2025', 'completo', 'cfe' o 'gratis' para ver detalles de cada uno, o escribe 'menu' para volver.*",
+    is_active: true
+  },
+  {
+    id: 5,
+    keyword: "cursos",
+    match_type: "contains",
+    response: "🎓 **Catálogo Oficial de Cursos Especializados en Udemy**\nFormulados por el **Ing. Francisco Gardea** con descuento promocional:\n\n1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n🔥 *Nuevo Lanzamiento*: Domina la versión más reciente, FSR, costos directos e indirectos.\n👉 [Inscribirme a OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n⭐ *Más Vendido*: Comparativa integral de las 3 herramientas líderes de la industria.\n👉 [Inscribirme a OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n⚡ *Mejor Valorado*: Normativas vigentes CFE, armado técnico-económico de propuestas.\n👉 [Inscribirme a Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n🎁 *Acceso Gratuito*: Ideal para iniciarte sin costo en la estructuración de costos.\n👉 [Acceder al Curso Gratis: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n💡 *Escribe '2025', 'completo', 'cfe' o 'gratis' para ver detalles de cada uno, o escribe 'menu' para volver.*",
+    is_active: true
+  },
+  {
+    id: 6,
+    keyword: "catalogo",
+    match_type: "contains",
+    response: "🎓 **Catálogo Oficial de Cursos Especializados en Udemy**\n\n1️⃣ **OPUS 2025 (Nuevo)**: [Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n2️⃣ **OPUS + Neodata + Excel (Más Vendido)**: [Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n3️⃣ **Concursos CFE (Mejor Valorado)**: [Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n4️⃣ **Curso Gratis OPUS**: [Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\nEscribe **'menu'** para volver al inicio.",
+    is_active: true
+  },
+
+  // Subflujos de Cursos individuales
+  {
+    id: 7,
+    keyword: "2025",
+    match_type: "contains",
+    response: "🏗️ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n\nEste curso te llevará de cero a experto en la versión más moderna de OPUS:\n✔️ Configuración de proyectos y catálogo de conceptos.\n✔️ Análisis de costos directos (materiales, mano de obra, equipo y maquinaria).\n✔️ Cálculo automatizado del Factor de Salario Real (FSR) conforme a la LFT y Ley del Seguro Social.\n✔️ Determinación de sobrecostos: indirectos de oficina/campo, financiamiento, utilidad y cargos adicionales.\n✔️ Exportación de reportes listos para licitaciones públicas y privadas.\n\n👉 [Haz clic aquí para inscribirte con descuento en Udemy](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n💡 *Escribe 'cursos' para ver otros cursos o 'menu' para volver.*",
+    is_active: true
+  },
+  {
+    id: 8,
+    keyword: "cfe",
+    match_type: "contains",
+    response: "⚡ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n\nEl curso especializado de mayor valor para contratistas y analistas de costos del sector eléctrico:\n✔️ Comprensión de las bases y normativas de contratación de la Comisión Federal de Electricidad (CFE).\n✔️ Armado de la propuesta técnica y económica paso a paso.\n✔️ Matrices específicas para líneas de transmisión, subestaciones y redes de distribución.\n✔️ Criterios de evaluación y causales de descalificación frecuentes para blindar tus propuestas.\n\n👉 [Haz clic aquí para inscribirte con descuento en Udemy](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n💡 *Escribe 'cursos' para ver otros cursos o 'menu' para volver.*",
+    is_active: true
+  },
+  {
+    id: 9,
+    keyword: "completo",
+    match_type: "contains",
+    response: "⭐ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n\nEl curso estrella y más vendido de la plataforma:\n✔️ Domina los dos softwares más exigidos en México e Hispanoamérica: OPUS y Neodata.\n✔️ Metodología paso a paso para comparar presupuestos en Excel y en software de precios unitarios.\n✔️ Elaboración de programas de obra (Gantt), montos y cantidades de insumos.\n✔️ Más de 1,200 estudiantes activos con calificación de excelencia.\n\n👉 [Haz clic aquí para inscribirte con descuento en Udemy](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n💡 *Escribe 'cursos' para ver otros cursos o 'menu' para volver.*",
+    is_active: true
+  },
+  {
+    id: 10,
+    keyword: "gratis",
+    match_type: "contains",
+    response: "🎁 **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n\nEl mejor punto de partida si te estás iniciando en la ingeniería de costos:\n✔️ Introducción al entorno de trabajo y herramientas de OPUS.\n✔️ Creación de cuadrillas de mano de obra y análisis de insumos.\n✔️ Estructuración básica de un presupuesto de obra sin costo alguno.\n\n👉 [Haz clic aquí para ingresar gratis en Udemy](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n💡 *Escribe 'cursos' para ver los cursos completos o 'menu' para volver.*",
+    is_active: true
+  },
+
+  // Flujo 2: Consultorías & Licitaciones
+  {
+    id: 11,
+    keyword: "2",
+    match_type: "exact",
+    response: "💼 **Servicios de Consultoría Especializada en Licitaciones y Presupuestos**\n\nEn **CLIPOP**, el equipo del **Ing. Francisco Gardea** te apoya en:\n✔️ Integración y armado de propuestas técnico-económicas para concursos públicos y privados.\n✔️ Revisión, auditoría y corrección de análisis de precios unitarios (APU).\n✔️ Cálculo normativo de FSR, costos horarios de maquinaria pesada y análisis de sobrecostos.\n✔️ Consultoría estratégica para licitaciones de CFE, SICT, CONAGUA e inversión privada.\n\n📲 **Contáctanos directamente para evaluar tu proyecto:**\n🟢 [WhatsApp Directo: Haz clic aquí](https://wa.me/526624745958)\n📸 [Instagram Direct (@ing.pako.pansho): Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n✉️ [Formulario de Contacto Web: Haz clic aquí](/contacto)\n\n💡 *Escribe 'menu' para regresar al menú principal.*",
+    is_active: true
+  },
+  {
+    id: 12,
+    keyword: "consultoria",
+    match_type: "contains",
+    response: "💼 **Servicios de Consultoría Especializada en Licitaciones y Presupuestos**\n\nEn **CLIPOP**, el equipo del **Ing. Francisco Gardea** te apoya en:\n✔️ Integración y armado de propuestas técnico-económicas para concursos públicos y privados.\n✔️ Revisión, auditoría y corrección de análisis de precios unitarios (APU).\n✔️ Cálculo normativo de FSR, costos horarios de maquinaria pesada y análisis de sobrecostos.\n✔️ Consultoría estratégica para licitaciones de CFE, SICT, CONAGUA e inversión privada.\n\n📲 **Contáctanos directamente para evaluar tu proyecto:**\n🟢 [WhatsApp Directo: Haz clic aquí](https://wa.me/526624745958)\n📸 [Instagram Direct (@ing.pako.pansho): Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n✉️ [Formulario de Contacto Web: Haz clic aquí](/contacto)\n\n💡 *Escribe 'menu' para regresar al menú principal.*",
+    is_active: true
+  },
+  {
+    id: 13,
+    keyword: "licitacion",
+    match_type: "contains",
+    response: "🏗️ **Asesoría en Licitaciones y Concursos de Obra**\n\nTe ayudamos a estructurar licitaciones ganadoras y libres de causales de descalificación.\n\nContáctanos de inmediato para revisar las bases de tu concurso:\n🟢 [WhatsApp Directo: Haz clic aquí](https://wa.me/526624745958)\n📸 [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n✉️ [Formulario Web: Haz clic aquí](/contacto)\n\nEscribe **'menu'** para volver.",
+    is_active: true
+  },
+
+  // Flujo 3: Hablar con un Asesor Humano / Contacto
+  {
+    id: 14,
+    keyword: "3",
+    match_type: "exact",
+    response: "👨‍💼 **Atención con un Asesor Humano**\n\n¡Perfecto! Hemos notificado a un asesor del equipo de **CLIPOP**. En unos momentos te atenderemos de forma personalizada.\n\nSi deseas comunicación inmediata vía chat o llamada, elige tu canal preferido:\n🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n✉️ **Formulario Web**: [Formulario de Contacto: Haz clic aquí](/contacto)\n\n💡 *Escribe 'menu' si deseas volver a interactuar con el asistente automatizado.*",
+    is_active: true
+  },
+  {
+    id: 15,
+    keyword: "asesor",
+    match_type: "contains",
+    response: "👨‍💼 **Atención con un Asesor Humano**\n\n¡Perfecto! Hemos notificado a un asesor del equipo de **CLIPOP**. En unos momentos te atenderemos de forma personalizada.\n\nSi deseas comunicación inmediata vía chat o llamada, elige tu canal preferido:\n🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n✉️ **Formulario Web**: [Formulario de Contacto: Haz clic aquí](/contacto)\n\n💡 *Escribe 'menu' si deseas volver a interactuar con el asistente automatizado.*",
+    is_active: true
+  },
+  {
+    id: 16,
+    keyword: "humano",
+    match_type: "contains",
+    response: "👨‍💼 **Atención con un Asesor Humano**\n\nUn asesor humano del equipo de **CLIPOP** tomará la conversación a la brevedad.\n\nPara contacto inmediato por WhatsApp: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n\nEscribe **'menu'** para volver al menú principal.",
+    is_active: true
+  },
+  {
+    id: 17,
+    keyword: "contacto",
+    match_type: "contains",
+    response: "¡Excelente! Elige el medio de contacto que prefieras para comunicarte con nosotros:\n\n🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx) (o síguenos en [@ing.pako.pansho](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx))\n🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n✉️ **Formulario de Correo en la Web**: [Formulario de Contacto: Haz clic aquí](/contacto)\n\nEscribe **'menu'** para volver.",
+    is_active: true
+  },
+
+  // Flujo 4: Soporte / FAQ
+  {
+    id: 18,
+    keyword: "4",
+    match_type: "exact",
+    response: "❓ **Dudas Frecuentes & Soporte Técnico**\n\nAquí tienes respuestas a las consultas más comunes:\n\n🔹 **¿Los cursos entregan certificado?** Sí, al concluir cualquiera de nuestros cursos en Udemy obtendrás un certificado con validez curricular.\n🔹 **¿Incluyen archivos y plantillas?** Sí, incluyen bases de datos de OPUS, hojas de cálculo de FSR y formatos de licitación para CFE.\n🔹 **¿Qué versión de OPUS necesito?** Contamos con cursos desde OPUS 2020, 2022, 2024 hasta la versión 2025.\n\n¿Tienes alguna duda técnica específica? Escríbela directamente y nuestro motor de IA te orientará, o escribe **'menu'** para volver.",
+    is_active: true
+  },
+  {
+    id: 19,
+    keyword: "dudas",
+    match_type: "contains",
+    response: "❓ **Dudas Frecuentes & Soporte Técnico**\n\nPuedes hacernos cualquier pregunta sobre OPUS, Neodata, cálculo de FSR o normativas de licitación para CFE. Escríbela y te orientaremos de inmediato, o escribe **'menu'** para ver las opciones principales.",
+    is_active: true
+  }
+];
+
+// Helper function to generate AI or rule-based bot reply with dynamic prompt and rules
+async function generateAiReply(message, history = []) {
+  const msg = (message || '').toLowerCase().trim();
+  if (!msg) return "¡Hola! ¿En qué te podemos apoyar hoy? Escribe 'menu' para ver nuestras opciones.";
+
+  // 1. Verificar si el bot está deshabilitado globalmente
+  let botEnabled = true;
+  let customPrompt = DEFAULT_SYSTEM_PROMPT;
+  let rules = inMemoryBotRules;
+
+  try {
+    if (process.env.DATABASE_URL) {
+      const settings = await prisma.setting.findMany({
+        where: { key: { in: ['bot_enabled', 'bot_system_prompt'] } }
+      });
+      settings.forEach(s => {
+        if (s.key === 'bot_enabled') botEnabled = s.value !== 'false';
+        if (s.key === 'bot_system_prompt' && s.value.trim()) customPrompt = s.value;
+      });
+
+      const dbRules = await prisma.botRule.findMany({ where: { is_active: true } });
+      if (dbRules && dbRules.length > 0) {
+        rules = dbRules;
+      }
+    }
+  } catch (err) {
+    console.error('[Bot Engine Settings Error]', err.message);
+  }
+
+  if (!botEnabled) {
+    return "En este momento nuestro bot automático se encuentra en pausa. Un asesor del equipo de CLIPOP te atenderá a la brevedad.";
+  }
+
+  // 2. Evaluar reglas de palabras clave automáticas
+  for (const rule of rules) {
+    if (!rule.is_active) continue;
+    const kw = (rule.keyword || '').toLowerCase().trim();
+    if (!kw) continue;
+
+    if (rule.match_type === 'exact' && msg === kw) {
+      return rule.response;
+    } else if (rule.match_type === 'contains' && msg.includes(kw)) {
+      return rule.response;
+    }
+  }
+
+  // 3. Fallback inteligente de respaldo si no hay API Key de Gemini
+  if (!process.env.GEMINI_API_KEY) {
+    if (msg.includes('curso') || msg.includes('udemy') || msg.includes('precio') || msg.includes('costo')) {
+      return "🎓 Ofrecemos 4 cursos de especialización en Udemy:\n\n1️⃣ **OPUS 2025**: [Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n2️⃣ **OPUS + Neodata + Excel**: [Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n3️⃣ **Concursos CFE**: [Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n4️⃣ **Curso Gratis**: [Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\nEscribe **'menu'** para volver al menú principal.";
+    }
+    return "👋 ¡Hola! Soy el asistente virtual de **CLIPOP**. 🏗️\n\nEscribe **'menu'** para ver nuestras opciones de Cursos y Consultorías, o escribe **'asesor'** para hablar con nuestro equipo.";
+  }
+
+  // 4. Invocar Inteligencia Artificial (Google Gemini) con System Prompt dinámico
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const chat = model.startChat({
+      history: history || [],
+      systemInstruction: customPrompt
+    });
+
+    const result = await chat.sendMessage(message);
+    const response = await result.response;
+    return response.text();
+  } catch (aiError) {
+    console.error('[Gemini AI Bot Error]', aiError);
+    return "👋 ¡Hola! Soy el asistente virtual de **CLIPOP**. ¿Te gustaría conocer nuestros cursos especializados en OPUS/Neodata o agendar una consultoría para licitaciones? Escribe **'menu'** para ver todas las opciones.";
+  }
 }
+
 
 // 1. Webhook para recibir datos de ManyChat o Bots (WhatsApp, Facebook, Instagram)
 app.post('/api/webhook/bot', async (req, res) => {
@@ -363,10 +558,10 @@ app.get('/api/leads', async (req, res) => {
 app.post('/api/leads/:leadId/conversations', async (req, res) => {
   try {
     const { leadId } = req.params;
-    const { message, sender } = req.body;
+    const { message, sender = 'human' } = req.body;
 
-    if (!message || !sender) {
-      return res.status(400).json({ error: 'Faltan datos obligatorios (message, sender)' });
+    if (!message) {
+      return res.status(400).json({ error: 'Mensaje requerido' });
     }
 
     if (process.env.DATABASE_URL) {
@@ -374,13 +569,12 @@ app.post('/api/leads/:leadId/conversations', async (req, res) => {
         data: {
           leadId: parseInt(leadId),
           message,
-          sender // "user" o "ai"
+          sender
         }
       });
       return res.json({ success: true, conversation });
     }
 
-    // Fallback local en memoria
     const lead = inMemoryLeads.find(l => l.id === parseInt(leadId));
     if (lead) {
       const newMsg = {
@@ -394,13 +588,423 @@ app.post('/api/leads/:leadId/conversations', async (req, res) => {
       lead.updatedAt = new Date().toISOString();
       return res.json({ success: true, conversation: newMsg });
     }
-
     res.status(404).json({ error: 'Lead no encontrado' });
+    // Si el lead es de WhatsApp, intentar enviar el mensaje saliente por Baileys o Meta
+    if (process.env.DATABASE_URL) {
+      const targetLead = await prisma.lead.findUnique({ where: { id: parseInt(leadId) } });
+      if (targetLead && targetLead.platform === 'whatsapp') {
+        await whatsappService.sendWhatsAppDirectMessage(targetLead.phone_or_id, message);
+      }
+    } else if (lead && lead.platform === 'whatsapp') {
+      await whatsappService.sendWhatsAppDirectMessage(lead.phone_or_id, message);
+    }
   } catch (error) {
-    console.error('[API Send Message Error]', error);
-    res.status(500).json({ error: 'Error interno al enviar mensaje' });
+    console.error('[Add Message Error]', error);
+    res.status(500).json({ error: 'Error al enviar mensaje' });
   }
 });
+
+// --- RUTAS DE WHATSAPP WEB POR CÓDIGO QR (BAILEYS) ---
+
+// Obtener estado de la conexión de WhatsApp Web y código QR
+app.get('/api/whatsapp/status', (req, res) => {
+  res.json(whatsappService.getWhatsAppStatus());
+});
+
+// Iniciar sesión y generar código QR
+app.post('/api/whatsapp/connect', async (req, res) => {
+  try {
+    await whatsappService.startWhatsAppSession();
+    // Dar 1 segundo para que genere el QR
+    setTimeout(() => {
+      res.json(whatsappService.getWhatsAppStatus());
+    }, 1200);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Solicitar código de vinculación de 8 dígitos para un número de teléfono
+app.post('/api/whatsapp/pairing-code', async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) {
+      return res.status(400).json({ error: 'Número de teléfono requerido' });
+    }
+    const result = await whatsappService.requestPairingCodeForPhone(phoneNumber);
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Desconectar sesión de WhatsApp Web
+app.post('/api/whatsapp/logout', async (req, res) => {
+  try {
+    const result = await whatsappService.logoutWhatsAppSession();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Ruta para cambiar el estado de pausa del Bot por Lead (Intervención Humana)
+app.post('/api/leads/:leadId/toggle-bot', async (req, res) => {
+  try {
+    const { leadId } = req.params;
+    const { bot_paused } = req.body;
+
+    if (process.env.DATABASE_URL) {
+      const updatedLead = await prisma.lead.update({
+        where: { id: parseInt(leadId) },
+        data: { bot_paused: Boolean(bot_paused) }
+      });
+      return res.json({ success: true, bot_paused: updatedLead.bot_paused });
+    }
+
+    const lead = inMemoryLeads.find(l => l.id === parseInt(leadId));
+    if (lead) {
+      lead.bot_paused = Boolean(bot_paused);
+      lead.updatedAt = new Date().toISOString();
+      return res.json({ success: true, bot_paused: lead.bot_paused });
+    }
+    res.status(404).json({ error: 'Lead no encontrado' });
+  } catch (error) {
+    console.error('[Toggle Bot Error]', error);
+    res.status(500).json({ error: 'Error al cambiar estado del bot' });
+  }
+});
+
+// Ruta para cambiar el estado del Lead (NUEVO, EN CONTACTO, COTIZADO, CERRADO)
+app.post('/api/leads/:leadId/status', async (req, res) => {
+  try {
+    const { leadId } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: 'Estado requerido' });
+    }
+
+    if (process.env.DATABASE_URL) {
+      const updatedLead = await prisma.lead.update({
+        where: { id: parseInt(leadId) },
+        data: { status }
+      });
+      return res.json({ success: true, lead: updatedLead });
+    }
+
+    const lead = inMemoryLeads.find(l => l.id === parseInt(leadId));
+    if (lead) {
+      lead.status = status;
+      lead.updatedAt = new Date().toISOString();
+      return res.json({ success: true, lead });
+    }
+    res.status(404).json({ error: 'Lead no encontrado' });
+  } catch (error) {
+    console.error('[Update Lead Status Error]', error);
+    res.status(500).json({ error: 'Error al actualizar estado del lead' });
+  }
+});
+
+// --- RUTAS PARA REGLAS DE PALABRAS CLAVE DEL BOT (KEYWORDS CRUD) ---
+
+// Obtener todas las reglas
+app.get('/api/bot/rules', async (req, res) => {
+  try {
+    if (process.env.DATABASE_URL) {
+      const rules = await prisma.botRule.findMany({
+        orderBy: { createdAt: 'desc' }
+      });
+      return res.json(rules);
+    }
+    res.json(inMemoryBotRules);
+  } catch (error) {
+    res.json(inMemoryBotRules);
+  }
+});
+
+// Crear o actualizar regla
+app.post('/api/bot/rules', async (req, res) => {
+  try {
+    const { id, keyword, match_type = 'contains', response, is_active = true } = req.body;
+
+    if (!keyword || !response) {
+      return res.status(400).json({ error: 'Palabra clave y respuesta son obligatorias' });
+    }
+
+    if (process.env.DATABASE_URL) {
+      let rule;
+      if (id) {
+        rule = await prisma.botRule.update({
+          where: { id: parseInt(id) },
+          data: {
+            keyword: keyword.trim().toLowerCase(),
+            match_type,
+            response,
+            is_active: Boolean(is_active)
+          }
+        });
+      } else {
+        rule = await prisma.botRule.create({
+          data: {
+            keyword: keyword.trim().toLowerCase(),
+            match_type,
+            response,
+            is_active: Boolean(is_active)
+          }
+        });
+      }
+      return res.json({ success: true, rule });
+    }
+
+    // Memoria local
+    if (id) {
+      const idx = inMemoryBotRules.findIndex(r => r.id === parseInt(id));
+      if (idx !== -1) {
+        inMemoryBotRules[idx] = {
+          ...inMemoryBotRules[idx],
+          keyword: keyword.trim().toLowerCase(),
+          match_type,
+          response,
+          is_active: Boolean(is_active)
+        };
+        return res.json({ success: true, rule: inMemoryBotRules[idx] });
+      }
+    }
+
+    const newRule = {
+      id: inMemoryBotRules.length + 1,
+      keyword: keyword.trim().toLowerCase(),
+      match_type,
+      response,
+      is_active: Boolean(is_active),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    inMemoryBotRules.push(newRule);
+    res.json({ success: true, rule: newRule });
+  } catch (error) {
+    console.error('[Save Bot Rule Error]', error);
+    res.status(500).json({ error: 'Error guardando regla del bot' });
+  }
+});
+
+// Eliminar regla
+app.delete('/api/bot/rules/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (process.env.DATABASE_URL) {
+      await prisma.botRule.delete({
+        where: { id: parseInt(id) }
+      });
+      return res.json({ success: true });
+    }
+
+    inMemoryBotRules = inMemoryBotRules.filter(r => r.id !== parseInt(id));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[Delete Bot Rule Error]', error);
+    res.status(500).json({ error: 'Error eliminando regla del bot' });
+  }
+});
+
+// --- WEBHOOK OFICIAL DE META (WHATSAPP, INSTAGRAM, MESSENGER) ---
+
+// Función para enviar mensajes salientes a través de la API oficial de Meta (WhatsApp / Messenger / Instagram)
+async function sendMetaReply({ platform, to, text }) {
+  try {
+    let token = process.env.META_ACCESS_TOKEN;
+    let phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+    // Buscar credenciales en la base de datos si existen
+    if (process.env.DATABASE_URL) {
+      const settings = await prisma.setting.findMany({
+        where: { key: { in: ['meta_access_token', 'whatsapp_phone_number_id'] } }
+      });
+      settings.forEach(s => {
+        if (s.key === 'meta_access_token' && s.value.trim()) token = s.value.trim();
+        if (s.key === 'whatsapp_phone_number_id' && s.value.trim()) phoneId = s.value.trim();
+      });
+    }
+
+    if (!token) {
+      console.log('[Meta Outbound] Token de Meta no configurado aún en Settings o .env');
+      return { success: false, reason: 'Token no configurado' };
+    }
+
+    if (platform === 'whatsapp') {
+      if (!phoneId) {
+        console.log('[Meta Outbound WhatsApp] Falta WHATSAPP_PHONE_NUMBER_ID');
+        return { success: false, reason: 'Phone ID no configurado' };
+      }
+
+      // Limpiar formato de teléfono
+      const cleanPhone = String(to).replace(/[^0-9]/g, '');
+
+      const response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: cleanPhone,
+          type: 'text',
+          text: { body: text }
+        })
+      });
+
+      const data = await response.json();
+      console.log('[Meta WhatsApp API Response]', data);
+      return { success: response.ok, data };
+    } else {
+      // Instagram Direct o Facebook Messenger
+      const response = await fetch(`https://graph.facebook.com/v18.0/me/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          recipient: { id: to },
+          message: { text }
+        })
+      });
+
+      const data = await response.json();
+      console.log('[Meta Messenger/IG API Response]', data);
+      return { success: response.ok, data };
+    }
+  } catch (error) {
+    console.error('[Meta Outbound Error]', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Endpoint para probar el envío de un mensaje real a WhatsApp desde el panel de control
+app.post('/api/meta/test-message', async (req, res) => {
+  try {
+    const { phone, message } = req.body;
+    if (!phone) {
+      return res.status(400).json({ error: 'Número de teléfono requerido' });
+    }
+
+    const testText = message || '¡Hola! Este es un mensaje de prueba enviado directamente desde el nuevo Panel de Control de CLIPOP.';
+    const result = await sendMetaReply({ platform: 'whatsapp', to: phone, text: testText });
+
+    if (result.success) {
+      return res.json({ success: true, message: 'Mensaje enviado a WhatsApp con éxito', data: result.data });
+    } else {
+      return res.status(400).json({ success: false, error: result.reason || result.error || 'Error al enviar a Meta' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Verificación de Webhook para Meta for Developers
+app.get('/api/webhooks/meta', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  const verifyToken = process.env.META_VERIFY_TOKEN || 'clipop_bot_verify_token_2026';
+
+  if (mode === 'subscribe' && token === verifyToken) {
+    console.log('[Meta Webhook] Verificado con éxito por Meta');
+    return res.status(200).send(challenge);
+  }
+  return res.sendStatus(403);
+});
+
+// Receptor de mensajes de Meta (WhatsApp Cloud API / Instagram / Messenger)
+app.post('/api/webhooks/meta', async (req, res) => {
+  try {
+    const body = req.body;
+    console.log('[Meta Webhook Event Received]', JSON.stringify(body));
+
+    if (body.object === 'whatsapp_business_account' || body.object === 'page' || body.object === 'instagram') {
+      const entry = body.entry?.[0];
+      const changes = entry?.changes?.[0]?.value;
+      const messaging = entry?.messaging?.[0];
+
+      let phoneOrId = null;
+      let senderName = null;
+      let messageText = null;
+      let platform = body.object === 'whatsapp_business_account' ? 'whatsapp' : (body.object === 'instagram' ? 'instagram' : 'messenger');
+
+      // WhatsApp Cloud API Payload
+      if (changes && changes.messages && changes.messages[0]) {
+        const msg = changes.messages[0];
+        phoneOrId = msg.from;
+        senderName = changes.contacts?.[0]?.profile?.name || phoneOrId;
+        if (msg.type === 'text') {
+          messageText = msg.text?.body;
+        }
+      } 
+      // Instagram / Messenger Payload
+      else if (messaging && messaging.message) {
+        phoneOrId = messaging.sender?.id;
+        senderName = `Usuario ${platform}`;
+        messageText = messaging.message.text;
+      }
+
+      if (phoneOrId && messageText) {
+        let lead = null;
+        if (process.env.DATABASE_URL) {
+          lead = await prisma.lead.upsert({
+            where: { phone_or_id: phoneOrId },
+            update: { name: senderName || undefined },
+            create: {
+              platform,
+              phone_or_id: phoneOrId,
+              name: senderName
+            }
+          });
+
+          await prisma.conversation.create({
+            data: {
+              leadId: lead.id,
+              message: messageText,
+              sender: 'user'
+            }
+          });
+        }
+
+        // Si el bot NO está pausado para este lead, generar respuesta automática
+        const isPaused = lead ? lead.bot_paused : false;
+        if (!isPaused) {
+          const reply = await generateAiReply(messageText);
+
+          if (process.env.DATABASE_URL && lead) {
+            await prisma.conversation.create({
+              data: {
+                leadId: lead.id,
+                message: reply,
+                sender: 'ai'
+              }
+            });
+          }
+
+          // Enviar la respuesta directamente a WhatsApp o Instagram a través de Meta API
+          await sendMetaReply({ platform, to: phoneOrId, text: reply });
+        }
+      }
+
+      return res.status(200).send('EVENT_RECEIVED');
+    }
+
+    res.sendStatus(404);
+  } catch (error) {
+    console.error('[Meta Webhook Error]', error);
+    res.status(500).send('ERROR');
+  }
+});
+
 
 // 3. Ruta para el Chatbot de la Landing Page
 app.post('/api/chat', async (req, res) => {
