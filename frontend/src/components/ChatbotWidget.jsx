@@ -113,24 +113,32 @@ export default function ChatbotWidget() {
   const resetInactivityTimer = () => {
     clearTimers();
     const lastMsg = messages[messages.length - 1];
-    const isAskingInactivity = lastMsg && lastMsg.role === 'model' && lastMsg.text.includes('¿Sigues ahí?');
+    const isAskingInactivity = lastMsg && lastMsg.role === 'model' && lastMsg.text.includes('¿Sigues');
 
     if (isAskingInactivity) {
+      // Si ya se preguntó y no contesta en los siguientes 2.5 minutos (total 5m), enviar mensaje de cierre y cerrar
       closeTimerRef.current = setTimeout(() => {
-        setIsOpen(false);
+        setMessages(prev => [
+          ...prev,
+          { role: 'model', text: '🔒 Hemos cerrado la conversación por inactividad. Puedes volver a escribir cuando gustes enviando "Hola" o seleccionando una opción del menú. ¡Mucho éxito en tus proyectos! 👋✨' }
+        ]);
         setTimeout(() => {
-          setMessages([
-            { role: 'model', text: initialGreeting }
-          ]);
-        }, 300);
-      }, 60000);
+          setIsOpen(false);
+          setTimeout(() => {
+            setMessages([
+              { role: 'model', text: initialGreeting }
+            ]);
+          }, 300);
+        }, 8000);
+      }, 150000); // 2.5 min después del primer aviso
     } else {
+      // A los 2.5 minutos de inactividad, enviar mensaje de seguimiento
       inactivityTimerRef.current = setTimeout(() => {
         setMessages(prev => [
           ...prev,
-          { role: 'model', text: '⏰ ¿Sigues ahí? Escribe cualquier duda o pulsa una opción rápida si deseas continuar nuestra asesoría.' }
+          { role: 'model', text: '⏰ ¿Sigues por ahí? ¿Te gustaría continuar con la conversación o tienes alguna otra duda sobre nuestros cursos y cotizaciones? 😊\n\n💡 *Escribe cualquier duda o pulsa una opción para continuar.*' }
         ]);
-      }, 45000);
+      }, 150000); // 2.5 minutos
     }
   };
 

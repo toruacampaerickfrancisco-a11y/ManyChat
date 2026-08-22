@@ -14,10 +14,54 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 const app = express();
 
+// --- GESTIÓN DE INACTIVIDAD DE CHAT EN WHATSAPP ---
+const inactivitySessions = new Map();
+
+function clearInactivityTimers(userJid) {
+  if (inactivitySessions.has(userJid)) {
+    const session = inactivitySessions.get(userJid);
+    if (session.nudgeTimer) clearTimeout(session.nudgeTimer);
+    if (session.closeTimer) clearTimeout(session.closeTimer);
+    inactivitySessions.delete(userJid);
+  }
+}
+
+function scheduleInactivityTimers(userJid, senderName = '') {
+  clearInactivityTimers(userJid);
+
+  // 1. Mensaje de seguimiento tras 2.5 minutos de inactividad
+  const nudgeTimer = setTimeout(async () => {
+    try {
+      const nudgeMsg = `⏰ *Hola${senderName ? ' ' + senderName : ''}*, ¿sigues por ahí? 🤔\n\n¿Te gustaría continuar con la conversación o tienes alguna otra duda sobre nuestros cursos o cotizaciones?\n\n💡 _Escribe cualquier duda o *0* para volver al menú principal._`;
+      console.log(`[WhatsApp Inactividad] Enviando recordatorio a ${userJid}`);
+      await whatsappService.sendWhatsAppDirectMessage(userJid, nudgeMsg);
+    } catch (err) {
+      console.error('[WhatsApp Nudge Error]', err);
+    }
+  }, 150000); // 2.5 minutos (150 segundos)
+
+  // 2. Mensaje de cierre tras 5 minutos de inactividad total
+  const closeTimer = setTimeout(async () => {
+    try {
+      const closeMsg = `🔒 *Sesión finalizada por inactividad*\n\nHemos cerrado esta conversación por el momento. Puedes volver a escribirnos cuando gustes enviando *'Hola'* o *'0'*. ¡Mucho éxito en tus proyectos! 👋✨\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━`;
+      console.log(`[WhatsApp Inactividad] Cerrando sesión por inactividad para ${userJid}`);
+      await whatsappService.sendWhatsAppDirectMessage(userJid, closeMsg);
+      inactivitySessions.delete(userJid);
+    } catch (err) {
+      console.error('[WhatsApp Close Error]', err);
+    }
+  }, 300000); // 5 minutos (300 segundos)
+
+  inactivitySessions.set(userJid, { nudgeTimer, closeTimer, lastActivity: Date.now() });
+}
+
 // Inicializar el manejador de mensajes de WhatsApp Web (Baileys)
 whatsappService.setMessageHandler(async ({ from, senderName, text }) => {
   console.log(`[WhatsApp Entrada] de ${senderName} (${from}): ${text}`);
   const phone = from.split('@')[0];
+
+  // Limpiar temporizadores anteriores al recibir cualquier mensaje
+  clearInactivityTimers(from);
 
   let lead = null;
   try {
@@ -100,6 +144,12 @@ whatsappService.setMessageHandler(async ({ from, senderName, text }) => {
     // Enviar respuesta directa e inmediata a WhatsApp
     const sendRes = await whatsappService.sendWhatsAppDirectMessage(from, reply);
     console.log(`[WhatsApp Salida Enviada] a ${from} | Éxito: ${sendRes.success}`);
+
+    // Programar recordatorio de inactividad y cierre a los 5 minutos (si no fue una despedida explícita)
+    const cleanText = (text || '').toLowerCase().trim();
+    if (cleanText !== 'no' && cleanText !== 'adios' && cleanText !== 'adiós') {
+      scheduleInactivityTimers(from, senderName);
+    }
   }
 });
 
