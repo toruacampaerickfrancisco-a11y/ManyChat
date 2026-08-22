@@ -55,13 +55,20 @@ async function startWhatsAppSession() {
       if (connection === 'close') {
         const statusCode = (lastDisconnect?.error)?.output?.statusCode;
         const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-        console.log(`[WhatsApp] Conexión cerrada (Código: ${statusCode}). Reconectar: ${shouldReconnect}`);
-        
         if (!shouldReconnect) {
+          console.log('[WhatsApp] Sesión previa expirada o cerrada. Limpiando credenciales para nuevo inicio limpio...');
           connectionStatus = 'DISCONNECTED';
           qrCodeDataUrl = null;
           connectedNumber = null;
           activePairingCode = null;
+          try {
+            if (fs.existsSync(authDir)) {
+              fs.rmSync(authDir, { recursive: true, force: true });
+            }
+          } catch (e) {}
+          setTimeout(() => {
+            startWhatsAppSession();
+          }, 1500);
         } else {
           connectionStatus = 'CONNECTING';
           setTimeout(() => {
