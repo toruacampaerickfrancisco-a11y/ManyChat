@@ -83,10 +83,39 @@ async function startWhatsAppSession() {
       for (const msg of messages) {
         if (!msg.key.fromMe && msg.message) {
           const from = msg.key.remoteJid;
-          const senderName = msg.pushName || 'Usuario WhatsApp';
-          const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
+          if (!from || from === 'status@broadcast' || from.includes('@broadcast') || from.includes('@g.us')) {
+            continue;
+          }
 
-          if (text && from && !from.includes('@g.us') && messageHandler) {
+          const senderName = msg.pushName || 'Usuario WhatsApp';
+          let text = '';
+          const m = msg.message;
+
+          if (m.conversation) {
+            text = m.conversation;
+          } else if (m.extendedTextMessage?.text) {
+            text = m.extendedTextMessage.text;
+          } else if (m.imageMessage?.caption) {
+            text = m.imageMessage.caption;
+          } else if (m.videoMessage?.caption) {
+            text = m.videoMessage.caption;
+          } else if (m.buttonsResponseMessage?.selectedButtonId) {
+            text = m.buttonsResponseMessage.selectedButtonId;
+          } else if (m.listResponseMessage?.singleSelectReply?.selectedRowId) {
+            text = m.listResponseMessage.singleSelectReply.selectedRowId;
+          } else if (m.templateButtonReplyMessage?.selectedId) {
+            text = m.templateButtonReplyMessage.selectedId;
+          } else if (m.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson) {
+            try {
+              const params = JSON.parse(m.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson);
+              text = params.id || params.title || '';
+            } catch (e) {}
+          }
+
+          text = (text || '').trim();
+
+          if (text && messageHandler) {
+            console.log(`[WhatsApp Mensaje Entrada] De: ${senderName} (${from}) | Mensaje: "${text}"`);
             try {
               await messageHandler({ from, senderName, text, sock });
             } catch (err) {
@@ -131,7 +160,7 @@ async function sendWhatsAppDirectMessage(to, text) {
 
   try {
     let jid = to;
-    if (!jid.includes('@s.whatsapp.net')) {
+    if (!jid.includes('@')) {
       const cleanPhone = String(to).replace(/[^0-9]/g, '');
       jid = `${cleanPhone}@s.whatsapp.net`;
     }

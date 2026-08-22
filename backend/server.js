@@ -16,29 +16,35 @@ const app = express();
 
 // Inicializar el manejador de mensajes de WhatsApp Web (Baileys)
 whatsappService.setMessageHandler(async ({ from, senderName, text }) => {
-  console.log(`[WhatsApp QR Recibido] de ${senderName} (${from}): ${text}`);
+  console.log(`[WhatsApp Entrada] de ${senderName} (${from}): ${text}`);
   const phone = from.split('@')[0];
 
   let lead = null;
-  if (process.env.DATABASE_URL) {
-    lead = await prisma.lead.upsert({
-      where: { phone_or_id: phone },
-      update: { name: senderName || undefined },
-      create: {
-        platform: 'whatsapp',
-        phone_or_id: phone,
-        name: senderName
-      }
-    });
+  try {
+    if (process.env.DATABASE_URL) {
+      lead = await prisma.lead.upsert({
+        where: { phone_or_id: phone },
+        update: { name: senderName || undefined },
+        create: {
+          platform: 'whatsapp',
+          phone_or_id: phone,
+          name: senderName
+        }
+      });
 
-    await prisma.conversation.create({
-      data: {
-        leadId: lead.id,
-        message: text,
-        sender: 'user'
-      }
-    });
-  } else {
+      await prisma.conversation.create({
+        data: {
+          leadId: lead.id,
+          message: text,
+          sender: 'user'
+        }
+      });
+    }
+  } catch (dbErr) {
+    console.warn('[WhatsApp DB Lead Warning]', dbErr.message);
+  }
+
+  if (!lead) {
     lead = inMemoryLeads.find(l => l.phone_or_id === phone);
     if (!lead) {
       lead = {
@@ -64,31 +70,36 @@ whatsappService.setMessageHandler(async ({ from, senderName, text }) => {
     });
   }
 
-  // Si el bot no está pausado para este lead, generar respuesta automática
+  // Si el bot no está pausado para este lead, generar y enviar respuesta inmediata
   const isPaused = lead ? lead.bot_paused : false;
   if (!isPaused) {
     const reply = await generateAiReply(text);
 
-    if (process.env.DATABASE_URL && lead) {
-      await prisma.conversation.create({
-        data: {
+    try {
+      if (process.env.DATABASE_URL && lead && typeof lead.id === 'string') {
+        await prisma.conversation.create({
+          data: {
+            leadId: lead.id,
+            message: reply,
+            sender: 'ai'
+          }
+        });
+      } else if (lead && lead.conversations) {
+        lead.conversations.push({
+          id: lead.conversations.length + 1,
           leadId: lead.id,
           message: reply,
-          sender: 'ai'
-        }
-      });
-    } else if (lead) {
-      lead.conversations.push({
-        id: lead.conversations.length + 1,
-        leadId: lead.id,
-        message: reply,
-        sender: 'ai',
-        timestamp: new Date().toISOString()
-      });
+          sender: 'ai',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (saveErr) {
+      console.warn('[WhatsApp DB Reply Save Warning]', saveErr.message);
     }
 
-    // Enviar respuesta directa a WhatsApp
-    await whatsappService.sendWhatsAppDirectMessage(from, reply);
+    // Enviar respuesta directa e inmediata a WhatsApp
+    const sendRes = await whatsappService.sendWhatsAppDirectMessage(from, reply);
+    console.log(`[WhatsApp Salida Enviada] a ${from} | Éxito: ${sendRes.success}`);
   }
 });
 
@@ -108,164 +119,195 @@ app.get('/api/health', (req, res) => {
 
 // --- RUTAS Y MOTOR PARA BOT, LIVE CHAT Y LEADS ESTILO MANYCHAT ---
 
-const DEFAULT_SYSTEM_PROMPT = `Eres el asistente virtual oficial de CLIPOP (Consultoría y Capacitación en Ingeniería de Costos y Licitaciones, fundada por el Ing. Francisco Gardea).
-Tus objetivos principales son:
-1. Brindar orientación técnica de excelencia sobre análisis de precios unitarios (APU), cálculo de Factor de Salario Real (FSR), costos directos, indirectos, financiamiento, utilidad y estructuración de propuestas técnico-económicas para licitaciones públicas (CFE, SICT, dependencias estatales) y privadas en México.
-2. Promocionar e incentivar la inscripción en los 4 cursos oficiales disponibles en Udemy:
-   - "Análisis de Precios Unitarios 100% Práctico. OPUS 2025" (Nuevo Lanzamiento): [OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)
-   - "Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel" (Más Vendido): [Curso OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)
-   - "Cómo Presentar Concursos para CFE desde cero con OPUS 2020" (Mejor Valorado): [Curso Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)
-   - "OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!" (Acceso Gratuito): [Curso Gratis OPUS: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)
-3. Fomentar la contratación de servicios de consultoría especializada para licitaciones y auditoría de presupuestos. Dirige al usuario a:
-   - WhatsApp Directo: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)
-   - Instagram Direct: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)
-   - Facebook: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)
-   - Formulario Web: [Formulario de Contacto: Haz clic aquí](/contacto)
-4. Responder siempre con tono profesional, claro, entusiasta y con autoridad técnica en ingeniería de costos. Al final de tu respuesta técnica, incluye siempre una recomendación o enlace a los cursos relevantes o al menú principal.`;
+const DEFAULT_SYSTEM_PROMPT = `Eres el asistente virtual oficial de CLIPOP (Ingeniería de Costos, Consultoría y Licitaciones, fundada por el Ing. Francisco Gardea).
+Debes responder de forma concisa, cordial, precisa y profesional siguiendo exactamente la oferta de servicios y enlaces oficiales de CLIPOP:
+
+1. SERVICIOS PRINCIPALES:
+   - 1️⃣ Cursos pregrabados: Disponibles en la plataforma Udemy (5 cursos de análisis de precios unitarios). El curso introductorio y gratuito está disponible en: https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED . Si el usuario desea cupones de descuento para adquirir los otros cursos, indícale que envíe un correo a clipopoficial@gmail.com.
+   - 2️⃣ Cursos virtuales en tiempo real: Impartidos mediante Microsoft Teams. Las convocatorias se publican en redes sociales, o pueden programar un curso en una fecha específica escribiendo a clipopoficial@gmail.com.
+   - 3️⃣ Cursos presenciales: Abiertos al público en la ciudad de Hermosillo, Sonora. Convocatorias con fechas y horarios en redes sociales. Para cursos en otras ciudades de México, escribir a clipopoficial@gmail.com.
+   - 4️⃣ Cotización de proyectos de media o alta tensión: Para cotizar un proyecto, solicitar enviar la información del proyecto, catálogo, especificaciones, planos y condiciones comerciales a clipopoficial@gmail.com con el asunto "solicitud de cotizacion".
+
+2. ENLACES Y REDES SOCIALES:
+   - 🌐 Sitio Web Oficial: https://clipop.com.mx
+   - 📸 Instagram Oficial: https://www.instagram.com/clipopoficial/
+   - 🔵 Facebook Oficial: https://www.facebook.com/profile.php?id=61591801231145
+   - 🟢 WhatsApp Directo: https://wa.me/526624745958
+   - ✉️ Correo Oficial: clipopoficial@gmail.com
+
+3. NAVEGACIÓN Y CIERRE:
+   - Al responder sobre cualquier servicio, incluye siempre los enlaces a redes y sitio web, pregunta: "¿Tienes alguna otra duda?" e indica: "💡 Escribe 0 o 'menu' para volver al menú principal."
+   - Si el usuario dice que "Sí", indícale las opciones para orientarle.
+   - Si el usuario dice que "No", despídete con: "¡Fue un placer atenderte! Recuerda seguirnos en nuestras redes, ¡mucho éxito!".`;
 
 let inMemoryBotRules = [
-  // Flujo 0: Menú Principal y Saludo Inicial
+  // Flujo 0: Bienvenida y Menú Principal (incluyendo '0', 'menu', 'hola', 'inicio', 'volver')
   {
     id: 1,
     keyword: "menu",
     match_type: "exact",
-    response: "👋 ¡Hola! Bienvenido a **CLIPOP** 🏗️ *Ingeniería de Costos y Licitaciones*, con el **Ing. Francisco Gardea**.\n\n¿En qué podemos apoyarte hoy? Elige una opción escribiendo el número o la palabra clave:\n\n1️⃣ **Cursos Especializados** (OPUS 2025, Neodata, Concursos CFE y Gratis)\n2️⃣ **Consultoría & Licitaciones** (Armado de propuestas y asesoría de obra)\n3️⃣ **Hablar con un Asesor Humano** (Atención personalizada)\n4️⃣ **Dudas Frecuentes & Soporte**\n\n💡 *Puedes escribir '1', '2', '3' o tocar los botones directos abajo.*",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
   {
     id: 2,
     keyword: "hola",
     match_type: "exact",
-    response: "👋 ¡Hola! Qué gusto saludarte. Bienvenido a **CLIPOP** 🏗️ *Ingeniería de Costos y Licitaciones*.\n\n¿En qué te podemos asesorar hoy?\n\n1️⃣ **Cursos Especializados** (OPUS 2025, Neodata, CFE y Gratis)\n2️⃣ **Consultoría & Licitaciones** (Propuestas técnico-económicas)\n3️⃣ **Hablar con un Asesor Humano** (Atención directa)\n\nEscribe el número de la opción o la palabra clave que deseas consultar.",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
   {
     id: 3,
     keyword: "inicio",
     match_type: "exact",
-    response: "👋 ¡Hola! Bienvenido al menú principal de **CLIPOP** 🏗️\n\n1️⃣ **Cursos** (OPUS 2025, Neodata, Concursos CFE y Gratis)\n2️⃣ **Consultorías** (Servicios de licitaciones y presupuestos)\n3️⃣ **Asesor Humano** (Hablar con nuestro equipo)\n\n¿Qué opción deseas explorar?",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
-
-  // Flujo 1: Cursos de Capacitación
   {
     id: 4,
-    keyword: "1",
+    keyword: "0",
     match_type: "exact",
-    response: "🎓 **Catálogo Oficial de Cursos Especializados en Udemy**\nFormulados por el **Ing. Francisco Gardea** con descuento promocional:\n\n1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n🔥 *Nuevo Lanzamiento*: Domina la versión más reciente, FSR, costos directos e indirectos.\n👉 [Inscribirme a OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n⭐ *Más Vendido*: Comparativa integral de las 3 herramientas líderes de la industria.\n👉 [Inscribirme a OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n⚡ *Mejor Valorado*: Normativas vigentes CFE, armado técnico-económico de propuestas.\n👉 [Inscribirme a Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n🎁 *Acceso Gratuito*: Ideal para iniciarte sin costo en la estructuración de costos.\n👉 [Acceder al Curso Gratis: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n💡 *Escribe '2025', 'completo', 'cfe' o 'gratis' para ver detalles de cada uno, o escribe 'menu' para volver.*",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
   {
     id: 5,
-    keyword: "cursos",
-    match_type: "contains",
-    response: "🎓 **Catálogo Oficial de Cursos Especializados en Udemy**\nFormulados por el **Ing. Francisco Gardea** con descuento promocional:\n\n1️⃣ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n🔥 *Nuevo Lanzamiento*: Domina la versión más reciente, FSR, costos directos e indirectos.\n👉 [Inscribirme a OPUS 2025: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n2️⃣ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n⭐ *Más Vendido*: Comparativa integral de las 3 herramientas líderes de la industria.\n👉 [Inscribirme a OPUS/Neodata/Excel: Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n⚡ *Mejor Valorado*: Normativas vigentes CFE, armado técnico-económico de propuestas.\n👉 [Inscribirme a Concursos CFE: Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n🎁 *Acceso Gratuito*: Ideal para iniciarte sin costo en la estructuración de costos.\n👉 [Acceder al Curso Gratis: Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n💡 *Escribe '2025', 'completo', 'cfe' o 'gratis' para ver detalles de cada uno, o escribe 'menu' para volver.*",
-    is_active: true
-  },
-  {
-    id: 6,
-    keyword: "catalogo",
-    match_type: "contains",
-    response: "🎓 **Catálogo Oficial de Cursos Especializados en Udemy**\n\n1️⃣ **OPUS 2025 (Nuevo)**: [Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n2️⃣ **OPUS + Neodata + Excel (Más Vendido)**: [Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n3️⃣ **Concursos CFE (Mejor Valorado)**: [Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n4️⃣ **Curso Gratis OPUS**: [Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\nEscribe **'menu'** para volver al inicio.",
+    keyword: "volver",
+    match_type: "exact",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
 
-  // Subflujos de Cursos individuales
+  // Flujo 1: Cursos pregrabados (Udemy)
+  {
+    id: 6,
+    keyword: "1",
+    match_type: "exact",
+    response: "¡Excelente! 🎓 Actualmente tenemos 5 cursos de análisis de precios unitarios en Udemy.\n\nTe compartimos el enlace al *Curso Gratuito* para que conozcas nuestra metodología:\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n_(Ahí mismo en Udemy encontrarás los otros 4 cursos)._\n\n🎁 Si deseas un cupón de descuento para adquirir los cursos completos, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    is_active: true
+  },
   {
     id: 7,
-    keyword: "2025",
+    keyword: "pregrabados",
     match_type: "contains",
-    response: "🏗️ **Análisis de Precios Unitarios 100% Práctico (OPUS 2025)**\n\nEste curso te llevará de cero a experto en la versión más moderna de OPUS:\n✔️ Configuración de proyectos y catálogo de conceptos.\n✔️ Análisis de costos directos (materiales, mano de obra, equipo y maquinaria).\n✔️ Cálculo automatizado del Factor de Salario Real (FSR) conforme a la LFT y Ley del Seguro Social.\n✔️ Determinación de sobrecostos: indirectos de oficina/campo, financiamiento, utilidad y cargos adicionales.\n✔️ Exportación de reportes listos para licitaciones públicas y privadas.\n\n👉 [Haz clic aquí para inscribirte con descuento en Udemy](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n💡 *Escribe 'cursos' para ver otros cursos o 'menu' para volver.*",
+    response: "¡Excelente! 🎓 Actualmente tenemos 5 cursos de análisis de precios unitarios en Udemy.\n\nTe compartimos el enlace al *Curso Gratuito* para que conozcas nuestra metodología:\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n_(Ahí mismo en Udemy encontrarás los otros 4 cursos)._\n\n🎁 Si deseas un cupón de descuento para adquirir los cursos completos, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 8,
-    keyword: "cfe",
+    keyword: "udemy",
     match_type: "contains",
-    response: "⚡ **Cómo Presentar Concursos para CFE desde cero con OPUS 2020**\n\nEl curso especializado de mayor valor para contratistas y analistas de costos del sector eléctrico:\n✔️ Comprensión de las bases y normativas de contratación de la Comisión Federal de Electricidad (CFE).\n✔️ Armado de la propuesta técnica y económica paso a paso.\n✔️ Matrices específicas para líneas de transmisión, subestaciones y redes de distribución.\n✔️ Criterios de evaluación y causales de descalificación frecuentes para blindar tus propuestas.\n\n👉 [Haz clic aquí para inscribirte con descuento en Udemy](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n💡 *Escribe 'cursos' para ver otros cursos o 'menu' para volver.*",
+    response: "¡Excelente! 🎓 Actualmente tenemos 5 cursos de análisis de precios unitarios en Udemy.\n\nTe compartimos el enlace al *Curso Gratuito* para que conozcas nuestra metodología:\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n_(Ahí mismo en Udemy encontrarás los otros 4 cursos)._\n\n🎁 Si deseas un cupón de descuento para adquirir los cursos completos, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
+
+  // Flujo 2: Cursos en tiempo real (Teams)
   {
     id: 9,
-    keyword: "completo",
-    match_type: "contains",
-    response: "⭐ **Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel**\n\nEl curso estrella y más vendido de la plataforma:\n✔️ Domina los dos softwares más exigidos en México e Hispanoamérica: OPUS y Neodata.\n✔️ Metodología paso a paso para comparar presupuestos en Excel y en software de precios unitarios.\n✔️ Elaboración de programas de obra (Gantt), montos y cantidades de insumos.\n✔️ Más de 1,200 estudiantes activos con calificación de excelencia.\n\n👉 [Haz clic aquí para inscribirte con descuento en Udemy](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n💡 *Escribe 'cursos' para ver otros cursos o 'menu' para volver.*",
+    keyword: "2",
+    match_type: "exact",
+    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 10,
-    keyword: "gratis",
+    keyword: "teams",
     match_type: "contains",
-    response: "🎁 **OPUS. ANÁLISIS DE PRECIOS UNITARIOS. ¡GRATIS!**\n\nEl mejor punto de partida si te estás iniciando en la ingeniería de costos:\n✔️ Introducción al entorno de trabajo y herramientas de OPUS.\n✔️ Creación de cuadrillas de mano de obra y análisis de insumos.\n✔️ Estructuración básica de un presupuesto de obra sin costo alguno.\n\n👉 [Haz clic aquí para ingresar gratis en Udemy](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n💡 *Escribe 'cursos' para ver los cursos completos o 'menu' para volver.*",
+    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    is_active: true
+  },
+  {
+    id: 11,
+    keyword: "tiempo real",
+    match_type: "contains",
+    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
 
-  // Flujo 2: Consultorías & Licitaciones
-  {
-    id: 11,
-    keyword: "2",
-    match_type: "exact",
-    response: "💼 **Servicios de Consultoría Especializada en Licitaciones y Presupuestos**\n\nEn **CLIPOP**, el equipo del **Ing. Francisco Gardea** te apoya en:\n✔️ Integración y armado de propuestas técnico-económicas para concursos públicos y privados.\n✔️ Revisión, auditoría y corrección de análisis de precios unitarios (APU).\n✔️ Cálculo normativo de FSR, costos horarios de maquinaria pesada y análisis de sobrecostos.\n✔️ Consultoría estratégica para licitaciones de CFE, SICT, CONAGUA e inversión privada.\n\n📲 **Contáctanos directamente para evaluar tu proyecto:**\n🟢 [WhatsApp Directo: Haz clic aquí](https://wa.me/526624745958)\n📸 [Instagram Direct (@ing.pako.pansho): Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n✉️ [Formulario de Contacto Web: Haz clic aquí](/contacto)\n\n💡 *Escribe 'menu' para regresar al menú principal.*",
-    is_active: true
-  },
+  // Flujo 3: Cursos presenciales (Hermosillo y otras ciudades)
   {
     id: 12,
-    keyword: "consultoria",
-    match_type: "contains",
-    response: "💼 **Servicios de Consultoría Especializada en Licitaciones y Presupuestos**\n\nEn **CLIPOP**, el equipo del **Ing. Francisco Gardea** te apoya en:\n✔️ Integración y armado de propuestas técnico-económicas para concursos públicos y privados.\n✔️ Revisión, auditoría y corrección de análisis de precios unitarios (APU).\n✔️ Cálculo normativo de FSR, costos horarios de maquinaria pesada y análisis de sobrecostos.\n✔️ Consultoría estratégica para licitaciones de CFE, SICT, CONAGUA e inversión privada.\n\n📲 **Contáctanos directamente para evaluar tu proyecto:**\n🟢 [WhatsApp Directo: Haz clic aquí](https://wa.me/526624745958)\n📸 [Instagram Direct (@ing.pako.pansho): Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n✉️ [Formulario de Contacto Web: Haz clic aquí](/contacto)\n\n💡 *Escribe 'menu' para regresar al menú principal.*",
+    keyword: "3",
+    match_type: "exact",
+    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 13,
-    keyword: "licitacion",
+    keyword: "presencial",
     match_type: "contains",
-    response: "🏗️ **Asesoría en Licitaciones y Concursos de Obra**\n\nTe ayudamos a estructurar licitaciones ganadoras y libres de causales de descalificación.\n\nContáctanos de inmediato para revisar las bases de tu concurso:\n🟢 [WhatsApp Directo: Haz clic aquí](https://wa.me/526624745958)\n📸 [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n✉️ [Formulario Web: Haz clic aquí](/contacto)\n\nEscribe **'menu'** para volver.",
+    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    is_active: true
+  },
+  {
+    id: 14,
+    keyword: "presenciales",
+    match_type: "contains",
+    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
 
-  // Flujo 3: Hablar con un Asesor Humano / Contacto
-  {
-    id: 14,
-    keyword: "3",
-    match_type: "exact",
-    response: "👨‍💼 **Atención con un Asesor Humano**\n\n¡Perfecto! Hemos notificado a un asesor del equipo de **CLIPOP**. En unos momentos te atenderemos de forma personalizada.\n\nSi deseas comunicación inmediata vía chat o llamada, elige tu canal preferido:\n🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n✉️ **Formulario Web**: [Formulario de Contacto: Haz clic aquí](/contacto)\n\n💡 *Escribe 'menu' si deseas volver a interactuar con el asistente automatizado.*",
-    is_active: true
-  },
+  // Flujo 4: Cotización de proyecto de media o alta tensión
   {
     id: 15,
-    keyword: "asesor",
-    match_type: "contains",
-    response: "👨‍💼 **Atención con un Asesor Humano**\n\n¡Perfecto! Hemos notificado a un asesor del equipo de **CLIPOP**. En unos momentos te atenderemos de forma personalizada.\n\nSi deseas comunicación inmediata vía chat o llamada, elige tu canal preferido:\n🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx)\n🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n✉️ **Formulario Web**: [Formulario de Contacto: Haz clic aquí](/contacto)\n\n💡 *Escribe 'menu' si deseas volver a interactuar con el asistente automatizado.*",
+    keyword: "4",
+    match_type: "exact",
+    response: "¡Excelente! 🤝⚡ Para nosotros será un placer hacer sinergia en tu proyecto de media o alta tensión.\n\nPor favor envíanos la información técnica del proyecto (catálogo de conceptos, especificaciones, planos y condiciones comerciales) a:\n✉️ *clipopoficial@gmail.com*\n📌 Asunto: *Solicitud de cotización*\n\nNuestro equipo de ingeniería de costos se comunicará contigo a la brevedad.\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 16,
-    keyword: "humano",
+    keyword: "cotizacion",
     match_type: "contains",
-    response: "👨‍💼 **Atención con un Asesor Humano**\n\nUn asesor humano del equipo de **CLIPOP** tomará la conversación a la brevedad.\n\nPara contacto inmediato por WhatsApp: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n\nEscribe **'menu'** para volver al menú principal.",
+    response: "¡Excelente! 🤝⚡ Para nosotros será un placer hacer sinergia en tu proyecto de media o alta tensión.\n\nPor favor envíanos la información técnica del proyecto (catálogo de conceptos, especificaciones, planos y condiciones comerciales) a:\n✉️ *clipopoficial@gmail.com*\n📌 Asunto: *Solicitud de cotización*\n\nNuestro equipo de ingeniería de costos se comunicará contigo a la brevedad.\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 17,
-    keyword: "contacto",
+    keyword: "proyecto",
     match_type: "contains",
-    response: "¡Excelente! Elige el medio de contacto que prefieras para comunicarte con nosotros:\n\n🟢 **WhatsApp Directo**: [WhatsApp: Haz clic aquí](https://wa.me/526624745958)\n📸 **Instagram Direct**: [Instagram Direct: Haz clic aquí](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx) (o síguenos en [@ing.pako.pansho](https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx))\n🔵 **Facebook**: [Facebook: Haz clic aquí](https://www.facebook.com/profile.php?id=61591801231145)\n✉️ **Formulario de Correo en la Web**: [Formulario de Contacto: Haz clic aquí](/contacto)\n\nEscribe **'menu'** para volver.",
+    response: "¡Excelente! 🤝⚡ Para nosotros será un placer hacer sinergia en tu proyecto de media o alta tensión.\n\nPor favor envíanos la información técnica del proyecto (catálogo de conceptos, especificaciones, planos y condiciones comerciales) a:\n✉️ *clipopoficial@gmail.com*\n📌 Asunto: *Solicitud de cotización*\n\nNuestro equipo de ingeniería de costos se comunicará contigo a la brevedad.\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
 
-  // Flujo 4: Soporte / FAQ
+  // Flujo: Duda adicional ("si" o "sí")
   {
     id: 18,
-    keyword: "4",
+    keyword: "si",
     match_type: "exact",
-    response: "❓ **Dudas Frecuentes & Soporte Técnico**\n\nAquí tienes respuestas a las consultas más comunes:\n\n🔹 **¿Los cursos entregan certificado?** Sí, al concluir cualquiera de nuestros cursos en Udemy obtendrás un certificado con validez curricular.\n🔹 **¿Incluyen archivos y plantillas?** Sí, incluyen bases de datos de OPUS, hojas de cálculo de FSR y formatos de licitación para CFE.\n🔹 **¿Qué versión de OPUS necesito?** Contamos con cursos desde OPUS 2020, 2022, 2024 hasta la versión 2025.\n\n¿Tienes alguna duda técnica específica? Escríbela directamente y nuestro motor de IA te orientará, o escribe **'menu'** para volver.",
+    response: "*¿Acerca de qué servicio es tu duda?* 🤔\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos virtuales en Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe *0* para el menú principal._",
     is_active: true
   },
   {
     id: 19,
-    keyword: "dudas",
+    keyword: "sí",
+    match_type: "exact",
+    response: "*¿Acerca de qué servicio es tu duda?* 🤔\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos virtuales en Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe *0* para el menú principal._",
+    is_active: true
+  },
+
+  // Flujo: Sin dudas adicionales ("no")
+  {
+    id: 20,
+    keyword: "no",
+    match_type: "exact",
+    response: "¡Fue un placer atenderte! 🚀✨\n\nRecuerda seguirnos en nuestras redes oficiales para novedades y convocatorias:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n¡Mucho éxito en tus proyectos! 🙌",
+    is_active: true
+  },
+
+  // Flujo: Contacto con Asesor Humano
+  {
+    id: 21,
+    keyword: "asesor",
     match_type: "contains",
-    response: "❓ **Dudas Frecuentes & Soporte Técnico**\n\nPuedes hacernos cualquier pregunta sobre OPUS, Neodata, cálculo de FSR o normativas de licitación para CFE. Escríbela y te orientaremos de inmediato, o escribe **'menu'** para ver las opciones principales.",
+    response: "👨‍💼 *Atención con un Asesor de CLIPOP*\n\n¡Perfecto! Hemos notificado a nuestro equipo. Si deseas contacto inmediato, puedes comunicarte por:\n\n🟢 *WhatsApp Directo:* https://wa.me/526624745958\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n🌐 *Sitio Web:* https://clipop.com.mx\n✉️ *Correo:* clipopoficial@gmail.com\n\n💡 _Escribe *0* o *'menu'* para volver._",
+    is_active: true
+  },
+  {
+    id: 22,
+    keyword: "humano",
+    match_type: "contains",
+    response: "👨‍💼 *Atención con un Asesor de CLIPOP*\n\nUn asesor humano del equipo de *CLIPOP* tomará la conversación a la brevedad.\n\n🟢 *WhatsApp Directo:* https://wa.me/526624745958\n🌐 *Sitio Web:* https://clipop.com.mx\n\n💡 _Escribe *0* o *'menu'* para volver al menú principal._",
     is_active: true
   }
 ];
@@ -282,22 +324,24 @@ async function generateAiReply(message, history = []) {
 
   try {
     if (process.env.DATABASE_URL) {
-      const settings = await prisma.setting.findMany({
-        where: { key: { in: ['bot_enabled', 'bot_system_prompt'] } }
-      });
-      settings.forEach(s => {
-        if (s.key === 'bot_enabled') botEnabled = s.value !== 'false';
-        if (s.key === 'bot_system_prompt' && s.value.trim()) customPrompt = s.value;
-      });
+      try {
+        const settings = await prisma.setting.findMany({
+          where: { key: { in: ['bot_enabled', 'bot_system_prompt'] } }
+        });
+        settings.forEach(s => {
+          if (s.key === 'bot_enabled') botEnabled = s.value !== 'false';
+          if (s.key === 'bot_system_prompt' && s.value.trim()) customPrompt = s.value;
+        });
+      } catch (e) {}
 
-      const dbRules = await prisma.botRule.findMany({ where: { is_active: true } });
-      if (dbRules && dbRules.length > 0) {
-        rules = dbRules;
-      }
+      try {
+        const dbRules = await prisma.botRule.findMany({ where: { is_active: true } });
+        if (dbRules && dbRules.length > 0) {
+          rules = dbRules;
+        }
+      } catch (e) {}
     }
-  } catch (err) {
-    console.error('[Bot Engine Settings Error]', err.message);
-  }
+  } catch (err) {}
 
   if (!botEnabled) {
     return "En este momento nuestro bot automático se encuentra en pausa. Un asesor del equipo de CLIPOP te atenderá a la brevedad.";
@@ -1272,4 +1316,9 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`[Servidor] Escuchando en el puerto ${PORT}`);
   console.log(`[Servidor] A la espera de la conexión a la Base de Datos...`);
+
+  // Auto-iniciar sesión de WhatsApp para responder de inmediato
+  whatsappService.startWhatsAppSession().catch(err => {
+    console.error('[WhatsApp AutoStart Error]', err.message);
+  });
 });

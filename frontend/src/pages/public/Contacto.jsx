@@ -5,8 +5,8 @@ import ColaboradoresMarquee from '../../components/ColaboradoresMarquee';
 import { useState } from 'react';
 
 export default function Contacto() {
-  const INSTAGRAM_USER = "ing.pako.pansho";
-  const getInstagramLink = () => "https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx";
+  const INSTAGRAM_USER = "clipopoficial";
+  const getInstagramLink = () => "https://www.instagram.com/clipopoficial/";
 
   const [formData, setFormData] = useState({
     nombre: '',

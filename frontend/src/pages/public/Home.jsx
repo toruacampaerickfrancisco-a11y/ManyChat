@@ -72,8 +72,8 @@ const CONCURSOS = [
 ];
 
 export default function Home() {
-  const INSTAGRAM_USER = "ing.pako.pansho";
-  const getInstagramLink = () => "https://www.instagram.com/ing.pako.pansho?igsh=N3l3Z2szZDFscGRx";
+  const INSTAGRAM_USER = "clipopoficial";
+  const getInstagramLink = () => "https://www.instagram.com/clipopoficial/";
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentConcursoIndex, setCurrentConcursoIndex] = useState(0);

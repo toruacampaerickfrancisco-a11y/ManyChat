@@ -1058,8 +1058,8 @@ export default function Settings() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-gray-900">Ing. Francisco Gardea</h3>
-                    <p className="text-xs text-purple-700 font-semibold">@ing.pako.pansho</p>
+                    <h3 className="text-sm font-bold text-gray-900">Clipop Oficial</h3>
+                    <p className="text-xs text-purple-700 font-semibold">@clipopoficial</p>
                     <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                       Conectado a CLIPOP
@@ -1068,7 +1068,7 @@ export default function Settings() {
                 </div>
 
                 <a
-                  href="https://www.instagram.com/ing.pako.pansho"
+                  href="https://www.instagram.com/clipopoficial/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"

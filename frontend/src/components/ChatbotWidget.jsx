@@ -22,6 +22,7 @@ const parseMessage = (text) => {
       const isExternalUdemy = linkUrl.includes('udemy.com');
       const isWhatsApp = linkUrl.includes('wa.me');
       const isInstagram = linkUrl.includes('instagram.com');
+      const isFacebook = linkUrl.includes('facebook.com');
 
       parts.push(
         <a
@@ -36,6 +37,8 @@ const parseMessage = (text) => {
               ? 'bg-emerald-500/10 text-emerald-800 border border-emerald-400/40 hover:bg-emerald-600 hover:text-white'
               : isInstagram
               ? 'bg-purple-500/10 text-purple-800 border border-purple-400/40 hover:bg-purple-600 hover:text-white'
+              : isFacebook
+              ? 'bg-blue-500/10 text-blue-800 border border-blue-400/40 hover:bg-blue-600 hover:text-white'
               : 'bg-teal-50 text-teal-800 border border-teal-200 hover:bg-[#1a4a49] hover:text-white'
           }`}
         >
@@ -86,7 +89,7 @@ const parseMessage = (text) => {
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const initialGreeting = '👋 ¡Hola! Bienvenido a **CLIPOP** 🏗️ *Ingeniería de Costos y Licitaciones*, fundado por el **Ing. Francisco Gardea**.\n\n¿En qué podemos apoyarte hoy? Elige una opción:\n\n1️⃣ **Cursos Especializados** (OPUS 2025, Neodata, Concursos CFE y Gratis)\n2️⃣ **Consultoría & Licitaciones** (Propuestas técnico-económicas de obra)\n3️⃣ **Hablar con un Asesor Humano** (Atención personalizada)\n4️⃣ **Dudas Frecuentes & Soporte**';
+  const initialGreeting = 'Hola que tal! Muchas gracias por contactarnos, sera un placer atenderte!\n\nPlaticanos sobre cual de nuestros servicios estas interesado:\n\n1️⃣ **Cursos pregrabados!**\n2️⃣ **Cursos en tiempo real, por medio de teams**\n3️⃣ **Cursos presenciales**\n4️⃣ **Cotizacion de un proyecto de media o alta tension**';
   
   const [messages, setMessages] = useState([
     { role: 'model', text: initialGreeting }
@@ -195,43 +198,35 @@ export default function ChatbotWidget() {
     setMessages([{ role: 'model', text: initialGreeting }]);
   };
 
-  // Botones de respuesta rápida estilo ManyChat calculados dinámicamente según el contexto
+  // Botones de respuesta rápida dinámicos según el flujo del bot
   const getQuickReplies = () => {
     const lastMsg = messages[messages.length - 1];
     const text = (lastMsg?.text || '').toLowerCase();
 
-    if (text.includes('catálogo oficial') || text.includes('cursos especializados') || text.includes('temario')) {
+    if (text.includes('otra duda') || text.includes('alguna otra duda')) {
       return [
-        { label: '🏗️ OPUS 2025 (Nuevo)', action: '2025' },
-        { label: '⭐ OPUS + Neodata + Excel', action: 'completo' },
-        { label: '⚡ Concursos CFE', action: 'cfe' },
-        { label: '🎁 Curso Gratis', action: 'gratis' },
+        { label: '👍 Sí, tengo una duda', action: 'si' },
+        { label: '👋 No, gracias', action: 'no' },
         { label: '🏠 Menú Principal', action: 'menu' },
       ];
     }
 
-    if (text.includes('consultoría especializada') || text.includes('asesoría en licitaciones')) {
+    if (text.includes('acerca de que es tu duda') || text.includes('acerca de qué es tu duda')) {
       return [
-        { label: '🟢 Cotizar por WhatsApp', action: 'asesor' },
-        { label: '🎓 Ver Cursos', action: '1' },
-        { label: '🏠 Menú Principal', action: 'menu' },
-      ];
-    }
-
-    if (text.includes('asesor humano') || text.includes('notificado a nuestro equipo')) {
-      return [
-        { label: '🟢 Abrir WhatsApp', action: 'whatsapp' },
-        { label: '🎓 Explorar Cursos', action: '1' },
-        { label: '🏠 Menú Principal', action: 'menu' },
+        { label: '🎓 1. Cursos pregrabados', action: '1' },
+        { label: '💻 2. Cursos en Teams', action: '2' },
+        { label: '📍 3. Cursos presenciales', action: '3' },
+        { label: '⚡ 4. Cotización proyecto', action: '4' },
       ];
     }
 
     // Opciones predeterminadas del Menú Principal
     return [
-      { label: '🎓 1. Cursos Especializados', action: '1' },
-      { label: '💼 2. Consultorías & Licitaciones', action: '2' },
-      { label: '👨‍💼 3. Hablar con Asesor', action: '3' },
-      { label: '❓ 4. Dudas Frecuentes', action: '4' },
+      { label: '🎓 1. Cursos pregrabados', action: '1' },
+      { label: '💻 2. Cursos en Teams', action: '2' },
+      { label: '📍 3. Cursos presenciales', action: '3' },
+      { label: '⚡ 4. Cotización proyecto', action: '4' },
+      { label: '👨‍💼 Hablar con Asesor', action: 'asesor' },
     ];
   };
 
