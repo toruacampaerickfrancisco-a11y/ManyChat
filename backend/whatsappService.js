@@ -31,7 +31,7 @@ async function startWhatsAppSession() {
       version,
       auth: state,
       logger: pino({ level: 'silent' }),
-      printQRInTerminal: false,
+      printQRInTerminal: true,
       browser: Browsers.ubuntu('Chrome'),
       syncFullHistory: false,
       generateHighQualityLinkPreview: false
