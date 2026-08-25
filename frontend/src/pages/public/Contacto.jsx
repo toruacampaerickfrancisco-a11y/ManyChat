@@ -13,6 +13,8 @@ export default function Contacto() {
     email: '',
     mensaje: ''
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -21,11 +23,25 @@ export default function Contacto() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const mailtoUrl = `mailto:clipopoficial@gmail.com?subject=Mensaje de Contacto - ${encodeURIComponent(formData.nombre)}&body=Nombre: ${encodeURIComponent(formData.nombre)}%0ACorreo: ${encodeURIComponent(formData.email)}%0AMensaje: ${encodeURIComponent(formData.mensaje)}`;
-    window.location.href = mailtoUrl;
-    setFormData({ nombre: '', email: '', mensaje: '' });
+    setSubmitting(true);
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      setSubmitted(true);
+      setFormData({ nombre: '', email: '', mensaje: '' });
+    } catch (err) {
+      console.error('Error submitting contact form:', err);
+      // Fallback a mailto si falla la red
+      const mailtoUrl = `mailto:clipopoficial@gmail.com?subject=Mensaje de Contacto - ${encodeURIComponent(formData.nombre)}&body=Nombre: ${encodeURIComponent(formData.nombre)}%0ACorreo: ${encodeURIComponent(formData.email)}%0AMensaje: ${encodeURIComponent(formData.mensaje)}`;
+      window.location.href = mailtoUrl;
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -44,56 +60,77 @@ export default function Contacto() {
           {/* Columna Izquierda: Formulario de Contacto */}
           <div className="flex-1 bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-gray-100">
             <h3 className="text-2xl font-bold text-[#1a4a49] mb-6">Envíanos un mensaje</h3>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              <div>
-                <label htmlFor="nombre" className="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo</label>
-                <input 
-                  type="text" 
-                  id="nombre"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleChange}
-                  placeholder="Tu nombre" 
-                  required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#176a6b] focus:border-transparent transition-all"
-                />
+            
+            {submitted ? (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 text-center animate-in fade-in zoom-in duration-300">
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+                  ✓
+                </div>
+                <h4 className="text-lg font-bold text-emerald-900 mb-1">¡Mensaje Enviado con Éxito!</h4>
+                <p className="text-sm text-emerald-700 mb-4">
+                  Tu mensaje ha sido registrado en nuestro panel de atención. Un asesor de Clipop se pondrá en contacto contigo a la brevedad.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(false)}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow transition-colors"
+                >
+                  Enviar otro mensaje
+                </button>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                <div>
+                  <label htmlFor="nombre" className="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo</label>
+                  <input 
+                    type="text" 
+                    id="nombre"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    placeholder="Tu nombre" 
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#176a6b] focus:border-transparent transition-all"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">Correo Electrónico</label>
-                <input 
-                  type="email" 
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="tu@correo.com" 
-                  required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#176a6b] focus:border-transparent transition-all"
-                />
-              </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">Correo Electrónico</label>
+                  <input 
+                    type="email" 
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="tu@correo.com" 
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#176a6b] focus:border-transparent transition-all"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="mensaje" className="block text-sm font-semibold text-gray-700 mb-1">Mensaje</label>
-                <textarea 
-                  id="mensaje"
-                  name="mensaje"
-                  value={formData.mensaje}
-                  onChange={handleChange}
-                  placeholder="¿En qué podemos ayudarte?" 
-                  rows="5"
-                  required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#176a6b] focus:border-transparent transition-all resize-none"
-                ></textarea>
-              </div>
+                <div>
+                  <label htmlFor="mensaje" className="block text-sm font-semibold text-gray-700 mb-1">Mensaje</label>
+                  <textarea 
+                    id="mensaje"
+                    name="mensaje"
+                    value={formData.mensaje}
+                    onChange={handleChange}
+                    placeholder="¿En qué podemos ayudarte?" 
+                    rows="5"
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#176a6b] focus:border-transparent transition-all resize-none"
+                  ></textarea>
+                </div>
 
-              <button 
-                type="submit" 
-                className="mt-2 w-full py-4 bg-[#1a4a49] hover:bg-[#135a5b] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
-              >
-                Enviar Mensaje
-              </button>
-            </form>
+                <button 
+                  type="submit" 
+                  disabled={submitting}
+                  className="mt-2 w-full py-4 bg-[#1a4a49] hover:bg-[#135a5b] disabled:bg-gray-400 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  {submitting ? 'Enviando...' : 'Enviar Mensaje'}
+                </button>
+              </form>
+            )}
           </div>
 
           {/* Columna Derecha: Redes Sociales e Información */}

@@ -686,21 +686,95 @@ app.post('/api/leads/:leadId/conversations', async (req, res) => {
       };
       lead.conversations.push(newMsg);
       lead.updatedAt = new Date().toISOString();
+
+      // Si el lead es de WhatsApp o Meta, enviar el mensaje saliente directamente
+      if (lead.platform === 'whatsapp') {
+        whatsappService.sendWhatsAppDirectMessage(lead.phone_or_id, message).catch(console.error);
+      } else if (lead.platform === 'messenger' || lead.platform === 'instagram') {
+        sendMetaReply({ platform: lead.platform, to: lead.phone_or_id, text: message }).catch(console.error);
+      }
+
       return res.json({ success: true, conversation: newMsg });
     }
     res.status(404).json({ error: 'Lead no encontrado' });
-    // Si el lead es de WhatsApp, intentar enviar el mensaje saliente por Baileys o Meta
-    if (process.env.DATABASE_URL) {
-      const targetLead = await prisma.lead.findUnique({ where: { id: parseInt(leadId) } });
-      if (targetLead && targetLead.platform === 'whatsapp') {
-        await whatsappService.sendWhatsAppDirectMessage(targetLead.phone_or_id, message);
-      }
-    } else if (lead && lead.platform === 'whatsapp') {
-      await whatsappService.sendWhatsAppDirectMessage(lead.phone_or_id, message);
-    }
   } catch (error) {
     console.error('[Add Message Error]', error);
     res.status(500).json({ error: 'Error al enviar mensaje' });
+  }
+});
+
+// Ruta para recibir mensajes del Formulario de Contacto Web y guardarlos como Leads
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { nombre, email, mensaje } = req.body;
+    if (!email || !mensaje) {
+      return res.status(400).json({ error: 'Correo y mensaje son requeridos' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanName = (nombre || '').trim() || `Contacto Web (${cleanEmail})`;
+
+    let lead = null;
+    if (process.env.DATABASE_URL) {
+      lead = await prisma.lead.upsert({
+        where: { phone_or_id: cleanEmail },
+        update: {
+          name: cleanName,
+          email: cleanEmail,
+          status: 'NUEVO'
+        },
+        create: {
+          platform: 'email',
+          phone_or_id: cleanEmail,
+          name: cleanName,
+          email: cleanEmail,
+          status: 'NUEVO'
+        }
+      });
+
+      const conversation = await prisma.conversation.create({
+        data: {
+          leadId: lead.id,
+          message: mensaje,
+          sender: 'user'
+        }
+      });
+
+      return res.json({ success: true, message: 'Mensaje de contacto guardado en panel con éxito', lead, conversation });
+    }
+
+    // Fallback en memoria
+    lead = inMemoryLeads.find(l => l.phone_or_id === cleanEmail);
+    if (!lead) {
+      lead = {
+        id: inMemoryLeads.length + 101,
+        name: cleanName,
+        platform: 'email',
+        phone_or_id: cleanEmail,
+        email: cleanEmail,
+        status: 'NUEVO',
+        bot_paused: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        conversations: []
+      };
+      inMemoryLeads.unshift(lead);
+    }
+
+    const newConv = {
+      id: lead.conversations.length + 1,
+      leadId: lead.id,
+      message: mensaje,
+      sender: 'user',
+      timestamp: new Date().toISOString()
+    };
+    lead.conversations.push(newConv);
+    lead.updatedAt = new Date().toISOString();
+
+    res.json({ success: true, message: 'Mensaje de contacto guardado en panel con éxito', lead, conversation: newConv });
+  } catch (error) {
+    console.error('[Contact Form API Error]', error);
+    res.status(500).json({ error: 'Error procesando el formulario de contacto' });
   }
 });
 
@@ -1007,8 +1081,8 @@ app.post('/api/meta/test-message', async (req, res) => {
   }
 });
 
-// Verificación de Webhook para Meta for Developers
-app.get('/api/webhooks/meta', (req, res) => {
+// Verificación de Webhook para Meta for Developers (soporta /api/webhooks/meta y /api/meta/webhook)
+const handleMetaWebhookVerification = (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
@@ -1019,10 +1093,13 @@ app.get('/api/webhooks/meta', (req, res) => {
     return res.status(200).send(challenge);
   }
   return res.sendStatus(403);
-});
+};
+
+app.get('/api/webhooks/meta', handleMetaWebhookVerification);
+app.get('/api/meta/webhook', handleMetaWebhookVerification);
 
 // Receptor de mensajes de Meta (WhatsApp Cloud API / Instagram / Messenger)
-app.post('/api/webhooks/meta', async (req, res) => {
+const handleMetaWebhookIncoming = async (req, res) => {
   try {
     const body = req.body;
     console.log('[Meta Webhook Event Received]', JSON.stringify(body));
@@ -1041,7 +1118,7 @@ app.post('/api/webhooks/meta', async (req, res) => {
       if (changes && changes.messages && changes.messages[0]) {
         const msg = changes.messages[0];
         phoneOrId = msg.from;
-        senderName = changes.contacts?.[0]?.profile?.name || phoneOrId;
+        senderName = changes.contacts?.[0]?.profile?.name || `WhatsApp ${phoneOrId}`;
         if (msg.type === 'text') {
           messageText = msg.text?.body;
         }
@@ -1049,7 +1126,7 @@ app.post('/api/webhooks/meta', async (req, res) => {
       // Instagram / Messenger Payload
       else if (messaging && messaging.message) {
         phoneOrId = messaging.sender?.id;
-        senderName = `Usuario ${platform}`;
+        senderName = `Usuario ${platform === 'instagram' ? 'Instagram' : 'Facebook'}`;
         messageText = messaging.message.text;
       }
 
@@ -1073,6 +1150,32 @@ app.post('/api/webhooks/meta', async (req, res) => {
               sender: 'user'
             }
           });
+        } else {
+          // Fallback en memoria para desarrollo local
+          lead = inMemoryLeads.find(l => l.phone_or_id === phoneOrId);
+          if (!lead) {
+            lead = {
+              id: inMemoryLeads.length + 101,
+              name: senderName,
+              platform,
+              phone_or_id: phoneOrId,
+              email: '',
+              status: 'NUEVO',
+              bot_paused: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              conversations: []
+            };
+            inMemoryLeads.unshift(lead);
+          }
+          lead.conversations.push({
+            id: lead.conversations.length + 1,
+            leadId: lead.id,
+            message: messageText,
+            sender: 'user',
+            timestamp: new Date().toISOString()
+          });
+          lead.updatedAt = new Date().toISOString();
         }
 
         // Si el bot NO está pausado para este lead, generar respuesta automática
@@ -1088,9 +1191,17 @@ app.post('/api/webhooks/meta', async (req, res) => {
                 sender: 'ai'
               }
             });
+          } else if (lead && lead.conversations) {
+            lead.conversations.push({
+              id: lead.conversations.length + 1,
+              leadId: lead.id,
+              message: reply,
+              sender: 'ai',
+              timestamp: new Date().toISOString()
+            });
           }
 
-          // Enviar la respuesta directamente a WhatsApp o Instagram a través de Meta API
+          // Enviar la respuesta directamente a WhatsApp, Messenger o Instagram a través de Meta API
           await sendMetaReply({ platform, to: phoneOrId, text: reply });
         }
       }
@@ -1103,7 +1214,10 @@ app.post('/api/webhooks/meta', async (req, res) => {
     console.error('[Meta Webhook Error]', error);
     res.status(500).send('ERROR');
   }
-});
+};
+
+app.post('/api/webhooks/meta', handleMetaWebhookIncoming);
+app.post('/api/meta/webhook', handleMetaWebhookIncoming);
 
 
 // 3. Ruta para el Chatbot de la Landing Page

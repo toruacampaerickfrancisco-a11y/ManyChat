@@ -1,4 +1,4 @@
-import { Bot, User, ArrowLeft, RefreshCw, Send, UserCheck, PauseCircle, PlayCircle, MessageSquare, Phone, Mail } from 'lucide-react';
+import { Bot, User, ArrowLeft, RefreshCw, Send, UserCheck, PauseCircle, PlayCircle, MessageSquare, Phone, Mail, Globe, Search, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 
@@ -83,6 +83,8 @@ export default function Chats() {
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const [togglingBot, setTogglingBot] = useState(false);
+  const [channelFilter, setChannelFilter] = useState('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
   const messagesEndRef = useRef(null);
 
   const fetchLeads = (selectFirst = false) => {
@@ -107,6 +109,11 @@ export default function Chats() {
 
   useEffect(() => {
     fetchLeads(true);
+    // Polling en vivo cada 6 segundos para recibir nuevos mensajes automáticamente
+    const interval = setInterval(() => {
+      fetchLeads(false);
+    }, 6000);
+    return () => clearInterval(interval);
   }, []);
 
   const selectedLead = leads.find(l => l.id === selectedLeadId);
@@ -174,7 +181,7 @@ export default function Chats() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: messageText,
-          sender: 'human' // Mensaje enviado directamente por el administrador humano
+          sender: 'human' // Mensaje enviado directamente por el asesor
         })
       });
 
@@ -188,6 +195,44 @@ export default function Chats() {
     }
   };
 
+  const getPlatformBadge = (platform) => {
+    const p = (platform || '').toLowerCase();
+    if (p === 'whatsapp') {
+      return <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">🟢 WhatsApp</span>;
+    }
+    if (p === 'facebook' || p === 'messenger') {
+      return <span className="bg-blue-100 text-blue-800 border border-blue-200 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">🔵 Facebook</span>;
+    }
+    if (p === 'instagram') {
+      return <span className="bg-purple-100 text-purple-800 border border-purple-200 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">🟣 Instagram</span>;
+    }
+    if (p === 'email' || p === 'correo') {
+      return <span className="bg-amber-100 text-amber-800 border border-amber-200 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">✉️ Correo Web</span>;
+    }
+    return <span className="bg-teal-100 text-teal-800 border border-teal-200 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">🌐 Web</span>;
+  };
+
+  const filteredLeads = leads.filter(lead => {
+    const p = (lead.platform || '').toLowerCase();
+    let matchesChannel = true;
+    if (channelFilter === 'WHATSAPP') matchesChannel = p === 'whatsapp';
+    else if (channelFilter === 'FACEBOOK') matchesChannel = p === 'facebook' || p === 'messenger';
+    else if (channelFilter === 'INSTAGRAM') matchesChannel = p === 'instagram';
+    else if (channelFilter === 'EMAIL') matchesChannel = p === 'email' || p === 'correo';
+
+    if (!matchesChannel) return false;
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      const matchName = (lead.name || '').toLowerCase().includes(q);
+      const matchPhone = (lead.phone_or_id || '').toLowerCase().includes(q);
+      const matchEmail = (lead.email || '').toLowerCase().includes(q);
+      return matchName || matchPhone || matchEmail;
+    }
+
+    return true;
+  });
+
   return (
     <div className="max-w-[1400px] mx-auto animate-in fade-in duration-300 h-full flex flex-col pb-8">
       {/* Header */}
@@ -198,9 +243,9 @@ export default function Chats() {
           </button>
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center gap-2">
-              Bandeja Live Chat & Auditoría IA
+              Bandeja Multicanal Unificada (WhatsApp, Facebook, Instagram, Correo)
             </h1>
-            <p className="text-xs sm:text-sm text-gray-600">Monitorea los chats en tiempo real, pausa la IA y toma el control como asesor humano.</p>
+            <p className="text-xs sm:text-sm text-gray-600">Centraliza todas tus conversaciones en tiempo real, audita el bot y responde como asesor humano.</p>
           </div>
         </div>
         <button
@@ -215,17 +260,63 @@ export default function Chats() {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[550px]">
         {/* Lista de Conversaciones */}
         <div className="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-gray-200 bg-gray-50 font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center justify-between">
-            <span>Conversaciones ({leads.length})</span>
+          
+          {/* Barra de Filtros de Canales */}
+          <div className="p-2.5 border-b border-gray-200 bg-gray-50/80 flex flex-wrap gap-1.5 text-[11px] font-bold">
+            <button
+              onClick={() => setChannelFilter('ALL')}
+              className={`px-2.5 py-1 rounded-md transition-all ${channelFilter === 'ALL' ? 'bg-[#1a4a49] text-white shadow-xs' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
+            >
+              Todos ({leads.length})
+            </button>
+            <button
+              onClick={() => setChannelFilter('WHATSAPP')}
+              className={`px-2.5 py-1 rounded-md transition-all ${channelFilter === 'WHATSAPP' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-white text-emerald-800 border border-emerald-200 hover:bg-emerald-50'}`}
+            >
+              🟢 WhatsApp
+            </button>
+            <button
+              onClick={() => setChannelFilter('FACEBOOK')}
+              className={`px-2.5 py-1 rounded-md transition-all ${channelFilter === 'FACEBOOK' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-blue-800 border border-blue-200 hover:bg-blue-50'}`}
+            >
+              🔵 Facebook
+            </button>
+            <button
+              onClick={() => setChannelFilter('INSTAGRAM')}
+              className={`px-2.5 py-1 rounded-md transition-all ${channelFilter === 'INSTAGRAM' ? 'bg-purple-600 text-white shadow-xs' : 'bg-white text-purple-800 border border-purple-200 hover:bg-purple-50'}`}
+            >
+              🟣 Instagram
+            </button>
+            <button
+              onClick={() => setChannelFilter('EMAIL')}
+              className={`px-2.5 py-1 rounded-md transition-all ${channelFilter === 'EMAIL' ? 'bg-amber-600 text-white shadow-xs' : 'bg-white text-amber-800 border border-amber-200 hover:bg-amber-50'}`}
+            >
+              ✉️ Correo
+            </button>
           </div>
 
+          {/* Buscador */}
+          <div className="p-2 border-b border-gray-100 bg-white">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Buscar cliente por nombre o teléfono..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1a4a49]"
+              />
+            </div>
+          </div>
+
+          {/* Lista scrolleable */}
           <div className="flex-1 overflow-auto p-3 space-y-2">
             {loading ? (
               <p className="text-sm text-gray-500 text-center py-6">Cargando conversaciones...</p>
-            ) : leads.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-6">No hay conversaciones registradas.</p>
+            ) : filteredLeads.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-8">No hay conversaciones en este filtro.</p>
             ) : (
-              leads.map((lead) => {
+              filteredLeads.map((lead) => {
                 const isSelected = lead.id === selectedLeadId;
                 const isPaused = lead.bot_paused;
 
@@ -242,17 +333,11 @@ export default function Chats() {
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                        <h4 className={`font-bold text-xs truncate max-w-[140px] ${isSelected ? 'text-[#1a4a49]' : 'text-gray-800'}`}>
+                        <h4 className={`font-bold text-xs truncate max-w-[130px] ${isSelected ? 'text-[#1a4a49]' : 'text-gray-800'}`}>
                           {lead.name || `Lead #${lead.phone_or_id}`}
                         </h4>
                       </div>
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${
-                        lead.platform === 'whatsapp' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                        lead.platform === 'instagram' ? 'bg-pink-100 text-pink-800 border border-pink-200' :
-                        'bg-blue-100 text-blue-800 border border-blue-200'
-                      }`}>
-                        {lead.platform}
-                      </span>
+                      {getPlatformBadge(lead.platform)}
                     </div>
 
                     <p className="text-xs text-gray-500 truncate mt-1">
@@ -262,7 +347,7 @@ export default function Chats() {
                     </p>
 
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 text-[10px]">
-                      <span className="text-gray-400 font-medium">{lead.phone_or_id}</span>
+                      <span className="text-gray-400 font-medium truncate max-w-[120px]">{lead.phone_or_id}</span>
                       <span className={`font-bold px-1.5 py-0.5 rounded ${
                         isPaused ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'
                       }`}>
@@ -290,6 +375,7 @@ export default function Chats() {
                     <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                       {selectedLead.name || 'Cliente sin nombre'}
                       <span className="text-[10px] font-normal text-gray-500 font-mono">({selectedLead.phone_or_id})</span>
+                      {getPlatformBadge(selectedLead.platform)}
                     </h3>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -422,4 +508,3 @@ export default function Chats() {
     </div>
   );
 }
-
