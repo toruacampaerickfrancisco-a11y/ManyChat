@@ -160,6 +160,14 @@ async function requestPairingCodeForPhone(phoneNumber) {
   }
 }
 
+function formatForWhatsApp(text) {
+  if (!text) return "";
+  // Transforma links markdown [Título](url) en formato limpio para WhatsApp: 👉 *Título:* \nurl
+  return text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, title, url) => {
+    return `👉 *${title}:*\n${url}`;
+  });
+}
+
 async function sendWhatsAppDirectMessage(to, text) {
   if (!sock || connectionStatus !== 'CONNECTED') {
     return { success: false, reason: 'WhatsApp no está conectado' };
@@ -172,7 +180,8 @@ async function sendWhatsAppDirectMessage(to, text) {
       jid = `${cleanPhone}@s.whatsapp.net`;
     }
 
-    await sock.sendMessage(jid, { text });
+    const cleanText = formatForWhatsApp(text);
+    await sock.sendMessage(jid, { text: cleanText });
     return { success: true };
   } catch (error) {
     console.error('[WhatsApp Direct Send Error]', error);
