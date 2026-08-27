@@ -1,10 +1,61 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, User, Zap, Sparkles, RefreshCw, ExternalLink, ArrowRight, BookOpen, Briefcase, UserCheck, HelpCircle } from 'lucide-react';
+import { 
+  MessageSquare, X, Send, Bot, User, Zap, Sparkles, RefreshCw, 
+  ExternalLink, ArrowRight, BookOpen, Briefcase, UserCheck, 
+  HelpCircle, Star, Phone, CheckCircle2, ChevronRight, Mail, Globe
+} from 'lucide-react';
 
-const parseMessage = (text) => {
+// Cursos Oficiales de Clipop para visualización enriquecida
+const OFFICIAL_COURSES = [
+  {
+    id: 'c1',
+    title: 'Curso Gratuito Introductorio APU',
+    rating: '4.9',
+    badge: '100% GRATUITO',
+    badgeColor: 'bg-emerald-500 text-white',
+    url: 'https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED',
+    actionText: 'Inscribirme Gratis en Udemy'
+  },
+  {
+    id: 'c2',
+    title: 'Precios Unitarios OPUS 22, 24, Neodata y Excel',
+    rating: '4.8',
+    badge: 'Más Vendido',
+    badgeColor: 'bg-amber-500 text-white',
+    url: 'https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/',
+    actionText: 'Ver Curso en Udemy'
+  },
+  {
+    id: 'c3',
+    title: 'Cómo Presentar Concursos para CFE (OPUS 2020)',
+    rating: '4.9',
+    badge: 'Especializado',
+    badgeColor: 'bg-blue-600 text-white',
+    url: 'https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/',
+    actionText: 'Ver Curso CFE en Udemy'
+  },
+  {
+    id: 'c4',
+    title: 'Análisis de Precios Unitarios 100% Práctico (OPUS 2025)',
+    rating: '5.0',
+    badge: 'Nueva Versión 2025',
+    badgeColor: 'bg-teal-600 text-white',
+    url: 'https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F',
+    actionText: 'Ver Curso OPUS 2025'
+  }
+];
+
+// Parser dinámico y limpio de mensajes
+const parseMessage = (text, onQuickAction) => {
   if (!text) return "";
   const lines = text.split('\n');
+
   return lines.map((line, lineIdx) => {
+    // Si es una línea divisoria
+    if (line.includes('━━━━━━━━━━━━━━━━━━━')) {
+      return <hr key={lineIdx} className="my-2.5 border-gray-200" />;
+    }
+
     // Parser de links en formato markdown [Texto](url)
     const parts = [];
     let lastIndex = 0;
@@ -20,30 +71,35 @@ const parseMessage = (text) => {
       const linkUrl = match[2];
       const isInternal = linkUrl.startsWith('/');
       const isExternalUdemy = linkUrl.includes('udemy.com');
-      const isWhatsApp = linkUrl.includes('wa.me');
+      const isWhatsApp = linkUrl.includes('wa.me') || linkUrl.includes('whatsapp');
       const isInstagram = linkUrl.includes('instagram.com');
       const isFacebook = linkUrl.includes('facebook.com');
 
+      // Botón interactivo de marca estilizado
       parts.push(
         <a
           key={match.index}
           href={linkUrl}
           target={isInternal ? undefined : "_blank"}
           rel={isInternal ? undefined : "noopener noreferrer"}
-          className={`inline-flex items-center gap-1 my-1 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm transition-all duration-200 break-all ${
+          className={`inline-flex items-center gap-1.5 my-1 px-3 py-1.5 rounded-lg text-xs font-bold shadow-xs transition-all duration-200 active:scale-95 group ${
             isExternalUdemy
-              ? 'bg-amber-500/10 text-amber-900 border border-amber-400/40 hover:bg-amber-500 hover:text-white'
+              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700 shadow-amber-500/20'
               : isWhatsApp
-              ? 'bg-emerald-500/10 text-emerald-800 border border-emerald-400/40 hover:bg-emerald-600 hover:text-white'
+              ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 shadow-emerald-600/20'
               : isInstagram
-              ? 'bg-purple-500/10 text-purple-800 border border-purple-400/40 hover:bg-purple-600 hover:text-white'
+              ? 'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white hover:opacity-95 shadow-purple-500/20'
               : isFacebook
-              ? 'bg-blue-500/10 text-blue-800 border border-blue-400/40 hover:bg-blue-600 hover:text-white'
-              : 'bg-teal-50 text-teal-800 border border-teal-200 hover:bg-[#1a4a49] hover:text-white'
+              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-blue-500/20'
+              : 'bg-[#1a4a49] text-white hover:bg-[#133c3b] shadow-teal-900/20'
           }`}
         >
+          {isExternalUdemy && <BookOpen className="w-3.5 h-3.5 shrink-0" />}
+          {isWhatsApp && <Phone className="w-3.5 h-3.5 shrink-0" />}
+          {isFacebook && <Globe className="w-3.5 h-3.5 shrink-0" />}
+          {isInstagram && <Sparkles className="w-3.5 h-3.5 shrink-0" />}
           <span>{linkText}</span>
-          {!isInternal && <ExternalLink className="w-3 h-3 opacity-75 inline" />}
+          {!isInternal && <ExternalLink className="w-3 h-3 opacity-80 group-hover:translate-x-0.5 transition-transform shrink-0" />}
         </a>
       );
 
@@ -53,7 +109,7 @@ const parseMessage = (text) => {
     if (lastIndex < line.length) {
       const remainingText = line.substring(lastIndex);
       
-      // Parsear negritas **texto**
+      // Parsear negritas **texto** o *texto*
       const boldParts = [];
       let boldLastIdx = 0;
       const boldRegex = /\*\*([^*]+)\*\*/g;
@@ -89,7 +145,8 @@ const parseMessage = (text) => {
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const initialGreeting = 'Hola que tal! Muchas gracias por contactarnos, sera un placer atenderte!\n\nPlaticanos sobre cual de nuestros servicios estas interesado:\n\n1️⃣ **Cursos pregrabados!**\n2️⃣ **Cursos en tiempo real, por medio de teams**\n3️⃣ **Cursos presenciales**\n4️⃣ **Cotizacion de un proyecto de media o alta tension**';
+  const [showTeaser, setShowTeaser] = useState(false);
+  const initialGreeting = '¡Hola que tal! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\nPlatícanos, ¿en cuál de nuestros servicios estás interesado?\n\n1️⃣ **Cursos pregrabados (Udemy)**\n2️⃣ **Cursos en tiempo real por Teams**\n3️⃣ **Cursos presenciales (Hermosillo)**\n4️⃣ **Cotización de proyectos de media o alta tensión**';
   
   const [messages, setMessages] = useState([
     { role: 'model', text: initialGreeting }
@@ -116,7 +173,6 @@ export default function ChatbotWidget() {
     const isAskingInactivity = lastMsg && lastMsg.role === 'model' && lastMsg.text.includes('¿Sigues');
 
     if (isAskingInactivity) {
-      // Si ya se preguntó y no contesta en los siguientes 2.5 minutos (total 5m), enviar mensaje de cierre y cerrar
       closeTimerRef.current = setTimeout(() => {
         setMessages(prev => [
           ...prev,
@@ -125,14 +181,11 @@ export default function ChatbotWidget() {
         setTimeout(() => {
           setIsOpen(false);
           setTimeout(() => {
-            setMessages([
-              { role: 'model', text: initialGreeting }
-            ]);
+            setMessages([{ role: 'model', text: initialGreeting }]);
           }, 300);
         }, 8000);
       }, 150000); // 2.5 min después del primer aviso
     } else {
-      // A los 2.5 minutos de inactividad, enviar mensaje de seguimiento
       inactivityTimerRef.current = setTimeout(() => {
         setMessages(prev => [
           ...prev,
@@ -141,6 +194,16 @@ export default function ChatbotWidget() {
       }, 150000); // 2.5 minutos
     }
   };
+
+  // Teaser emergente automático después de 4 segundos
+  useEffect(() => {
+    const teaserTimer = setTimeout(() => {
+      if (!isOpen) {
+        setShowTeaser(true);
+      }
+    }, 4000);
+    return () => clearTimeout(teaserTimer);
+  }, [isOpen]);
 
   useEffect(() => {
     scrollToBottom();
@@ -151,6 +214,7 @@ export default function ChatbotWidget() {
       clearTimers();
       return;
     }
+    setShowTeaser(false);
     resetInactivityTimer();
     return () => clearTimers();
   }, [messages, isOpen]);
@@ -167,7 +231,6 @@ export default function ChatbotWidget() {
     setIsLoading(true);
 
     try {
-      // Formatear historial para la API
       const formattedHistory = messages.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
@@ -206,192 +269,280 @@ export default function ChatbotWidget() {
     setMessages([{ role: 'model', text: initialGreeting }]);
   };
 
-  // Botones de respuesta rápida dinámicos según el flujo del bot
-  const getQuickReplies = () => {
-    const lastMsg = messages[messages.length - 1];
-    const text = (lastMsg?.text || '').toLowerCase();
-
-    if (text.includes('otra duda') || text.includes('alguna otra duda')) {
-      return [
-        { label: '👍 Sí, tengo una duda', action: 'si' },
-        { label: '👋 No, gracias', action: 'no' },
-        { label: '🏠 Menú Principal', action: 'menu' },
-      ];
-    }
-
-    if (text.includes('acerca de que es tu duda') || text.includes('acerca de qué es tu duda')) {
-      return [
-        { label: '🎓 1. Cursos pregrabados', action: '1' },
-        { label: '💻 2. Cursos en Teams', action: '2' },
-        { label: '📍 3. Cursos presenciales', action: '3' },
-        { label: '⚡ 4. Cotización proyecto', action: '4' },
-      ];
-    }
-
-    // Opciones predeterminadas del Menú Principal
-    return [
-      { label: '🎓 1. Cursos pregrabados', action: '1' },
-      { label: '💻 2. Cursos en Teams', action: '2' },
-      { label: '📍 3. Cursos presenciales', action: '3' },
-      { label: '⚡ 4. Cotización proyecto', action: '4' },
-      { label: '👨‍💼 Hablar con Asesor', action: 'asesor' },
-    ];
-  };
-
-  const currentReplies = getQuickReplies();
+  // Detección contextual de respuestas rápidas
+  const lastModelMsg = messages[messages.length - 1]?.text?.toLowerCase() || '';
+  const isCoursesTopic = lastModelMsg.includes('udemy') || lastModelMsg.includes('pregrabados') || lastModelMsg.includes('opus');
+  const isQuotationTopic = lastModelMsg.includes('cotización') || lastModelMsg.includes('cotizacion') || lastModelMsg.includes('alta tensión');
 
   return (
     <>
-      {/* Botón Flotante Energizado y Moderno */}
+      {/* Globo Teaser Emergente de Bienvenida */}
+      {showTeaser && !isOpen && (
+        <div className="fixed bottom-24 right-6 z-50 animate-in fade-in slide-in-from-bottom-3 duration-500 max-w-[280px]">
+          <div className="bg-white p-3.5 rounded-2xl shadow-xl border border-gray-100 flex items-start gap-3 relative ring-1 ring-black/5">
+            <button
+              onClick={() => setShowTeaser(false)}
+              className="absolute -top-2 -right-2 w-5 h-5 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-xs shadow-xs"
+            >
+              ×
+            </button>
+            <div className="w-8 h-8 rounded-full bg-[#1a4a49] text-white flex items-center justify-center shrink-0 text-xs font-bold shadow-xs">
+              🤖
+            </div>
+            <div className="text-xs">
+              <p className="font-bold text-gray-800">¡Hola! ¿Tienes dudas?</p>
+              <p className="text-gray-600 mt-0.5">Consulta cursos, OPUS o cotiza proyectos al instante.</p>
+              <button
+                onClick={() => {
+                  setShowTeaser(false);
+                  setIsOpen(true);
+                }}
+                className="mt-2 text-[11px] font-bold text-[#1a4a49] hover:underline flex items-center gap-1"
+              >
+                Abrir chat <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Botón Flotante Energizado */}
       <div className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}>
-        
-        {/* Anillo de pulso de energía exterior */}
         <span className="absolute inset-0 rounded-full bg-[#1a4a49] opacity-60 animate-ping"></span>
-        
-        {/* Botón Principal */}
         <button
           onClick={() => setIsOpen(true)}
-          className="relative group w-16 h-16 bg-gradient-to-tr from-[#0f3433] via-[#1a4a49] to-[#256f6d] hover:to-[#2d8784] rounded-full flex items-center justify-center text-white shadow-[0_8px_25px_rgba(26,74,73,0.5)] hover:shadow-[0_10px_30px_rgba(37,111,109,0.7)] transition-all duration-300 hover:scale-110 border-2 border-teal-400/40"
-          aria-label="Abrir chat de asistencia ManyChat"
+          className="relative w-14 h-14 bg-gradient-to-tr from-[#143d3c] via-[#1a4a49] to-[#256c6b] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/30"
+          aria-label="Abrir Asistente Virtual Clipop"
         >
-          {/* Brillo interno */}
-          <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-400/10 via-transparent to-teal-300/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-
-          {/* Icono de Globo de Chat */}
-          <div className="relative flex items-center justify-center">
-            <MessageSquare className="w-7 h-7 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] group-hover:scale-110 transition-transform duration-300" />
-            <Zap className="w-4 h-4 text-amber-300 fill-amber-300 absolute -top-1 -right-2 animate-bounce drop-shadow-[0_0_6px_rgba(252,211,77,0.9)]" />
-          </div>
-
-          {/* Indicador de Estado Activo */}
-          <span className="absolute top-1 right-1 flex h-3.5 w-3.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white"></span>
-          </span>
-
-          {/* Tooltip */}
-          <span className="absolute right-full mr-3 px-3 py-1.5 bg-gray-900/95 text-white text-xs font-semibold rounded-lg shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none translate-x-2 group-hover:translate-x-0 border border-gray-700/50">
-            💬 Asistente CLIPOP
-          </span>
+          <Bot className="w-7 h-7 animate-pulse" />
+          <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full shadow-xs"></span>
         </button>
       </div>
 
-      {/* Ventana de Chat Flotante */}
+      {/* Ventana Principal del Chat */}
       <div
-        className={`fixed bottom-5 right-5 sm:right-6 w-[94vw] sm:w-[410px] h-[580px] max-h-[85vh] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] flex flex-col z-50 transition-all duration-300 origin-bottom-right border border-gray-100 overflow-hidden ${
-          isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-90 opacity-0 translate-y-4 pointer-events-none'
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[94vw] sm:w-[420px] max-w-[440px] h-[85vh] sm:h-[620px] max-h-[700px] bg-white rounded-3xl shadow-2xl flex flex-col z-50 overflow-hidden border border-gray-100 transition-all duration-300 ${
+          isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-90 opacity-0 translate-y-8 pointer-events-none'
         }`}
       >
-        {/* Cabecera ManyChat Estilizada */}
-        <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-[#0b2827] via-[#0f3433] to-[#1a4a49] text-white border-b border-teal-500/20 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="relative p-2 bg-teal-900/80 rounded-2xl border border-teal-400/30 shadow-inner">
-              <Bot className="w-5 h-5 text-teal-200" />
-              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#0f3433]"></span>
+        {/* Cabecera Premium con Glassmorphism */}
+        <div className="bg-gradient-to-r from-[#143c3b] via-[#1a4a49] to-[#246362] text-white px-5 py-4 flex items-center justify-between shrink-0 shadow-md relative overflow-hidden">
+          {/* Luz ambiental sutil de fondo */}
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="relative">
+              <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-inner">
+                <Bot className="w-5 h-5 text-emerald-300" />
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-[#1a4a49] rounded-full"></span>
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-sm leading-tight text-white">
-                  Asistente CLIPOP
-                </h3>
-                <span className="bg-amber-400/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-300/30">
-                  Bot Pro
+              <h3 className="font-bold text-sm leading-tight flex items-center gap-1.5 text-white">
+                Asistente Clipop
+                <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full">
+                  IA Activa ⚡
                 </span>
-              </div>
-              <p className="text-[11px] text-teal-200/90 font-medium flex items-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                En línea • Ing. Francisco Gardea
+              </h3>
+              <p className="text-[11px] text-gray-300 mt-0.5 flex items-center gap-1">
+                <span>Ingeniería & Capacitación</span>
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+
+          <div className="flex items-center gap-1.5 relative z-10">
+            {/* Botón directo a WhatsApp */}
+            <a
+              href="https://wa.me/526624745958"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Chatear por WhatsApp con un Asesor"
+              className="p-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-xl transition-colors border border-emerald-400/20"
+            >
+              <Phone className="w-3.5 h-3.5" />
+            </a>
+
+            {/* Reiniciar chat */}
             <button
               onClick={handleResetChat}
-              title="Reiniciar chat al inicio"
-              className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              title="Reiniciar conversación"
+              className="p-2 hover:bg-white/10 text-white/80 hover:text-white rounded-xl transition-colors"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-3.5 h-3.5" />
             </button>
+
+            {/* Cerrar chat */}
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 hover:bg-white/10 text-white/80 hover:text-white rounded-xl transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Área de mensajes con Scroll Automático */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/70">
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+        {/* Cuerpo de Mensajes */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-gradient-to-b from-gray-50/60 via-white to-gray-50/40 text-xs sm:text-sm">
+          {messages.map((msg, idx) => {
+            const isModel = msg.role === 'model';
+            return (
               <div
-                className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm shadow-sm transition-all ${
-                  msg.role === 'user'
-                    ? 'bg-gradient-to-r from-[#1a4a49] to-[#256f6d] text-white rounded-tr-xs'
-                    : 'bg-white text-gray-800 border border-slate-200/80 rounded-tl-xs shadow-slate-200/40'
+                key={idx}
+                className={`flex gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300 ${
+                  isModel ? 'justify-start' : 'justify-end'
                 }`}
               >
-                {msg.role === 'model' && (
-                  <div className="flex items-center gap-1 text-[11px] font-semibold text-teal-800 mb-1">
-                    <Sparkles className="w-3 h-3 text-amber-500" />
-                    CLIPOP Asesor
+                {isModel && (
+                  <div className="w-7 h-7 rounded-full bg-[#1a4a49]/10 border border-[#1a4a49]/20 text-[#1a4a49] flex items-center justify-center shrink-0 mt-1 font-bold text-xs">
+                    🤖
                   </div>
                 )}
-                <div className="text-[13px]">
-                  {parseMessage(msg.text)}
+                <div
+                  className={`max-w-[85%] sm:max-w-[82%] p-3.5 rounded-2xl shadow-xs transition-all ${
+                    isModel
+                      ? 'bg-white border border-gray-200/80 text-gray-800 rounded-tl-sm'
+                      : 'bg-gradient-to-br from-[#1a4a49] to-[#143c3b] text-white rounded-tr-sm shadow-md'
+                  }`}
+                >
+                  {parseMessage(msg.text, sendQuery)}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
-          {/* Indicador de escritura */}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-white border border-slate-200/80 rounded-2xl rounded-tl-xs px-4 py-3 shadow-sm flex gap-1.5 items-center">
-                <span className="text-xs text-gray-400 font-medium mr-1">Escribiendo</span>
-                <div className="w-2 h-2 bg-teal-600 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          {/* Carrusel interactivo de Cursos si se tocó el tema */}
+          {isCoursesTopic && (
+            <div className="pt-2 animate-in fade-in zoom-in-95 duration-400">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1">
+                  <BookOpen className="w-3.5 h-3.5 text-[#1a4a49]" /> Cursos Destacados Udemy
+                </span>
+                <span className="text-[10px] text-gray-400">Desliza ➔</span>
               </div>
+              <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none snap-x">
+                {OFFICIAL_COURSES.map((course) => (
+                  <div
+                    key={course.id}
+                    className="min-w-[210px] max-w-[210px] bg-white border border-gray-200 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between snap-start"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${course.badgeColor}`}>
+                          {course.badge}
+                        </span>
+                        <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {course.rating}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-xs text-gray-800 line-clamp-2 leading-tight">
+                        {course.title}
+                      </h4>
+                    </div>
+
+                    <a
+                      href={course.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 w-full py-1.5 bg-gray-900 hover:bg-[#1a4a49] text-white text-[11px] font-bold rounded-lg transition-colors flex items-center justify-center gap-1 shadow-xs"
+                    >
+                      {course.actionText} <ExternalLink className="w-3 h-3 opacity-70" />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tarjeta de Acción Rápida para Cotización */}
+          {isQuotationTopic && (
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 animate-in fade-in duration-300">
+              <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs mb-1">
+                <Zap className="w-4 h-4 text-emerald-600" /> Solicitud Rápida de Cotización
+              </div>
+              <p className="text-[11px] text-emerald-700 mb-3 leading-relaxed">
+                Envía tus planos y catálogo a nuestro equipo de ingeniería o comunícate directo vía WhatsApp:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href="mailto:clipopoficial@gmail.com?subject=Solicitud%20de%20Cotizaci%C3%B3n%20-%20Media%20y%20Alta%20Tensi%C3%B3n"
+                  className="flex-1 py-2 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[11px] font-bold text-center flex items-center justify-center gap-1 shadow-xs"
+                >
+                  <Mail className="w-3.5 h-3.5" /> Enviar Correo
+                </a>
+                <a
+                  href="https://wa.me/526624745958?text=Hola%20Clipop,%20deseo%20cotizar%20un%20proyecto%20de%20media%20o%20alta%20tensi%C3%B3n."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[11px] font-bold text-center flex items-center justify-center gap-1 shadow-xs"
+                >
+                  <Phone className="w-3.5 h-3.5" /> WhatsApp Asesor
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Animación de Pensamiento (Loading) */}
+          {isLoading && (
+            <div className="flex gap-2 items-center text-gray-400 text-xs italic pl-2">
+              <div className="w-6 h-6 rounded-full bg-[#1a4a49]/10 text-[#1a4a49] flex items-center justify-center text-xs font-bold animate-spin">
+                ⏳
+              </div>
+              <span>Clipop AI está redactando una respuesta...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Botones de Respuesta Rápida (Quick Replies ManyChat) */}
-        <div className="px-3 py-2 bg-slate-100/90 border-t border-slate-200/70 overflow-x-auto flex gap-1.5 no-scrollbar">
-          {currentReplies.map((reply, i) => (
-            <button
-              key={i}
-              onClick={() => sendQuery(reply.action)}
-              disabled={isLoading}
-              className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] text-gray-700 hover:text-white text-xs font-semibold rounded-full border border-gray-300 shadow-sm transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50"
-            >
-              {reply.label}
-            </button>
-          ))}
+        {/* Píldoras Interactivas de Acción Rápida */}
+        <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 overflow-x-auto flex gap-1.5 scrollbar-none shrink-0">
+          <button
+            onClick={() => sendQuery('1')}
+            className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+          >
+            🎓 1. Cursos Udemy
+          </button>
+          <button
+            onClick={() => sendQuery('2')}
+            className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+          >
+            💻 2. Cursos Teams
+          </button>
+          <button
+            onClick={() => sendQuery('3')}
+            className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+          >
+            📍 3. Presenciales
+          </button>
+          <button
+            onClick={() => sendQuery('4')}
+            className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+          >
+            ⚡ 4. Cotización
+          </button>
+          <button
+            onClick={() => sendQuery('menu')}
+            className="shrink-0 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-600 rounded-full text-[11px] font-bold transition-all shadow-2xs active:scale-95"
+          >
+            🏠 Menú
+          </button>
         </div>
 
-        {/* Entrada de Texto y Envío */}
-        <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-100">
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Escribe tu mensaje o duda técnica..."
-              className="w-full pl-4 pr-12 py-3 bg-slate-100/90 border border-transparent rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#1a4a49]/40 focus:bg-white focus:border-teal-300 transition-all text-gray-800 placeholder-gray-400"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={!inputText.trim() || isLoading}
-              className="absolute right-1.5 w-9 h-9 flex items-center justify-center bg-gradient-to-r from-[#1a4a49] to-[#256f6d] hover:to-[#2d8784] text-white rounded-full transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:scale-105"
-            >
-              <Send className="w-4 h-4 ml-0.5" />
-            </button>
-          </div>
+        {/* Input Bar */}
+        <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-200 flex items-center gap-2 shrink-0">
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Escribe tu duda o selecciona una opción..."
+            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#1a4a49] focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+          />
+          <button
+            type="submit"
+            disabled={!inputText.trim() || isLoading}
+            className="w-10 h-10 bg-[#1a4a49] hover:bg-[#133c3b] disabled:bg-gray-200 text-white disabled:text-gray-400 rounded-xl flex items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95 shrink-0"
+          >
+            <Send className="w-4 h-4" />
+          </button>
         </form>
       </div>
     </>

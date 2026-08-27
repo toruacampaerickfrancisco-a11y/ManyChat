@@ -174,25 +174,25 @@ Debes responder de forma concisa, cordial, precisa y profesional siguiendo exact
 
 1. SERVICIOS PRINCIPALES:
    - 1️⃣ Cursos pregrabados: Disponibles en la plataforma Udemy.
-     * Curso Gratuito Introductorio: https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED
-     * Precios Unitarios OPUS 22, 24, Neodata y Excel: https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/
-     * Cómo Presentar Concursos para CFE (OPUS 2020): https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/
-     * Análisis de Precios Unitarios 100% Práctico (OPUS 2025): https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F
-     * Catálogo completo en web: https://clipop.com.mx/cursos
+     * [Curso Gratuito Introductorio](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)
+     * [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)
+     * [Cómo Presentar Concursos para CFE (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)
+     * [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)
+     * [Ver Catálogo Completo](https://clipop.com.mx/cursos)
      * Cupones de descuento: escribir a clipopoficial@gmail.com
    - 2️⃣ Cursos virtuales en tiempo real: Impartidos mediante Microsoft Teams. Las convocatorias se publican en redes sociales, o pueden programar un curso en una fecha específica escribiendo a clipopoficial@gmail.com.
    - 3️⃣ Cursos presenciales: Abiertos al público en la ciudad de Hermosillo, Sonora. Convocatorias con fechas y horarios en redes sociales. Para cursos en otras ciudades de México, escribir a clipopoficial@gmail.com.
    - 4️⃣ Cotización de proyectos de media o alta tensión: Para cotizar un proyecto, solicitar enviar la información del proyecto, catálogo, especificaciones, planos y condiciones comerciales a clipopoficial@gmail.com con el asunto "solicitud de cotizacion".
 
-2. ENLACES Y REDES SOCIALES:
-   - 🌐 Sitio Web Oficial: https://clipop.com.mx
-   - 📸 Instagram Oficial: https://www.instagram.com/clipopoficial/
-   - 🔵 Facebook Oficial: https://www.facebook.com/profile.php?id=61591801231145
-   - 🟢 WhatsApp Directo: https://wa.me/526624745958
+2. ENLACES Y REDES SOCIALES (siempre en formato markdown limpio [Texto](URL)):
+   - 🌐 [Sitio Web Oficial](https://clipop.com.mx)
+   - 📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)
+   - 🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)
+   - 🟢 [WhatsApp Directo Clipop](https://wa.me/526624745958)
    - ✉️ Correo Oficial: clipopoficial@gmail.com
 
 3. NAVEGACIÓN Y CIERRE:
-   - Al responder sobre cualquier servicio, incluye siempre los enlaces a redes y sitio web, pregunta: "¿Tienes alguna otra duda?" e indica: "💡 Escribe 0 o 'menu' para volver al menú principal."
+   - Al responder sobre cualquier servicio, incluye siempre los botones de enlace a redes y sitio web, pregunta: "¿Tienes alguna otra duda?" e indica: "💡 Escribe 0 o 'menu' para volver al menú principal."
    - Si el usuario dice que "Sí", indícale las opciones para orientarle.
    - Si el usuario dice que "No", despídete con: "¡Fue un placer atenderte! Recuerda seguirnos en nuestras redes, ¡mucho éxito!".`;
 
@@ -202,35 +202,35 @@ let inMemoryBotRules = [
     id: 1,
     keyword: "menu",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
   {
     id: 2,
     keyword: "hola",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
   {
     id: 3,
     keyword: "inicio",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
   {
     id: 4,
     keyword: "0",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
   {
     id: 5,
     keyword: "volver",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
+    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._",
     is_active: true
   },
 
@@ -239,21 +239,21 @@ let inMemoryBotRules = [
     id: 6,
     keyword: "1",
     match_type: "exact",
-    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en *Udemy*:\n\n1️⃣ *Curso Gratuito Introductorio:*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n2️⃣ *Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel:*\n👉 https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/\n\n3️⃣ *Cómo Presentar Concursos para CFE desde cero (OPUS 2020):*\n👉 https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/\n\n4️⃣ *Análisis de Precios Unitarios 100% Práctico (OPUS 2025):*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F\n\n🌐 *Ver todos en la plataforma:* https://clipop.com.mx/cursos\n🎁 *Cupones de descuento:* Escríbenos a *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en Udemy:\n\n1️⃣ [Curso Gratuito Introductorio](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n2️⃣ [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ [Cómo Presentar Concursos para CFE desde cero (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n🌐 [Ver Catálogo Completo en Clipop](https://clipop.com.mx/cursos)\n🎁 *Cupones de descuento:* Escríbenos a *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web](https://clipop.com.mx) | 📸 [Instagram Clipop](https://instagram.com/clipopoficial) | 🔵 [Facebook Clipop](https://facebook.com/profile.php?id=61591801231145)\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 7,
     keyword: "pregrabados",
     match_type: "contains",
-    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en *Udemy*:\n\n1️⃣ *Curso Gratuito Introductorio:*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n2️⃣ *Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel:*\n👉 https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/\n\n3️⃣ *Cómo Presentar Concursos para CFE desde cero (OPUS 2020):*\n👉 https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/\n\n4️⃣ *Análisis de Precios Unitarios 100% Práctico (OPUS 2025):*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F\n\n🌐 *Ver todos en la plataforma:* https://clipop.com.mx/cursos\n🎁 *Cupones de descuento:* Escríbenos a *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en Udemy:\n\n1️⃣ [Curso Gratuito Introductorio](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n2️⃣ [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ [Cómo Presentar Concursos para CFE desde cero (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n🌐 [Ver Catálogo Completo en Clipop](https://clipop.com.mx/cursos)\n🎁 *Cupones de descuento:* Escríbenos a *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web](https://clipop.com.mx) | 📸 [Instagram Clipop](https://instagram.com/clipopoficial) | 🔵 [Facebook Clipop](https://facebook.com/profile.php?id=61591801231145)\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 8,
     keyword: "udemy",
     match_type: "contains",
-    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en *Udemy*:\n\n1️⃣ *Curso Gratuito Introductorio:*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n2️⃣ *Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel:*\n👉 https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/\n\n3️⃣ *Cómo Presentar Concursos para CFE desde cero (OPUS 2020):*\n👉 https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/\n\n4️⃣ *Análisis de Precios Unitarios 100% Práctico (OPUS 2025):*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F\n\n🌐 *Ver todos en la plataforma:* https://clipop.com.mx/cursos\n🎁 *Cupones de descuento:* Escríbenos a *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en Udemy:\n\n1️⃣ [Curso Gratuito Introductorio](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n2️⃣ [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ [Cómo Presentar Concursos para CFE desde cero (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n🌐 [Ver Catálogo Completo en Clipop](https://clipop.com.mx/cursos)\n🎁 *Cupones de descuento:* Escríbenos a *clipopoficial@gmail.com*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web](https://clipop.com.mx) | 📸 [Instagram Clipop](https://instagram.com/clipopoficial) | 🔵 [Facebook Clipop](https://facebook.com/profile.php?id=61591801231145)\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
 
@@ -262,21 +262,21 @@ let inMemoryBotRules = [
     id: 9,
     keyword: "2",
     match_type: "exact",
-    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 10,
     keyword: "teams",
     match_type: "contains",
-    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 11,
     keyword: "tiempo real",
     match_type: "contains",
-    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "Te invitamos a seguir nuestras redes oficiales, donde publicamos las convocatorias para los cursos en tiempo real vía *Microsoft Teams* 💻:\n\n━━━━━━━━━━━━━━━━━━━\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n━━━━━━━━━━━━━━━━━━━\n\n📅 Si deseas programar un curso exclusivo en una fecha específica, envíanos un correo a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
 
@@ -285,21 +285,21 @@ let inMemoryBotRules = [
     id: 12,
     keyword: "3",
     match_type: "exact",
-    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 13,
     keyword: "presencial",
     match_type: "contains",
-    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 14,
     keyword: "presenciales",
     match_type: "contains",
-    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "¡Excelente! 📍 Los cursos presenciales abiertos al público se imparten en la ciudad de *Hermosillo, Sonora*.\n\nEn nuestras redes sociales damos a conocer las próximas convocatorias, fechas y horarios:\n\n━━━━━━━━━━━━━━━━━━━\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n━━━━━━━━━━━━━━━━━━━\n\n🏢 Si te interesa un curso presencial en otra ciudad de la República Mexicana, escríbenos a:\n✉️ *clipopoficial@gmail.com*\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
 
@@ -308,14 +308,14 @@ let inMemoryBotRules = [
     id: 15,
     keyword: "4",
     match_type: "exact",
-    response: "¡Excelente! 🤝⚡ Para nosotros será un placer hacer sinergia en tu proyecto de media o alta tensión.\n\nPor favor envíanos la información técnica del proyecto (catálogo de conceptos, especificaciones, planos y condiciones comerciales) a:\n✉️ *clipopoficial@gmail.com*\n📌 Asunto: *Solicitud de cotización*\n\nNuestro equipo de ingeniería de costos se comunicará contigo a la brevedad.\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "¡Excelente! 🤝⚡ Para nosotros será un placer hacer sinergia en tu proyecto de media o alta tensión.\n\nPor favor envíanos la información técnica del proyecto (catálogo de conceptos, especificaciones, planos y condiciones comerciales) a:\n✉️ *clipopoficial@gmail.com*\n📌 Asunto: *Solicitud de cotización*\n\nNuestro equipo de ingeniería de costos se comunicará contigo a la brevedad.\n\n━━━━━━━━━━━━━━━━━━━\n🟢 [WhatsApp Asesor Directo](https://wa.me/526624745958)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
     id: 16,
     keyword: "cotizacion",
     match_type: "contains",
-    response: "¡Excelente! 🤝⚡ Para nosotros será un placer hacer sinergia en tu proyecto de media o alta tensión.\n\nPor favor envíanos la información técnica del proyecto (catálogo de conceptos, especificaciones, planos y condiciones comerciales) a:\n✉️ *clipopoficial@gmail.com*\n📌 Asunto: *Solicitud de cotización*\n\nNuestro equipo de ingeniería de costos se comunicará contigo a la brevedad.\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
+    response: "¡Excelente! 🤝⚡ Para nosotros será un placer hacer sinergia en tu proyecto de media o alta tensión.\n\nPor favor envíanos la información técnica del proyecto (catálogo de conceptos, especificaciones, planos y condiciones comerciales) a:\n✉️ *clipopoficial@gmail.com*\n📌 Asunto: *Solicitud de cotización*\n\nNuestro equipo de ingeniería de costos se comunicará contigo a la brevedad.\n\n━━━━━━━━━━━━━━━━━━━\n🟢 [WhatsApp Asesor Directo](https://wa.me/526624745958)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n━━━━━━━━━━━━━━━━━━━\n\n❓ _¿Tienes alguna otra duda? (Responde 'Sí' o 'No')_\n💡 _Escribe *0* para volver al menú principal._",
     is_active: true
   },
   {
