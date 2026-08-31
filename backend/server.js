@@ -443,6 +443,128 @@ async function generateAiReply(message, history = []) {
   }
 }
 
+// --- FUNCIONES DE META API (FACEBOOK / INSTAGRAM) ---
+async function sendMetaReply({ to, text, platform = 'messenger' }) {
+  if (!process.env.META_ACCESS_TOKEN) {
+    console.warn('[Meta API] No hay META_ACCESS_TOKEN configurado. El mensaje no se enviará a Meta.');
+    return;
+  }
+  
+  try {
+    const url = `https://graph.facebook.com/v19.0/me/messages?access_token=${process.env.META_ACCESS_TOKEN}`;
+    const payload = {
+      recipient: { id: to },
+      message: { text }
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      console.error('[Meta API Error]', data.error);
+    } else {
+      console.log(`[Meta API] Mensaje enviado exitosamente a ${to}`);
+    }
+  } catch (error) {
+    console.error('[Meta API Fetch Error]', error);
+  }
+}
+
+// --- RUTAS DEL WEBHOOK OFICIAL DE META ---
+
+// 1. Verificación del Webhook (GET)
+app.get('/api/meta/webhook', (req, res) => {
+  const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || 'clipop2026';
+  
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (mode && token) {
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+      console.log('[Meta Webhook] Verificado correctamente.');
+      return res.status(200).send(challenge);
+    } else {
+      return res.sendStatus(403);
+    }
+  }
+  res.sendStatus(400);
+});
+
+// 2. Recepción de mensajes (POST)
+app.post('/api/meta/webhook', async (req, res) => {
+  const body = req.body;
+
+  // Verificamos si es un evento de página (Facebook/Instagram)
+  if (body.object === 'page' || body.object === 'instagram') {
+    
+    for (const entry of body.entry) {
+      const webhook_event = entry.messaging ? entry.messaging[0] : null;
+      
+      if (webhook_event && webhook_event.message && !webhook_event.message.is_echo) {
+        const senderId = webhook_event.sender.id;
+        const messageText = webhook_event.message.text;
+        const platform = body.object === 'instagram' ? 'instagram' : 'messenger';
+        
+        console.log(`[Meta Entrada] de ${senderId} (${platform}): ${messageText}`);
+
+        let lead = null;
+        try {
+          if (process.env.DATABASE_URL) {
+            lead = await prisma.lead.upsert({
+              where: { phone_or_id: senderId },
+              update: {},
+              create: {
+                platform,
+                phone_or_id: senderId,
+                name: `Usuario ${platform}`,
+              }
+            });
+
+            await prisma.conversation.create({
+              data: {
+                leadId: lead.id,
+                message: messageText,
+                sender: 'user'
+              }
+            });
+          }
+        } catch (dbErr) {
+          console.warn('[Meta DB Lead Warning]', dbErr.message);
+        }
+
+        const isPaused = lead ? lead.bot_paused : false;
+        if (!isPaused && messageText) {
+          const reply = await generateAiReply(messageText);
+
+          try {
+            if (process.env.DATABASE_URL && lead) {
+              await prisma.conversation.create({
+                data: {
+                  leadId: lead.id,
+                  message: reply,
+                  sender: 'ai'
+                }
+              });
+            }
+          } catch (saveErr) {
+            console.warn('[Meta DB Reply Save Warning]', saveErr.message);
+          }
+
+          // Enviar respuesta a Meta
+          await sendMetaReply({ to: senderId, text: reply, platform });
+        }
+      }
+    }
+    return res.status(200).send('EVENT_RECEIVED');
+  } else {
+    return res.sendStatus(404);
+  }
+});
 
 // 1. Webhook para recibir datos de ManyChat o Bots (WhatsApp, Facebook, Instagram)
 app.post('/api/webhook/bot', async (req, res) => {
