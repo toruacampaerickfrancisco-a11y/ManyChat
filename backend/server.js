@@ -445,37 +445,6 @@ async function generateAiReply(message, history = []) {
   }
 }
 
-// --- FUNCIONES DE META API (FACEBOOK / INSTAGRAM) ---
-async function sendMetaReply({ to, text, platform = 'messenger' }) {
-  if (!process.env.META_ACCESS_TOKEN) {
-    console.warn('[Meta API] No hay META_ACCESS_TOKEN configurado. El mensaje no se enviará a Meta.');
-    return;
-  }
-  
-  try {
-    const url = `https://graph.facebook.com/v19.0/me/messages?access_token=${process.env.META_ACCESS_TOKEN}`;
-    const payload = {
-      recipient: { id: to },
-      message: { text }
-    };
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-    if (data.error) {
-      console.error('[Meta API Error]', data.error);
-    } else {
-      console.log(`[Meta API] Mensaje enviado exitosamente a ${to}`);
-    }
-  } catch (error) {
-    console.error('[Meta API Fetch Error]', error);
-  }
-}
-
 // --- RUTAS DEL WEBHOOK OFICIAL DE META ---
 
 // 1. Verificación del Webhook (GET)
@@ -1114,20 +1083,25 @@ app.delete('/api/bot/rules/:id', async (req, res) => {
 // --- WEBHOOK OFICIAL DE META (WHATSAPP, INSTAGRAM, MESSENGER) ---
 
 // Función para enviar mensajes salientes a través de la API oficial de Meta (WhatsApp / Messenger / Instagram)
-async function sendMetaReply({ platform, to, text }) {
+async function sendMetaReply({ platform = 'messenger', to, text }) {
   try {
-    let token = process.env.META_ACCESS_TOKEN;
+    const DEFAULT_META_TOKEN = 'EAAPm3rhOrksBSbceYXMtzTmHWp1ONeqClQvHBDVywDwCVZAz6HeeAAtbvxsYBZC1wSZAPoH1rOwQAwrm8zyKh9WgguKjUs28N82wBgTHDVZAYoCoAdMZA6oDVIWqrys92O3ghAQ1WsL9eozj07XMC3VquXPfDaDm2LCXQGswshcvbRn1J1jp91TQ4LSDKHBobiy0bhAZDZD';
+    let token = (process.env.META_ACCESS_TOKEN || DEFAULT_META_TOKEN).trim().replace(/['"]/g, '');
     let phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
     // Buscar credenciales en la base de datos si existen
     if (process.env.DATABASE_URL) {
-      const settings = await prisma.setting.findMany({
-        where: { key: { in: ['meta_access_token', 'whatsapp_phone_number_id'] } }
-      });
-      settings.forEach(s => {
-        if (s.key === 'meta_access_token' && s.value.trim()) token = s.value.trim();
-        if (s.key === 'whatsapp_phone_number_id' && s.value.trim()) phoneId = s.value.trim();
-      });
+      try {
+        const settings = await prisma.setting.findMany({
+          where: { key: { in: ['meta_access_token', 'whatsapp_phone_number_id'] } }
+        });
+        settings.forEach(s => {
+          if (s.key === 'meta_access_token' && s.value && s.value.trim()) token = s.value.trim().replace(/['"]/g, '');
+          if (s.key === 'whatsapp_phone_number_id' && s.value && s.value.trim()) phoneId = s.value.trim().replace(/['"]/g, '');
+        });
+      } catch (e) {
+        console.warn('[Meta Settings Warning]', e.message);
+      }
     }
 
     if (!token) {
@@ -1163,10 +1137,10 @@ async function sendMetaReply({ platform, to, text }) {
       return { success: response.ok, data };
     } else {
       // Instagram Direct o Facebook Messenger
-      const response = await fetch(`https://graph.facebook.com/v18.0/me/messages`, {
+      console.log(`[Meta Outbound] Enviando mensaje a ${to} (${platform}): "${text.substring(0, 40)}..."`);
+      const response = await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${token}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -1176,7 +1150,11 @@ async function sendMetaReply({ platform, to, text }) {
       });
 
       const data = await response.json();
-      console.log('[Meta Messenger/IG API Response]', data);
+      if (data.error) {
+        console.error('[Meta Messenger/IG API Error]', data.error);
+      } else {
+        console.log('[Meta Messenger/IG API Success]', data);
+      }
       return { success: response.ok, data };
     }
   } catch (error) {
