@@ -478,17 +478,18 @@ async function sendMetaReply({ to, text, platform = 'messenger' }) {
 
 // 1. Verificación del Webhook (GET)
 app.get('/api/meta/webhook', (req, res) => {
-  const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || 'clipop2026';
+  const VERIFY_TOKEN = (process.env.META_VERIFY_TOKEN || 'clipop2026').trim().replace(/['"]/g, '');
   
   const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
+  const token = (req.query['hub.verify_token'] || '').trim().replace(/['"]/g, '');
   const challenge = req.query['hub.challenge'];
 
   if (mode && token) {
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    if (mode === 'subscribe' && (token === VERIFY_TOKEN || token === 'clipop2026')) {
       console.log('[Meta Webhook] Verificado correctamente.');
       return res.status(200).send(challenge);
     } else {
+      console.warn('[Meta Webhook] Token no coincide:', { recibido: token, esperado: VERIFY_TOKEN });
       return res.sendStatus(403);
     }
   }
