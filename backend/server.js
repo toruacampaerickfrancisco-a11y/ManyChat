@@ -1245,11 +1245,15 @@ const handleMetaWebhookIncoming = async (req, res) => {
           messageText = msg.text?.body;
         }
       } 
-      // Instagram / Messenger Payload
-      else if (messaging && messaging.message) {
+      // Instagram / Messenger Payload (Mensajes de texto, botones y botón Empezar/Postback)
+      else if (messaging && (messaging.message || messaging.postback)) {
         phoneOrId = messaging.sender?.id;
         senderName = `Usuario ${platform === 'instagram' ? 'Instagram' : 'Facebook'}`;
-        messageText = messaging.message.text;
+        if (messaging.message) {
+          messageText = messaging.message.text || messaging.message.quick_reply?.payload;
+        } else if (messaging.postback) {
+          messageText = messaging.postback.title || messaging.postback.payload || 'Empezar';
+        }
       }
 
       if (phoneOrId && messageText) {
