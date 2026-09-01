@@ -391,10 +391,41 @@ let inMemoryBotRules = [
 
 // Helper function to generate AI or rule-based bot reply with dynamic prompt and rules
 async function generateAiReply(message, history = []) {
-  const msg = (message || '').toLowerCase().trim();
+  const rawMsg = (message || '').trim();
+  const msg = rawMsg.toLowerCase();
   if (!msg) return "¡Hola! ¿En qué te podemos apoyar hoy? Escribe 'menu' para ver nuestras opciones.";
 
-  // 1. Verificar si el bot está deshabilitado globalmente
+  // 1. Normalización inteligente de números y opciones de menú
+  if (/^(0|0️⃣|menu|menú|inicio|volver|hola|empezar|welcome_message|get started|buenas|buenos dias|buenas tardes)$/i.test(msg)) {
+    const menuRule = inMemoryBotRules.find(r => r.keyword === 'menu');
+    if (menuRule) return menuRule.response;
+  }
+  if (/^(1|1️⃣|1\.|1\s|opci[oó]n 1|cursos? pregrabados?|udemy|pregrabados)$/i.test(msg)) {
+    const r1 = inMemoryBotRules.find(r => r.id === 6);
+    if (r1) return r1.response;
+  }
+  if (/^(2|2️⃣|2\.|2\s|opci[oó]n 2|cursos? en tiempo real|teams|virtual|virtuales)$/i.test(msg)) {
+    const r2 = inMemoryBotRules.find(r => r.id === 9);
+    if (r2) return r2.response;
+  }
+  if (/^(3|3️⃣|3\.|3\s|opci[oó]n 3|cursos? presenciales?|presencial|hermosillo)$/i.test(msg)) {
+    const r3 = inMemoryBotRules.find(r => r.id === 12);
+    if (r3) return r3.response;
+  }
+  if (/^(4|4️⃣|4\.|4\s|opci[oó]n 4|cotizaci[oó]n|cotizar|proyectos?|media tensi[oó]n|alta tensi[oó]n)$/i.test(msg)) {
+    const r4 = inMemoryBotRules.find(r => r.id === 15);
+    if (r4) return r4.response;
+  }
+  if (/^(s[ií]|s[ií] tengo dudas?|tengo una duda|otra duda)$/i.test(msg)) {
+    const rSi = inMemoryBotRules.find(r => r.keyword === 'si');
+    if (rSi) return rSi.response;
+  }
+  if (/^(no|no gracias|ninguna|todo bien|todo claro|adi[oó]s|bye)$/i.test(msg)) {
+    const rNo = inMemoryBotRules.find(r => r.keyword === 'no');
+    if (rNo) return rNo.response;
+  }
+
+  // 2. Verificar si el bot está deshabilitado globalmente
   let botEnabled = true;
   let customPrompt = DEFAULT_SYSTEM_PROMPT;
   let rules = inMemoryBotRules;
@@ -424,7 +455,7 @@ async function generateAiReply(message, history = []) {
     return "En este momento nuestro bot automático se encuentra en pausa. Un asesor del equipo de CLIPOP te atenderá a la brevedad.";
   }
 
-  // 2. Evaluar reglas de palabras clave automáticas
+  // 3. Evaluar reglas de palabras clave automáticas
   for (const rule of rules) {
     if (!rule.is_active) continue;
     const kw = (rule.keyword || '').toLowerCase().trim();
@@ -437,7 +468,7 @@ async function generateAiReply(message, history = []) {
     }
   }
 
-  // 3. Fallback inteligente de respaldo si no hay API Key de Gemini
+  // 4. Fallback inteligente de respaldo si no hay API Key de Gemini
   if (!process.env.GEMINI_API_KEY) {
     if (msg.includes('curso') || msg.includes('udemy') || msg.includes('precio') || msg.includes('costo')) {
       return "🎓 Ofrecemos 4 cursos de especialización en Udemy:\n\n1️⃣ **OPUS 2025**: [Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n2️⃣ **OPUS + Neodata + Excel**: [Haz clic aquí](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n3️⃣ **Concursos CFE**: [Haz clic aquí](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n4️⃣ **Curso Gratis**: [Haz clic aquí](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\nEscribe **'menu'** para volver al menú principal.";
@@ -445,7 +476,7 @@ async function generateAiReply(message, history = []) {
     return "👋 ¡Hola! Soy el asistente virtual de **CLIPOP**. 🏗️\n\nEscribe **'menu'** para ver nuestras opciones de Cursos y Consultorías, o escribe **'asesor'** para hablar con nuestro equipo.";
   }
 
-  // 4. Invocar Inteligencia Artificial (Google Gemini) con System Prompt dinámico
+  // 5. Invocar Inteligencia Artificial (Google Gemini) con System Prompt dinámico
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -455,7 +486,7 @@ async function generateAiReply(message, history = []) {
       systemInstruction: customPrompt
     });
 
-    const result = await chat.sendMessage(message);
+    const result = await chat.sendMessage(rawMsg);
     const response = await result.response;
     return response.text();
   } catch (aiError) {
@@ -463,99 +494,6 @@ async function generateAiReply(message, history = []) {
     return "👋 ¡Hola! Soy el asistente virtual de **CLIPOP**. ¿Te gustaría conocer nuestros cursos especializados en OPUS/Neodata o agendar una consultoría para licitaciones? Escribe **'menu'** para ver todas las opciones.";
   }
 }
-
-// --- RUTAS DEL WEBHOOK OFICIAL DE META ---
-
-// 1. Verificación del Webhook (GET)
-app.get('/api/meta/webhook', (req, res) => {
-  const VERIFY_TOKEN = (process.env.META_VERIFY_TOKEN || 'clipop2026').trim().replace(/['"]/g, '');
-  
-  const mode = req.query['hub.mode'];
-  const token = (req.query['hub.verify_token'] || '').trim().replace(/['"]/g, '');
-  const challenge = req.query['hub.challenge'];
-
-  if (mode && token) {
-    if (mode === 'subscribe' && (token === VERIFY_TOKEN || token === 'clipop2026')) {
-      console.log('[Meta Webhook] Verificado correctamente.');
-      return res.status(200).send(challenge);
-    } else {
-      console.warn('[Meta Webhook] Token no coincide:', { recibido: token, esperado: VERIFY_TOKEN });
-      return res.sendStatus(403);
-    }
-  }
-  res.sendStatus(400);
-});
-
-// 2. Recepción de mensajes (POST)
-app.post('/api/meta/webhook', async (req, res) => {
-  const body = req.body;
-
-  // Verificamos si es un evento de página (Facebook/Instagram)
-  if (body.object === 'page' || body.object === 'instagram') {
-    
-    for (const entry of body.entry) {
-      const webhook_event = entry.messaging ? entry.messaging[0] : null;
-      
-      if (webhook_event && webhook_event.message && !webhook_event.message.is_echo) {
-        const senderId = webhook_event.sender.id;
-        const messageText = webhook_event.message.text;
-        const platform = body.object === 'instagram' ? 'instagram' : 'messenger';
-        
-        console.log(`[Meta Entrada] de ${senderId} (${platform}): ${messageText}`);
-
-        let lead = null;
-        try {
-          if (process.env.DATABASE_URL) {
-            lead = await prisma.lead.upsert({
-              where: { phone_or_id: senderId },
-              update: {},
-              create: {
-                platform,
-                phone_or_id: senderId,
-                name: `Usuario ${platform}`,
-              }
-            });
-
-            await prisma.conversation.create({
-              data: {
-                leadId: lead.id,
-                message: messageText,
-                sender: 'user'
-              }
-            });
-          }
-        } catch (dbErr) {
-          console.warn('[Meta DB Lead Warning]', dbErr.message);
-        }
-
-        const isPaused = lead ? lead.bot_paused : false;
-        if (!isPaused && messageText) {
-          const reply = await generateAiReply(messageText);
-
-          try {
-            if (process.env.DATABASE_URL && lead) {
-              await prisma.conversation.create({
-                data: {
-                  leadId: lead.id,
-                  message: reply,
-                  sender: 'ai'
-                }
-              });
-            }
-          } catch (saveErr) {
-            console.warn('[Meta DB Reply Save Warning]', saveErr.message);
-          }
-
-          // Enviar respuesta a Meta
-          await sendMetaReply({ to: senderId, text: reply, platform });
-        }
-      }
-    }
-    return res.status(200).send('EVENT_RECEIVED');
-  } else {
-    return res.sendStatus(404);
-  }
-});
 
 // 1. Webhook para recibir datos de ManyChat o Bots (WhatsApp, Facebook, Instagram)
 app.post('/api/webhook/bot', async (req, res) => {
