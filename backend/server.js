@@ -10,6 +10,25 @@ const { PrismaClient } = require('@prisma/client');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const whatsappService = require('./whatsappService');
 
+// --- SISTEMA ANTICAIDAS (Previene que errores de WhatsApp tumben a Facebook) ---
+process.on('uncaughtException', (err) => {
+  console.error('[Uncaught Exception] Capturado para evitar crasheo del servidor:', err.message || err);
+  if (err && err.message && (err.message.includes('Bad MAC') || err.message.includes('Session error'))) {
+    console.error('[WhatsApp FATAL] Corrupción detectada en WhatsApp. Borrando sesión corrupta automáticamente para salvar el servidor...');
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const authDir = path.join(__dirname, 'auth_info_baileys');
+      if (fs.existsSync(authDir)) fs.rmSync(authDir, { recursive: true, force: true });
+    } catch(e) {}
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Unhandled Rejection] Promesa sin capturar:', reason);
+});
+// -----------------------------------------------------------------------------
+
 const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
