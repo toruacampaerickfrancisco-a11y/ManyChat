@@ -1220,11 +1220,26 @@ const handleMetaWebhookVerification = (req, res) => {
 app.get('/api/webhooks/meta', handleMetaWebhookVerification);
 app.get('/api/meta/webhook', handleMetaWebhookVerification);
 
+// Cache para evitar procesar mensajes duplicados o reintentos de Meta
+const processedMetaMessageIds = new Map();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [mid, timestamp] of processedMetaMessageIds.entries()) {
+    if (now - timestamp > 600000) { // 10 minutos
+      processedMetaMessageIds.delete(mid);
+    }
+  }
+}, 300000);
+
 // Receptor de mensajes de Meta (WhatsApp Cloud API / Instagram / Messenger)
 const handleMetaWebhookIncoming = async (req, res) => {
   try {
     const body = req.body;
     console.log('[Meta Webhook Event Received]', JSON.stringify(body));
+
+    // Responder HTTP 200 de inmediato a Meta para evitar reintentos automáticos
+    res.status(200).send('EVENT_RECEIVED');
 
     if (body.object === 'whatsapp_business_account' || body.object === 'page' || body.object === 'instagram') {
       const entry = body.entry?.[0];
@@ -1234,6 +1249,8 @@ const handleMetaWebhookIncoming = async (req, res) => {
       let phoneOrId = null;
       let senderName = null;
       let messageText = null;
+      let mid = null;
+      let msgTimestamp = null;
       let platform = body.object === 'whatsapp_business_account' ? 'whatsapp' : (body.object === 'instagram' ? 'instagram' : 'messenger');
 
       // WhatsApp Cloud API Payload
@@ -1241,6 +1258,8 @@ const handleMetaWebhookIncoming = async (req, res) => {
         const msg = changes.messages[0];
         phoneOrId = msg.from;
         senderName = changes.contacts?.[0]?.profile?.name || `WhatsApp ${phoneOrId}`;
+        mid = msg.id;
+        msgTimestamp = Number(msg.timestamp) * 1000;
         if (msg.type === 'text') {
           messageText = msg.text?.body;
         }
@@ -1249,11 +1268,28 @@ const handleMetaWebhookIncoming = async (req, res) => {
       else if (messaging && (messaging.message || messaging.postback)) {
         phoneOrId = messaging.sender?.id;
         senderName = `Usuario ${platform === 'instagram' ? 'Instagram' : 'Facebook'}`;
+        msgTimestamp = messaging.timestamp;
         if (messaging.message) {
+          mid = messaging.message.mid;
           messageText = messaging.message.text || messaging.message.quick_reply?.payload;
         } else if (messaging.postback) {
+          mid = messaging.postback.mid || `${phoneOrId}_${messaging.timestamp}_postback`;
           messageText = messaging.postback.title || messaging.postback.payload || 'Empezar';
         }
+      }
+
+      // Control de Duplicados: ignorar si ya se procesó este mid o si es un reintento antiguo
+      if (mid) {
+        if (processedMetaMessageIds.has(mid)) {
+          console.log(`[Meta Antiduplicados] Mensaje ID ${mid} ya fue procesado. Ignorando reenvío.`);
+          return;
+        }
+        processedMetaMessageIds.set(mid, Date.now());
+      }
+
+      if (msgTimestamp && (Date.now() - msgTimestamp > 120000)) {
+        console.log(`[Meta Antiduplicados] Mensaje de reintento con más de 2 minutos de antigüedad (${Math.round((Date.now() - msgTimestamp) / 1000)}s). Ignorando.`);
+        return;
       }
 
       if (phoneOrId && messageText) {
@@ -1341,14 +1377,9 @@ const handleMetaWebhookIncoming = async (req, res) => {
           await sendMetaReply({ platform, to: phoneOrId, text: reply });
         }
       }
-
-      return res.status(200).send('EVENT_RECEIVED');
     }
-
-    res.sendStatus(404);
   } catch (error) {
     console.error('[Meta Webhook Error]', error);
-    res.status(500).send('ERROR');
   }
 };
 
