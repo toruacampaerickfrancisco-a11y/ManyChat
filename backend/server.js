@@ -1258,26 +1258,32 @@ const handleMetaWebhookIncoming = async (req, res) => {
 
       if (phoneOrId && messageText) {
         let lead = null;
-        if (process.env.DATABASE_URL) {
-          lead = await prisma.lead.upsert({
-            where: { phone_or_id: phoneOrId },
-            update: { name: senderName || undefined },
-            create: {
-              platform,
-              phone_or_id: phoneOrId,
-              name: senderName
-            }
-          });
+        try {
+          if (process.env.DATABASE_URL) {
+            lead = await prisma.lead.upsert({
+              where: { phone_or_id: phoneOrId },
+              update: { name: senderName || undefined },
+              create: {
+                platform,
+                phone_or_id: phoneOrId,
+                name: senderName
+              }
+            });
 
-          await prisma.conversation.create({
-            data: {
-              leadId: lead.id,
-              message: messageText,
-              sender: 'user'
-            }
-          });
-        } else {
-          // Fallback en memoria para desarrollo local
+            await prisma.conversation.create({
+              data: {
+                leadId: lead.id,
+                message: messageText,
+                sender: 'user'
+              }
+            });
+          }
+        } catch (dbErr) {
+          console.warn('[Meta DB Lead Warning]', dbErr.message);
+        }
+
+        if (!lead) {
+          // Fallback en memoria para desarrollo o si la base de datos no está disponible
           lead = inMemoryLeads.find(l => l.phone_or_id === phoneOrId);
           if (!lead) {
             lead = {
@@ -1309,22 +1315,26 @@ const handleMetaWebhookIncoming = async (req, res) => {
         if (!isPaused) {
           const reply = await generateAiReply(messageText);
 
-          if (process.env.DATABASE_URL && lead) {
-            await prisma.conversation.create({
-              data: {
+          try {
+            if (process.env.DATABASE_URL && lead && lead.id && typeof lead.id === 'string') {
+              await prisma.conversation.create({
+                data: {
+                  leadId: lead.id,
+                  message: reply,
+                  sender: 'ai'
+                }
+              });
+            } else if (lead && lead.conversations) {
+              lead.conversations.push({
+                id: lead.conversations.length + 1,
                 leadId: lead.id,
                 message: reply,
-                sender: 'ai'
-              }
-            });
-          } else if (lead && lead.conversations) {
-            lead.conversations.push({
-              id: lead.conversations.length + 1,
-              leadId: lead.id,
-              message: reply,
-              sender: 'ai',
-              timestamp: new Date().toISOString()
-            });
+                sender: 'ai',
+                timestamp: new Date().toISOString()
+              });
+            }
+          } catch (convDbErr) {
+            console.warn('[Meta DB Conversation Warning]', convDbErr.message);
           }
 
           // Enviar la respuesta directamente a WhatsApp, Messenger o Instagram a través de Meta API
