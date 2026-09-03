@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default function AvatarTorre3D({ 
   isSpeaking = false, 
   mouthOpen = false,
   imageClosed = '/avatar-torre/Avatar_Torre_Diagrama_V2.jpg',
-  imageOpen = '/avatar-torre/Avatar_Torre_Hablando.jpg'
+  imageOpen = '/avatar-torre/Avatar_Torre_Hablando.jpg',
+  modelPath = '/avatar-torre/torre_avatar.glb'
 }) {
   const containerRef = useRef(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [modelMode, setModelMode] = useState('loading'); // 'glb' | 'parallax'
 
   useEffect(() => {
     const container = containerRef.current;
@@ -20,71 +22,126 @@ export default function AvatarTorre3D({
     const width = container.clientWidth || 380;
     const height = container.clientHeight || 380;
 
-    const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
-    camera.position.set(0, 0, 3.8);
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+    camera.position.set(0, 0.1, 3.8);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.25;
+    renderer.shadowMap.enabled = true;
     container.appendChild(renderer.domElement);
 
-    // --- 2. ILUMINACIÓN DINÁMICA ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    // --- 2. ILUMINACIÓN DE ESTUDIO 3D ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff5ea, 1.8);
-    sunLight.position.set(2, 3, 4);
-    scene.add(sunLight);
+    const mainSun = new THREE.DirectionalLight(0xfffaed, 2.5);
+    mainSun.position.set(3, 5, 4);
+    scene.add(mainSun);
 
-    const cyanLight = new THREE.PointLight(0x00d2ff, 2.5, 6);
-    cyanLight.position.set(-1.2, 0.5, 1.2);
-    scene.add(cyanLight);
+    const blueFill = new THREE.DirectionalLight(0x38bdf8, 1.5);
+    blueFill.position.set(-4, 2, 2);
+    scene.add(blueFill);
 
-    const orangeLight = new THREE.PointLight(0xff7700, 2.5, 6);
-    orangeLight.position.set(1.2, -0.5, 1.2);
-    scene.add(orangeLight);
+    const orangeRim = new THREE.DirectionalLight(0xff8800, 2.0);
+    orangeRim.position.set(0, -3, -3);
+    scene.add(orangeRim);
 
-    // --- 3. CARGA DE TEXTURAS EN ALTA DEFINICIÓN (IMÁGENES REALES) ---
-    const textureLoader = new THREE.TextureLoader();
-    const planeGroup = new THREE.Group();
-    scene.add(planeGroup);
+    // Luces de alta tensión pulsantes
+    const sparkLightLeft = new THREE.PointLight(0x00f2fe, 3, 5);
+    sparkLightLeft.position.set(-1.4, 0.5, 0.8);
+    scene.add(sparkLightLeft);
 
-    let matClosed = null;
-    let matOpen = null;
+    const sparkLightRight = new THREE.PointLight(0xff7700, 3, 5);
+    sparkLightRight.position.set(1.4, -0.4, 0.8);
+    scene.add(sparkLightRight);
+
+    // --- 3. GRUPO PRINCIPAL ---
+    const mainGroup = new THREE.Group();
+    scene.add(mainGroup);
+
+    let mixer = null;
+    let glbLoaded = false;
     let meshClosed = null;
     let meshOpen = null;
 
-    const geometry = new THREE.PlaneGeometry(2.4, 2.4, 32, 32);
+    // Cargar modelo .GLB si existe
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load(
+      modelPath,
+      (gltf) => {
+        glbLoaded = true;
+        setModelMode('glb');
+        const model = gltf.scene;
+        
+        // Centrar y ajustar escala automáticamente
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 2.4 / (maxDim || 1);
+        model.scale.setScalar(scale);
+        model.position.sub(center.multiplyScalar(scale));
+        model.position.y -= 0.1;
 
-    textureLoader.load(imageClosed, (texClosed) => {
-      texClosed.colorSpace = THREE.SRGBColorSpace;
-      matClosed = new THREE.MeshStandardMaterial({
-        map: texClosed,
-        roughness: 0.35,
-        metalness: 0.15,
-        transparent: true,
-        opacity: 1
-      });
-      meshClosed = new THREE.Mesh(geometry, matClosed);
-      planeGroup.add(meshClosed);
-
-      textureLoader.load(imageOpen, (texOpen) => {
-        texOpen.colorSpace = THREE.SRGBColorSpace;
-        matOpen = new THREE.MeshStandardMaterial({
-          map: texOpen,
-          roughness: 0.35,
-          metalness: 0.15,
-          transparent: true,
-          opacity: 0
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (child.material) {
+              child.material.roughness = Math.min(child.material.roughness, 0.4);
+              child.material.metalness = Math.max(child.material.metalness, 0.2);
+            }
+          }
         });
-        meshOpen = new THREE.Mesh(geometry, matOpen);
-        meshOpen.position.z = 0.005; // Ligeramente adelante para evitar z-fighting
-        planeGroup.add(meshOpen);
-        setIsLoaded(true);
-      });
-    });
+
+        mainGroup.add(model);
+
+        // Animaciones integradas del modelo
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(model);
+          const action = mixer.clipAction(gltf.animations[0]);
+          action.play();
+        }
+      },
+      undefined,
+      (error) => {
+        // Fallback a Parallax HD con texturas del usuario
+        setModelMode('parallax');
+        const textureLoader = new THREE.TextureLoader();
+        const geometry = new THREE.PlaneGeometry(2.4, 2.4, 32, 32);
+
+        textureLoader.load(imageClosed, (texClosed) => {
+          texClosed.colorSpace = THREE.SRGBColorSpace;
+          const matClosed = new THREE.MeshStandardMaterial({
+            map: texClosed,
+            roughness: 0.35,
+            metalness: 0.15,
+            transparent: true,
+            opacity: 1
+          });
+          meshClosed = new THREE.Mesh(geometry, matClosed);
+          mainGroup.add(meshClosed);
+
+          textureLoader.load(imageOpen, (texOpen) => {
+            texOpen.colorSpace = THREE.SRGBColorSpace;
+            const matOpen = new THREE.MeshStandardMaterial({
+              map: texOpen,
+              roughness: 0.35,
+              metalness: 0.15,
+              transparent: true,
+              opacity: 0
+            });
+            meshOpen = new THREE.Mesh(geometry, matOpen);
+            meshOpen.position.z = 0.005;
+            mainGroup.add(meshOpen);
+          });
+        });
+      }
+    );
 
     // --- 4. SISTEMA DE RAYOS DE ALTA TENSIÓN 3D ---
     const lightningGroup = new THREE.Group();
@@ -123,14 +180,14 @@ export default function AvatarTorre3D({
       lineMesh.geometry.attributes.position.needsUpdate = true;
     };
 
-    // Partículas de chispas
-    const particleCount = 45;
+    // Partículas de plasma
+    const particleCount = 40;
     const particleGeom = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-      particlePositions[i * 3] = (Math.random() - 0.5) * 2.6;
-      particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 2.6;
-      particlePositions[i * 3 + 2] = 0.05 + Math.random() * 0.4;
+      particlePositions[i * 3] = (Math.random() - 0.5) * 2.8;
+      particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 2.8;
+      particlePositions[i * 3 + 2] = 0.05 + Math.random() * 0.5;
     }
     particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
     const particleMat = new THREE.PointsMaterial({
@@ -143,11 +200,14 @@ export default function AvatarTorre3D({
     const particles = new THREE.Points(particleGeom, particleMat);
     scene.add(particles);
 
-    // --- 5. INTERACCIÓN DE PERSPECTIVA 3D Y PARALLAX ---
+    // --- 5. INTERACCIÓN DE ROTACIÓN Y PARALLAX 360° ---
     let mouseX = 0;
     let mouseY = 0;
     let targetRotY = 0;
     let targetRotX = 0;
+    let isDragging = false;
+    let prevX = 0;
+    let prevY = 0;
 
     const handleMouseMove = (e) => {
       const rect = container.getBoundingClientRect();
@@ -155,74 +215,83 @@ export default function AvatarTorre3D({
       const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
       mouseX = x;
       mouseY = y;
-      targetRotY = x * 0.35; // Inclinación en 3D
-      targetRotX = -y * 0.25;
+
+      if (isDragging) {
+        const deltaX = e.clientX - prevX;
+        const deltaY = e.clientY - prevY;
+        targetRotY += deltaX * 0.012;
+        targetRotX += deltaY * 0.008;
+      } else {
+        targetRotY = THREE.MathUtils.lerp(targetRotY, x * 0.45, 0.1);
+        targetRotX = THREE.MathUtils.lerp(targetRotX, -y * 0.3, 0.1);
+      }
+      prevX = e.clientX;
+      prevY = e.clientY;
     };
 
-    const handleMouseLeave = () => {
-      mouseX = 0;
-      mouseY = 0;
-      targetRotY = 0;
-      targetRotX = 0;
+    const handleMouseDown = (e) => {
+      isDragging = true;
+      prevX = e.clientX;
+      prevY = e.clientY;
+    };
+
+    const handleMouseUp = () => {
+      isDragging = false;
     };
 
     container.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
 
-    // --- 6. BUCLE DE RENDERIZADO Y LIP-SYNC ---
+    // --- 6. BUCLE DE ANIMACIÓN Y RENDERIZADO ---
     let clock = new THREE.Clock();
     let animId;
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
+      const delta = clock.getDelta();
       const t = clock.getElapsedTime();
 
-      // Parallax 3D suave con inercia
-      planeGroup.rotation.y = THREE.MathUtils.lerp(planeGroup.rotation.y, targetRotY, 0.08);
-      planeGroup.rotation.x = THREE.MathUtils.lerp(planeGroup.rotation.x, targetRotX, 0.08);
+      if (mixer) mixer.update(delta);
+
+      // Rotación suave con inercia
+      mainGroup.rotation.y = THREE.MathUtils.lerp(mainGroup.rotation.y, targetRotY, 0.08);
+      mainGroup.rotation.x = THREE.MathUtils.lerp(mainGroup.rotation.x, targetRotX, 0.08);
 
       // Respiración sutil
-      planeGroup.position.y = Math.sin(t * 1.6) * 0.025;
-      planeGroup.position.z = Math.cos(t * 1.6) * 0.015;
+      mainGroup.position.y = Math.sin(t * 1.6) * 0.03;
 
-      // Luz sigue al ratón
-      cyanLight.position.x = -1.2 + mouseX * 0.8;
-      cyanLight.position.y = 0.5 + mouseY * 0.8;
-      orangeLight.position.x = 1.2 + mouseX * 0.8;
+      // Luces dinámicas
+      sparkLightLeft.position.x = -1.4 + mouseX * 0.6;
+      sparkLightLeft.position.y = 0.5 + mouseY * 0.6;
 
-      // Sincronización Labial (Lip-Sync con el render exacto)
+      // Sincronización Labial y Rayos (Modo Parallax)
       if (meshClosed && meshOpen) {
         if (isSpeaking) {
-          // Modulación rápida entre boca abierta y cerrada
           const isMouthOpenNow = Math.sin(t * 18) > -0.2;
           meshOpen.material.opacity = isMouthOpenNow ? 1 : 0;
           meshClosed.material.opacity = isMouthOpenNow ? 0 : 1;
 
-          // Destellos en los cables de los aisladores
-          leftBolt.visible = Math.random() > 0.3;
-          rightBolt.visible = Math.random() > 0.3;
-          if (leftBolt.visible) {
-            updateBolt(leftBolt, -0.65, 0.45, -1.15, 0.35);
-          }
-          if (rightBolt.visible) {
-            updateBolt(rightBolt, 0.65, 0.45, 1.15, 0.35);
-          }
+          leftBolt.visible = Math.random() > 0.35;
+          rightBolt.visible = Math.random() > 0.35;
+          if (leftBolt.visible) updateBolt(leftBolt, -0.65, 0.45, -1.15, 0.35);
+          if (rightBolt.visible) updateBolt(rightBolt, 0.65, 0.45, 1.15, 0.35);
 
-          cyanLight.intensity = 3.5 + Math.sin(t * 22) * 2.0;
+          sparkLightLeft.intensity = 3.5 + Math.sin(t * 22) * 2.0;
         } else {
           meshOpen.material.opacity = 0;
           meshClosed.material.opacity = 1;
           leftBolt.visible = false;
           rightBolt.visible = false;
-          cyanLight.intensity = 1.8;
+          sparkLightLeft.intensity = 2.0;
         }
       }
 
-      // Animación de partículas de plasma flotantes
+      // Animación de partículas de plasma
       const pArr = particleGeom.attributes.position.array;
       for (let i = 0; i < particleCount; i++) {
-        pArr[i * 3 + 1] += 0.004;
-        if (pArr[i * 3 + 1] > 1.3) pArr[i * 3 + 1] = -1.3;
+        pArr[i * 3 + 1] += 0.005;
+        if (pArr[i * 3 + 1] > 1.4) pArr[i * 3 + 1] = -1.4;
       }
       particleGeom.attributes.position.needsUpdate = true;
 
@@ -244,23 +313,24 @@ export default function AvatarTorre3D({
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mouseup', handleMouseUp);
       container.removeEventListener('mousemove', handleMouseMove);
-      container.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('mousedown', handleMouseDown);
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };
-  }, [isSpeaking, imageClosed, imageOpen]);
+  }, [isSpeaking, imageClosed, imageOpen, modelPath]);
 
   return (
-    <div className="relative w-full h-full min-h-[340px] sm:min-h-[390px] flex items-center justify-center cursor-pointer select-none">
+    <div className="relative w-full h-full min-h-[340px] sm:min-h-[390px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none">
       <div ref={containerRef} className="w-full h-full absolute inset-0" />
       
-      {/* Badge de Render Pixar HD */}
+      {/* Badge de Estado del Render */}
       <div className="absolute top-3 right-3 z-20 pointer-events-none px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 text-[10px] font-black text-cyan-300 flex items-center gap-1.5 shadow-xl">
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-        Render Pixar HD 3D • Mueve el ratón
+        {modelMode === 'glb' ? 'Modelo 3D GLB • Rotación 360°' : 'Render Pixar HD 3D • Mueve el ratón'}
       </div>
     </div>
   );
