@@ -1,0 +1,16 @@
+﻿===================================================
+PAQUETE DEL AVATAR TORRE CFE (ALTA TENSION)
+===================================================
+
+Contenido de esta carpeta:
+1. Video_Presentador_CFE.html:
+   - Reproductor interactivo animado con voz, movimiento de boca (lip-sync) y diapositivas de licitaciones CFE.
+   - Funciona en cualquier computadora con solo hacer doble clic (en Chrome, Edge, etc.).
+
+2. DiseÃ±os del Avatar (Imagenes JPG en alta resolucion):
+   - Avatar_Torre_Diagrama_V1.jpg: Cuerpo completo con aisladores rojos y estructura de celosia.
+   - Avatar_Torre_Diagrama_V2.jpg: Encuadre cercano con lineas de energia activas (400kV y 230kV).
+   - Avatar_Torre_Hablando.jpg: Fotograma del avatar con boca abierta para animaciones.
+   - Avatar_Torre_Estilo_Pixar.jpg: Version caricatura 3D amigable.
+   - Avatar_Torre_Estilo_Futurista.jpg: Version androide / alta tecnologia.
+   - Avatar_Torre_Estilo_Emoji.jpg: Version Memoji / 3D glossy.
