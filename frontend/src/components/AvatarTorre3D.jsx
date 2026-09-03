@@ -254,14 +254,36 @@ export default function AvatarTorre3D({
 
       if (mixer) mixer.update(delta);
 
-      // Rotación suave con inercia
-      mainGroup.rotation.y = THREE.MathUtils.lerp(mainGroup.rotation.y, targetRotY, 0.08);
-      mainGroup.rotation.x = THREE.MathUtils.lerp(mainGroup.rotation.x, targetRotX, 0.08);
+      // --- ANIMACIÓN PROCEDURAL VIVA DEL MODELO 3D ---
+      if (isSpeaking) {
+        // Gesticulación de habla y presentación
+        const talkSwayZ = Math.sin(t * 6.5) * 0.045;
+        const talkNodX = Math.sin(t * 11) * 0.035;
+        const talkBounceY = Math.sin(t * 14) * 0.03;
 
-      // Respiración sutil
-      mainGroup.position.y = Math.sin(t * 1.6) * 0.03;
+        mainGroup.position.y = -0.05 + Math.sin(t * 2.5) * 0.05 + talkBounceY;
+        mainGroup.rotation.z = THREE.MathUtils.lerp(mainGroup.rotation.z, talkSwayZ, 0.1);
+        mainGroup.rotation.x = THREE.MathUtils.lerp(mainGroup.rotation.x, targetRotX + talkNodX, 0.1);
+        mainGroup.rotation.y = THREE.MathUtils.lerp(mainGroup.rotation.y, targetRotY + Math.sin(t * 3.5) * 0.03, 0.08);
 
-      // Luces dinámicas
+        // Pulsos de energía al hablar
+        sparkLightLeft.intensity = 3.8 + Math.sin(t * 22) * 2.5;
+        sparkLightRight.intensity = 3.8 + Math.cos(t * 19) * 2.5;
+      } else {
+        // Movimiento de respiración y flotación en reposo
+        const idleFloatY = Math.sin(t * 1.8) * 0.04;
+        const idleSwayZ = Math.sin(t * 1.2) * 0.015;
+
+        mainGroup.position.y = -0.05 + idleFloatY;
+        mainGroup.rotation.z = THREE.MathUtils.lerp(mainGroup.rotation.z, idleSwayZ, 0.08);
+        mainGroup.rotation.x = THREE.MathUtils.lerp(mainGroup.rotation.x, targetRotX, 0.08);
+        mainGroup.rotation.y = THREE.MathUtils.lerp(mainGroup.rotation.y, targetRotY, 0.08);
+
+        sparkLightLeft.intensity = 2.0;
+        sparkLightRight.intensity = 2.0;
+      }
+
+      // Luces dinámicas siguiendo el cursor
       sparkLightLeft.position.x = -1.4 + mouseX * 0.6;
       sparkLightLeft.position.y = 0.5 + mouseY * 0.6;
 
@@ -276,14 +298,11 @@ export default function AvatarTorre3D({
           rightBolt.visible = Math.random() > 0.35;
           if (leftBolt.visible) updateBolt(leftBolt, -0.65, 0.45, -1.15, 0.35);
           if (rightBolt.visible) updateBolt(rightBolt, 0.65, 0.45, 1.15, 0.35);
-
-          sparkLightLeft.intensity = 3.5 + Math.sin(t * 22) * 2.0;
         } else {
           meshOpen.material.opacity = 0;
           meshClosed.material.opacity = 1;
           leftBolt.visible = false;
           rightBolt.visible = false;
-          sparkLightLeft.intensity = 2.0;
         }
       }
 
