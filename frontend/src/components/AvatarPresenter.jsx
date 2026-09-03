@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Volume2, VolumeX, Sparkles, ChevronRight, ChevronLeft, Zap, BookOpen, Award, CheckCircle2, ArrowUpRight, Maximize2, Minimize2, X } from 'lucide-react';
+import { Play, Pause, RotateCcw, Volume2, VolumeX, Sparkles, ChevronRight, ChevronLeft, Zap, BookOpen, Award, CheckCircle2, ArrowUpRight, Maximize2, Minimize2, X, Box, Image as ImageIcon } from 'lucide-react';
+import AvatarTorre3D from './AvatarTorre3D';
 
 const CHAPTERS = [
   {
@@ -93,6 +94,7 @@ export default function AvatarPresenter({ isModal = false, onClose = null }) {
   const [isSpeakingState, setIsSpeakingState] = useState(false);
   const [mouthOpen, setMouthOpen] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState(STYLES[0]);
+  const [is3DMode, setIs3DMode] = useState(true);
 
   const canvasRef = useRef(null);
   const speechRef = useRef(null);
@@ -269,17 +271,36 @@ export default function AvatarPresenter({ isModal = false, onClose = null }) {
 
         {/* Estilos del Avatar y Controles rápidos */}
         <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
-            {STYLES.map(style => (
-              <button
-                key={style.id}
-                onClick={() => setSelectedStyle(style)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${selectedStyle.id === style.id ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30 font-bold' : 'text-slate-400 hover:text-white'}`}
-              >
-                {style.name}
-              </button>
-            ))}
+          
+          {/* Selector de Modo 3D vs 2D */}
+          <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-cyan-500/30 shadow-inner">
+            <button
+              onClick={() => setIs3DMode(true)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black transition-all ${is3DMode ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white'}`}
+            >
+              <Box className="w-3.5 h-3.5" /> 3D WebGL
+            </button>
+            <button
+              onClick={() => setIs3DMode(false)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${!is3DMode ? 'bg-slate-800 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+            >
+              <ImageIcon className="w-3.5 h-3.5" /> 2D Diseños
+            </button>
           </div>
+
+          {!is3DMode && (
+            <div className="hidden md:flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
+              {STYLES.map(style => (
+                <button
+                  key={style.id}
+                  onClick={() => setSelectedStyle(style)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${selectedStyle.id === style.id ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30 font-bold' : 'text-slate-400 hover:text-white'}`}
+                >
+                  {style.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           <button
             onClick={() => setIsMuted(!isMuted)}
@@ -305,49 +326,56 @@ export default function AvatarPresenter({ isModal = false, onClose = null }) {
         
         {/* AVATAR INTERACTIVO (Columna Izquierda / Central) */}
         <div className="lg:col-span-5 flex flex-col items-center justify-center">
-          <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-[0_0_50px_rgba(0,210,255,0.35)] bg-slate-950 group">
+          <div className="relative w-full max-w-[340px] sm:max-w-[380px] h-[320px] sm:h-[380px] rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-[0_0_60px_rgba(0,210,255,0.4)] bg-gradient-to-b from-[#060e20] to-[#02050c] group">
             
-            {/* Fotograma Base (Boca cerrada) */}
-            <img
-              src={selectedStyle.closed}
-              alt="Avatar Torre CFE"
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-100 ${mouthOpen && isSpeakingState ? 'opacity-0' : 'opacity-100'}`}
-            />
+            {is3DMode ? (
+              /* RENDERIZADOR 3D REAL EN THREE.JS (WebGL) */
+              <AvatarTorre3D isSpeaking={isSpeakingState} mouthOpen={mouthOpen} />
+            ) : (
+              /* MODO 2D CON CAMBIO DE FOTOGRAMAS */
+              <>
+                <img
+                  src={selectedStyle.closed}
+                  alt="Avatar Torre CFE"
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-100 ${mouthOpen && isSpeakingState ? 'opacity-0' : 'opacity-100'}`}
+                />
 
-            {/* Fotograma Hablando (Boca abierta) */}
-            <img
-              src={selectedStyle.open}
-              alt="Avatar Torre CFE Hablando"
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-100 ${mouthOpen && isSpeakingState ? 'opacity-100' : 'opacity-0'}`}
-            />
+                <img
+                  src={selectedStyle.open}
+                  alt="Avatar Torre CFE Hablando"
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-100 ${mouthOpen && isSpeakingState ? 'opacity-100' : 'opacity-0'}`}
+                />
 
-            {/* Canvas de Rayos Eléctricos */}
-            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-10" />
+                <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-10" />
+              </>
+            )}
 
             {/* Badge de Estado */}
             <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-cyan-500/40 text-[11px] font-bold text-cyan-300">
               <span className={`w-2 h-2 rounded-full ${isSpeakingState ? 'bg-emerald-400 animate-ping' : 'bg-cyan-400'}`}></span>
-              {isSpeakingState ? 'Hablando en Vivo...' : 'En Espera'}
+              {isSpeakingState ? 'Hablando en Vivo...' : (is3DMode ? '3D Interactivo' : 'En Espera')}
             </div>
 
             {/* Indicador de Tensión Eléctrica */}
-            <div className="absolute bottom-3 right-3 z-20 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-[10px] font-extrabold text-amber-300">
+            <div className="absolute bottom-3 right-3 z-20 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-[10px] font-extrabold text-amber-300 pointer-events-none">
               ⚡ 400 kV RED NACIONAL
             </div>
           </div>
 
-          {/* Selector de Estilo en Móvil */}
-          <div className="flex md:hidden items-center gap-1 mt-4 overflow-x-auto max-w-full pb-1">
-            {STYLES.map(style => (
-              <button
-                key={style.id}
-                onClick={() => setSelectedStyle(style)}
-                className={`px-2 py-1 rounded-md text-[10px] font-semibold shrink-0 ${selectedStyle.id === style.id ? 'bg-cyan-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300'}`}
-              >
-                {style.name}
-              </button>
-            ))}
-          </div>
+          {/* Selector de Estilo en Móvil (solo en 2D) */}
+          {!is3DMode && (
+            <div className="flex md:hidden items-center gap-1 mt-4 overflow-x-auto max-w-full pb-1">
+              {STYLES.map(style => (
+                <button
+                  key={style.id}
+                  onClick={() => setSelectedStyle(style)}
+                  className={`px-2 py-1 rounded-md text-[10px] font-semibold shrink-0 ${selectedStyle.id === style.id ? 'bg-cyan-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300'}`}
+                >
+                  {style.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* DIAPOSITIVA INTERACTIVA (Columna Derecha) */}
