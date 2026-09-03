@@ -288,19 +288,17 @@ export default function AvatarPresenter({ isModal = false, onClose = null }) {
             </button>
           </div>
 
-          {!is3DMode && (
-            <div className="hidden md:flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
-              {STYLES.map(style => (
-                <button
-                  key={style.id}
-                  onClick={() => setSelectedStyle(style)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${selectedStyle.id === style.id ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30 font-bold' : 'text-slate-400 hover:text-white'}`}
-                >
-                  {style.name}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="hidden md:flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
+            {STYLES.map(style => (
+              <button
+                key={style.id}
+                onClick={() => setSelectedStyle(style)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${selectedStyle.id === style.id ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30 font-bold' : 'text-slate-400 hover:text-white'}`}
+              >
+                {style.name}
+              </button>
+            ))}
+          </div>
 
           <button
             onClick={() => setIsMuted(!isMuted)}
@@ -329,8 +327,13 @@ export default function AvatarPresenter({ isModal = false, onClose = null }) {
           <div className="relative w-full max-w-[340px] sm:max-w-[380px] h-[320px] sm:h-[380px] rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-[0_0_60px_rgba(0,210,255,0.4)] bg-gradient-to-b from-[#060e20] to-[#02050c] group">
             
             {is3DMode ? (
-              /* RENDERIZADOR 3D REAL EN THREE.JS (WebGL) */
-              <AvatarTorre3D isSpeaking={isSpeakingState} mouthOpen={mouthOpen} />
+              /* RENDERIZADOR 3D PARALLAX EN THREE.JS (WebGL) CON TU DISEÑO REAL */
+              <AvatarTorre3D 
+                isSpeaking={isSpeakingState} 
+                mouthOpen={mouthOpen} 
+                imageClosed={selectedStyle.closed}
+                imageOpen={selectedStyle.open}
+              />
             ) : (
               /* MODO 2D CON CAMBIO DE FOTOGRAMAS */
               <>
