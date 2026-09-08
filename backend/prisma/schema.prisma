@@ -1,17 +1,20 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
+// 1. Catálogo de Cursos y Servicios
 model Product {
   id               Int      @id @default(autoincrement())
   name             String
   description      String?
   long_description String?  @db.Text
-  competencies     String[] // Solo en PostgreSQL
+  competencies     String[] // Temas clave del curso (solo PostgreSQL)
   price            Float
   image_url        String?
   link             String?
@@ -20,43 +23,65 @@ model Product {
   updatedAt        DateTime @updatedAt
 }
 
+// 2. Leads (Prospectos) con atributos de IA y canal
 model Lead {
   id            Int            @id @default(autoincrement())
-  platform      String         // "whatsapp", "instagram", "messenger"
+  platform      String         // "whatsapp", "instagram", "messenger", "web"
   phone_or_id   String         @unique
   name          String?
   email         String?
-  status        String         @default("new") // "new", "contacted", "converted"
-  bot_paused    Boolean        @default(false) // Si true, un humano está atendiendo y el bot se silencia
+  status        String         @default("NUEVO") // "NUEVO", "EN_CONTACTO", "COTIZADO", "CERRADO"
+  bot_paused    Boolean        @default(false)   // Toma de control humana
+  prefers_audio Boolean        @default(false)   // Si el usuario prefiere notas de voz
+  sentiment     String?        // "interesado", "molesto", "neutral", "urgente"
+  custom_data   Json?          // Datos recolectados por tools (ej: presupuesto, tipo de obra)
   conversations Conversation[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
 
+// 3. Conversaciones con soporte multimodal y trazabilidad de tools
 model Conversation {
+  id           Int      @id @default(autoincrement())
+  leadId       Int
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  message      String   @db.Text
+  sender       String   // "user", "ai", "human"
+  media_type   String   @default("text") // "text", "audio", "image", "document"
+  media_url    String?  // URL del archivo o nota de voz
+  tool_invoked String?  // Nombre de la tool si la IA ejecutó una acción
+  tokens_used  Int?     // Conteo de tokens para métricas de costo
+  timestamp    DateTime @default(now())
+}
+
+// 4. Base de Conocimiento RAG Vectorial (pgvector)
+model DocumentChunk {
   id        Int      @id @default(autoincrement())
-  leadId    Int
-  lead      Lead     @relation(fields: [leadId], references: [id])
-  message   String
-  sender    String   // "user", "ai", o "human"
-  timestamp DateTime @default(now())
+  title     String   // Ej: "Norma CFE Contratación", "Temario OPUS 2025"
+  category  String   // "normas_cfe", "cursos_opus", "politicas"
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
 }
 
+// 5. Configuraciones Dinámicas del Sistema
 model Setting {
-  id            Int      @id @default(autoincrement())
-  key           String   @unique
-  value         String   @db.Text
-  description   String?
-  updatedAt     DateTime @updatedAt
-}
-
-model BotRule {
   id          Int      @id @default(autoincrement())
-  keyword     String
-  match_type  String   @default("contains") // "contains" o "exact"
-  response    String   @db.Text
-  is_active   Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
   updatedAt   DateTime @updatedAt
 }
 
+// 6. Reglas Rápidas de Palabras Clave (Short-circuit antes de IA)
+model BotRule {
+  id         Int      @id @default(autoincrement())
+  keyword    String
+  match_type String   @default("contains") // "contains", "exact"
+  response   String   @db.Text
+  is_active  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

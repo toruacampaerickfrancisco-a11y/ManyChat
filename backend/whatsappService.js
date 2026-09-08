@@ -209,6 +209,30 @@ async function logoutWhatsAppSession() {
   }
 }
 
+async function sendVoiceNote(to, audioBuffer) {
+  if (!sock || connectionStatus !== 'CONNECTED') {
+    return { success: false, reason: 'WhatsApp no está conectado' };
+  }
+
+  try {
+    let jid = to;
+    if (!jid.includes('@')) {
+      const cleanPhone = String(to).replace(/[^0-9]/g, '');
+      jid = `${cleanPhone}@s.whatsapp.net`;
+    }
+
+    await sock.sendMessage(jid, {
+      audio: audioBuffer,
+      mimetype: 'audio/ogg; codecs=opus',
+      ptt: true // Esto activa la nota de voz nativa oficial (micrófono verde)
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('[WhatsApp Voice Send Error]', error);
+    return { success: false, error: error.message };
+  }
+}
+
 function getWhatsAppStatus() {
   return {
     status: connectionStatus,
@@ -223,6 +247,7 @@ module.exports = {
   requestPairingCodeForPhone,
   setMessageHandler,
   sendWhatsAppDirectMessage,
+  sendVoiceNote,
   logoutWhatsAppSession,
   getWhatsAppStatus
 };
