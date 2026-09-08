@@ -92,6 +92,9 @@ async function generateWithHedra({ imageBuffer, audioBuffer, text }) {
 async function generateWithKling({ imageBase64, promptText }) {
   if (!config.KLING_API_KEY) throw new Error('KLING_API_KEY no configurada');
 
+  // Asegurar que la imagen sea base64 puro sin prefijo data:image/...
+  const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+
   const res = await fetch('https://api.klingai.com/v1/videos/image2video', {
     method: 'POST',
     headers: {
@@ -99,17 +102,31 @@ async function generateWithKling({ imageBase64, promptText }) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'kling-v1',
-      image: imageBase64,
-      prompt: `3D mascot electric transmission tower named Nikola speaking, friendly smile, blinking eyes, waving hand with subtle electrical sparks: "${promptText}"`,
-      duration: '10',
+      model_name: 'kling-v1',
+      image: cleanBase64,
+      prompt: `3D Pixar style electric transmission tower mascot named Nikola speaking with friendly smile, expressive eyes and waving hand: "${promptText}"`,
+      duration: '5',
       mode: 'std'
     })
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Error en Kling API');
-  return { jobId: data.data?.task_id || data.task_id, provider: 'kling' };
+  if (!res.ok || (data.code && data.code !== 0)) {
+    throw new Error(data.message || data.msg || 'Error en Kling API');
+  }
+
+  const taskId = data.data?.task_id || data.task_id;
+  return { jobId: taskId, provider: 'kling' };
+}
+
+async function checkKlingTaskStatus(taskId) {
+  if (!config.KLING_API_KEY) return null;
+  const res = await fetch(`https://api.klingai.com/v1/videos/image2video/${taskId}`, {
+    headers: {
+      'Authorization': `Bearer ${config.KLING_API_KEY}`
+    }
+  });
+  return await res.json();
 }
 
 // 4. Orquestador de inicio de renderizado
