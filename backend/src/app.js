@@ -9,6 +9,7 @@ const whatsappRoutes = require('./routes/whatsapp.routes');
 const leadsRoutes = require('./routes/leads.routes');
 const productsRoutes = require('./routes/products.routes');
 const settingsRoutes = require('./routes/settings.routes');
+const videoRoutes = require('./routes/video.routes');
 
 const app = express();
 
@@ -30,7 +31,12 @@ app.use('/api/webhooks/meta', metaWebhookRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/videos', videoRoutes);
 app.use('/api', settingsRoutes);
+
+// Servir videos generados
+const generatedVideosPath = path.join(__dirname, '../generated_videos');
+app.use('/generated-videos', express.static(generatedVideosPath));
 
 // Servir frontend compilado en producción con resolución robusta de rutas
 const fs = require('fs');

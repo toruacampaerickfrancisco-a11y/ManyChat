@@ -14,6 +14,11 @@ const config = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY || '',
   
+  // Video & Avatar Generation
+  HEDRA_API_KEY: process.env.HEDRA_API_KEY || '',
+  KLING_API_KEY: process.env.KLING_API_KEY || '',
+  REPLICATE_API_TOKEN: process.env.REPLICATE_API_TOKEN || '',
+  
   // Meta Configuration
   META_VERIFY_TOKEN: process.env.META_VERIFY_TOKEN || 'clipop2026',
   META_ACCESS_TOKEN: process.env.META_ACCESS_TOKEN || '',
