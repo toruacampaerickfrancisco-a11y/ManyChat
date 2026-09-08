@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Zap } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function Navbar() {
@@ -60,13 +60,6 @@ export default function Navbar() {
         <Link to="/servicios" className={getLinkClass('/servicios')}>Servicios</Link>
         <Link to="/cursos" className={getLinkClass('/cursos')}>Cursos</Link>
         <Link to="/contacto" className={getLinkClass('/contacto')}>Contacto</Link>
-        <Link 
-          to="/presentador-virtual" 
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 text-cyan-400 border border-cyan-500/40 hover:scale-105 shadow-md shadow-cyan-500/10 transition-all"
-        >
-          <Zap className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-          <span>Presentador CFE</span>
-        </Link>
       </nav>
 
       {/* Botón de Menú Móvil */}
@@ -85,13 +78,6 @@ export default function Navbar() {
           <Link to="/servicios" className={getLinkClass('/servicios', true)}>Servicios</Link>
           <Link to="/cursos" className={getLinkClass('/cursos', true)}>Cursos</Link>
           <Link to="/contacto" className={getLinkClass('/contacto', true)}>Contacto</Link>
-          <Link 
-            to="/presentador-virtual" 
-            className="flex items-center gap-2 p-3.5 rounded-xl bg-slate-950 text-cyan-400 font-bold text-base border border-cyan-500/30"
-          >
-            <Zap className="w-4 h-4 animate-pulse text-cyan-400" />
-            <span>Presentador Virtual CFE</span>
-          </Link>
         </div>
       )}
     </header>
