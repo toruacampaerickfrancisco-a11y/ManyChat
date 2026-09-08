@@ -21,7 +21,8 @@ auth_session.tar.gz
 auth_session.zip
 
 # Production build
-dist/
+# dist/ se incluye para despliegue directo en el servidor
+!frontend/dist/
 build/
 
 # Logs

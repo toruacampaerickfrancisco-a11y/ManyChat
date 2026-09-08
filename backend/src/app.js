@@ -32,17 +32,29 @@ app.use('/api/leads', leadsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api', settingsRoutes);
 
-// Servir frontend compilado en producción
-const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+// Servir frontend compilado en producción con resolución robusta de rutas
+const fs = require('fs');
+let frontendDistPath = path.join(__dirname, '../../frontend/dist');
+if (!fs.existsSync(frontendDistPath)) {
+  frontendDistPath = path.join(__dirname, '../frontend/dist');
+}
+if (!fs.existsSync(frontendDistPath)) {
+  frontendDistPath = path.join(process.cwd(), '../frontend/dist');
+}
+if (!fs.existsSync(frontendDistPath)) {
+  frontendDistPath = path.join(process.cwd(), 'frontend/dist');
+}
+
+console.log(`[Frontend Static] Sirviendo archivos estáticos desde: ${frontendDistPath}`);
 app.use(express.static(frontendDistPath));
 
-// Fallback SPA (Single Page Application)
+// Fallback SPA (Single Page Application) - únicamente para rutas de navegación web
 app.use((req, res, next) => {
-  if (req.method === 'GET' && !req.path.startsWith('/api')) {
+  if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/assets') && !path.extname(req.path)) {
     const indexPath = path.join(frontendDistPath, 'index.html');
-    return res.sendFile(indexPath, (err) => {
-      if (err) next();
-    });
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
   }
   next();
 });

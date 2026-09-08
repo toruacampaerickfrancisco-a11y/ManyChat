@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentador Virtual CFE - Alta Tensión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b111e;
+      --bg-panel: rgba(15, 23, 42, 0.9);
+      --cfe-green: #007848;
+      --cfe-accent: #00b067;
+      --volt-blue: #00d2ff;
+      --volt-orange: #ff7b00;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #172554, var(--bg-dark) 80%);
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .video-container {
+      width: 100%;
+      max-width: 1100px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 210, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stage {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 30px 50px;
+      background: linear-gradient(135deg, #091224 0%, #030712 100%);
+      overflow: hidden;
+    }
+
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(0, 210, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 210, 255, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .energy-glow {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+    .glow-1 { top: -100px; left: -100px; background: var(--volt-blue); }
+    .glow-2 { bottom: -100px; right: -100px; background: var(--cfe-accent); }
+
+    /* Avatar Canvas / Lip-Sync Frame Container */
+    .avatar-wrapper {
+      position: relative;
+      width: 420px;
+      height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .avatar-card {
+      width: 340px;
+      height: 340px;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(0, 210, 255, 0.4);
+      box-shadow: 0 0 35px rgba(0, 210, 255, 0.35);
+      background: #0d172a;
+    }
+
+    /* Double-buffered talking frame images */
+    .avatar-frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.08s ease, transform 0.15s ease;
+    }
+
+    #frameClosed {
+      opacity: 1;
+      z-index: 1;
+    }
+
+    #frameOpen {
+      opacity: 0;
+      z-index: 2;
+    }
+
+    /* Head movement while talking */
+    .avatar-card.talking {
+      animation: headSway 0.6s infinite alternate ease-in-out;
+    }
+
+    @keyframes headSway {
+      0% { transform: translateY(0) rotate(-0.8deg) scale(1); }
+      50% { transform: translateY(-4px) rotate(0.4deg) scale(1.015); }
+      100% { transform: translateY(-2px) rotate(0.9deg) scale(1.01); }
+    }
+
+    /* Lightning Arc Canvas on top of Avatar */
+    #lightningCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .speaking-indicator {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: var(--cfe-green);
+      border: 2px solid #fff;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(0, 176, 103, 0.6);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      z-index: 4;
+    }
+    .speaking-indicator.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .speaking-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fff;
+      animation: pulseDot 0.8s infinite;
+    }
+
+    /* Slide Information */
+    .presentation-panel {
+      flex: 1;
+      max-width: 500px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 26px 30px;
+      z-index: 2;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      position: relative;
+      min-height: 290px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .slide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--volt-blue);
+      background: rgba(0, 210, 255, 0.1);
+      padding: 4px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 210, 255, 0.25);
+      width: fit-content;
+      margin-bottom: 10px;
+    }
+
+    .slide-title {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 12px;
+      background: linear-gradient(90deg, #ffffff, #93c5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-content {
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: #cbd5e1;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--volt-orange);
+    }
+    .metric-val.blue { color: var(--volt-blue); }
+    .metric-val.green { color: var(--cfe-accent); }
+
+    .metric-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Subtitles / Teleprompter */
+    .subtitles-bar {
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 10px 20px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      z-index: 10;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      transition: all 0.2s ease;
+    }
+
+    /* Video Player Control Bar */
+    .controls-bar {
+      height: 60px;
+      background: rgba(10, 15, 29, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .play-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cfe-green), var(--cfe-accent));
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 15px rgba(0, 176, 103, 0.4);
+    }
+    .play-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 25px rgba(0, 176, 103, 0.7);
+    }
+
+    .timeline-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      position: relative;
+      cursor: pointer;
+    }
+    .timeline-progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--volt-blue), var(--cfe-accent));
+      border-radius: 3px;
+      transition: width 0.1s linear;
+    }
+
+    .time-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      min-width: 90px;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .audio-waves {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 20px;
+    }
+    .wave-bar {
+      width: 3px;
+      height: 4px;
+      background: var(--volt-blue);
+      border-radius: 2px;
+      transition: height 0.1s ease;
+    }
+    .active-wave .wave-bar {
+      animation: waveDance 0.35s infinite alternate ease-in-out;
+    }
+    .active-wave .wave-bar:nth-child(2) { animation-delay: 0.07s; }
+    .active-wave .wave-bar:nth-child(3) { animation-delay: 0.14s; }
+    .active-wave .wave-bar:nth-child(4) { animation-delay: 0.21s; }
+    .active-wave .wave-bar:nth-child(5) { animation-delay: 0.28s; }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    @keyframes waveDance {
+      0% { height: 4px; }
+      100% { height: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="video-container" id="videoPlayer">
+    
+    <div class="stage">
+      <div class="grid-bg"></div>
+      <div class="energy-glow glow-1"></div>
+      <div class="energy-glow glow-2"></div>
+
+      <!-- Avatar with Dynamic Lip-Sync & Sparks -->
+      <div class="avatar-wrapper">
+        <div class="avatar-card" id="avatarCard">
+          <img src="Avatar_Torre_Diagrama_V1.jpg" alt="Avatar Boca Cerrada" class="avatar-frame" id="frameClosed">
+          <img src="Avatar_Torre_Hablando.jpg" alt="Avatar Boca Abierta" class="avatar-frame" id="frameOpen">
+          <canvas id="lightningCanvas" width="340" height="340"></canvas>
+          
+          <div class="speaking-indicator" id="speakingTag">
+            <div class="speaking-dot"></div>
+            <span>TRANSMITIENDO VOZ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide Panel -->
+      <div class="presentation-panel" id="slidePanel">
+        <div>
+          <div class="slide-tag" id="slideBadge">⚡ CFE | ALTA TENSIÓN</div>
+          <h2 class="slide-title" id="slideHeading">Licitaciones de Transmisión Eléctrica</h2>
+          <p class="slide-content" id="slideBody">
+            Bienvenido al módulo de cumplimiento técnico para licitaciones públicas de la Comisión Federal de Electricidad.
+          </p>
+        </div>
+
+        <div class="metrics-grid" id="metricsContainer">
+          <div class="metric-card">
+            <span class="metric-val blue">400 / 230 kV</span>
+            <span class="metric-lbl">Líneas Troncales</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val">115 kV</span>
+            <span class="metric-lbl">Subtransmisión</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val green">LAPEM</span>
+            <span class="metric-lbl">Certificación Calidad</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val">CFE 00J00-51</span>
+            <span class="metric-lbl">Norma Técnica</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtitles -->
+      <div class="subtitles-bar" id="subtitlesText">
+        Presiona "Reproducir Video" para iniciar la presentación interactiva con voz y avatar animado hablando.
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <button class="play-btn" id="btnPlay" title="Reproducir / Pausar">▶</button>
+
+      <div class="audio-waves" id="waveVisualizer">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+
+      <div class="timeline-track" id="timelineTrack">
+        <div class="timeline-progress" id="progressBar"></div>
+      </div>
+
+      <div class="time-display" id="timeDisplay">00:00 / 00:36</div>
+
+      <button class="action-btn" id="btnRestart" title="Reiniciar">🔄 Reiniciar</button>
+      <button class="action-btn" id="btnFullscreen" title="Pantalla Completa">⛶ Pantalla Completa</button>
+    </div>
+
+  </div>
+
+  <script>
+    const SCENES = [
+      {
+        badge: "⚡ ESCENA 1: INTRODUCCIÓN Y POTENCIA",
+        title: "Infraestructura de Alta Tensión CFE",
+        text: "¡Hola a todos! Soy su avatar técnico. En las licitaciones públicas de la CFE, la construcción e interconexión de líneas de transmisión de 400, 230 y 115 kilovoltios requieren el más alto estándar de ingeniería.",
+        subtitle: "¡Hola a todos! Soy su avatar técnico. En las licitaciones de CFE, las líneas de 400 y 230 kV requieren máxima excelencia.",
+        metrics: [
+          { val: "400 kV", lbl: "Red Troncal Nacional", color: "blue" },
+          { val: "230 / 115 kV", lbl: "Distribución Regional", color: "orange" },
+          { val: "LAPEM", lbl: "Validación de Equipos", color: "green" },
+          { val: "SE-230kV", lbl: "Subestaciones Enlace", color: "orange" }
+        ],
+        duration: 9
+      },
+      {
+        badge: "📋 ESCENA 2: NORMATIVA Y CALIDAD LAPEM",
+        title: "Especificaciones Técnicas Obligatorias",
+        text: "Para asegurar la adjudicación del contrato, es indispensable contar con certificados de pruebas de laboratorio LAPEM para torres de celosía, cadenas de aisladores y herrajes de sujeción.",
+        subtitle: "Es indispensable contar con pruebas de laboratorio LAPEM para torres de celosía, aisladores y herrajes.",
+        metrics: [
+          { val: "CFE 00J00-51", lbl: "Norma de Estructuras", color: "green" },
+          { val: "100%", lbl: "Ensayos Destructivos", color: "blue" },
+          { val: "Aisladores", lbl: "Porcelana y Poliméricos", color: "orange" },
+          { val: "Cero Fallas", lbl: "Confiabilidad en Red", color: "green" }
+        ],
+        duration: 9
+      },
+      {
+        badge: "📑 ESCENA 3: PROPUESTA INTEGRAL CFE",
+        title: "Estrategia Técnico-Económica",
+        text: "Las bases de licitación evalúan la solvencia técnica, el plan de seguridad en maniobras con línea viva y el cronograma de libranzas coordinado con el CENACE.",
+        subtitle: "Las bases evalúan solvencia técnica, seguridad en maniobras y coordinación precisa con el CENACE.",
+        metrics: [
+          { val: "CENACE", lbl: "Gestión de Libranzas", color: "blue" },
+          { val: "ISO 45001", lbl: "Seguridad Industrial", color: "orange" },
+          { val: "Ruta Crítica", lbl: "Cronograma de Obra", color: "green" },
+          { val: "Cumplimiento", lbl: "100% Legal y Financiero", color: "blue" }
+        ],
+        duration: 9
+      },
+      {
+        badge: "🏆 ESCENA 4: CONCLUSIÓN",
+        title: "Listos para Ganar la Licitación",
+        text: "Con el respaldo de nuestra experiencia y capacidad técnica certificada, garantizamos proyectos energéticos robustos, seguros y eficientes para México. ¡Mucho éxito en el proceso!",
+        subtitle: "Garantizamos proyectos energéticos robustos, seguros y eficientes para México. ¡Mucho éxito en el proceso!",
+        metrics: [
+          { val: "Éxito CFE", lbl: "Propuesta Ganadora", color: "green" },
+          { val: "400/230 kV", lbl: "Potencia Confiable", color: "blue" },
+          { val: "100%", lbl: "Disponibilidad", color: "orange" },
+          { val: "México", lbl: "Soberanía Energética", color: "green" }
+        ],
+        duration: 9
+      }
+    ];
+
+    const TOTAL_DURATION = SCENES.reduce((acc, s) => acc + s.duration, 0);
+
+    // DOM Elements
+    const btnPlay = document.getElementById('btnPlay');
+    const btnRestart = document.getElementById('btnRestart');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    const progressBar = document.getElementById('progressBar');
+    const timelineTrack = document.getElementById('timelineTrack');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const subtitlesText = document.getElementById('subtitlesText');
+    const avatarCard = document.getElementById('avatarCard');
+    const frameClosed = document.getElementById('frameClosed');
+    const frameOpen = document.getElementById('frameOpen');
+    const speakingTag = document.getElementById('speakingTag');
+    const waveVisualizer = document.getElementById('waveVisualizer');
+    const slideBadge = document.getElementById('slideBadge');
+    const slideHeading = document.getElementById('slideHeading');
+    const slideBody = document.getElementById('slideBody');
+    const metricsContainer = document.getElementById('metricsContainer');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const canvas = document.getElementById('lightningCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let isPlaying = false;
+    let isSpeaking = false;
+    let currentTime = 0;
+    let intervalTimer = null;
+    let lipSyncTimer = null;
+    let currentSceneIndex = -1;
+    let synth = window.speechSynthesis;
+    let currentUtterance = null;
+
+    // Electric Spark VFX
+    function drawElectricSparks() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (isSpeaking) {
+        // Draw lightning near insulators & hand
+        ctx.strokeStyle = '#00d2ff';
+        ctx.shadowColor = '#00d2ff';
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 1.5;
+
+        // Spark 1 (Hand)
+        drawBolt(260, 140, 275 + Math.random()*20, 130 + Math.random()*20);
+        // Spark 2 (Insulator left)
+        drawBolt(110, 160, 95 + Math.random()*15, 175 + Math.random()*15);
+        // Spark 3 (Insulator right)
+        drawBolt(230, 160, 245 + Math.random()*15, 175 + Math.random()*15);
+      }
+      requestAnimationFrame(drawElectricSparks);
+    }
+    requestAnimationFrame(drawElectricSparks);
+
+    function drawBolt(x1, y1, x2, y2) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      const midX = (x1 + x2)/2 + (Math.random() - 0.5)*15;
+      const midY = (y1 + y2)/2 + (Math.random() - 0.5)*15;
+      ctx.lineTo(midX, midY);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    // Dynamic Lip-Sync Controller
+    function startLipSync() {
+      isSpeaking = true;
+      avatarCard.classList.add('talking');
+      speakingTag.classList.add('active');
+      waveVisualizer.classList.add('active-wave');
+
+      let state = false;
+      lipSyncTimer = setInterval(() => {
+        state = !state;
+        if (state) {
+          frameOpen.style.opacity = '1';
+          frameClosed.style.opacity = '0';
+        } else {
+          frameOpen.style.opacity = '0';
+          frameClosed.style.opacity = '1';
+        }
+      }, 140 + Math.random() * 80);
+    }
+
+    function stopLipSync() {
+      isSpeaking = false;
+      clearInterval(lipSyncTimer);
+      avatarCard.classList.remove('talking');
+      speakingTag.classList.remove('active');
+      waveVisualizer.classList.remove('active-wave');
+      frameOpen.style.opacity = '0';
+      frameClosed.style.opacity = '1';
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    function updateTimeDisplay() {
+      timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(TOTAL_DURATION)}`;
+      const percent = (currentTime / TOTAL_DURATION) * 100;
+      progressBar.style.width = `${percent}%`;
+    }
+
+    function renderScene(index) {
+      if (index === currentSceneIndex || index < 0 || index >= SCENES.length) return;
+      currentSceneIndex = index;
+      const s = SCENES[index];
+
+      slideBadge.textContent = s.badge;
+      slideHeading.textContent = s.title;
+      slideBody.textContent = s.text;
+      subtitlesText.textContent = s.subtitle;
+
+      metricsContainer.innerHTML = s.metrics.map(m => `
+        <div class="metric-card">
+          <span class="metric-val ${m.color}">${m.val}</span>
+          <span class="metric-lbl">${m.lbl}</span>
+        </div>
+      `).join('');
+
+      speakText(s.text);
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      synth.cancel();
+
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.lang = 'es-MX';
+      currentUtterance.rate = 1.05;
+      currentUtterance.pitch = 1.0;
+
+      const voices = synth.getVoices();
+      const esVoice = voices.find(v => v.lang.includes('es-MX') || v.lang.includes('es-US') || v.lang.includes('es-ES') || v.lang.startsWith('es'));
+      if (esVoice) currentUtterance.voice = esVoice;
+
+      currentUtterance.onstart = () => {
+        startLipSync();
+      };
+
+      currentUtterance.onend = () => {
+        stopLipSync();
+      };
+
+      currentUtterance.onerror = () => {
+        stopLipSync();
+      };
+
+      synth.speak(currentUtterance);
+    }
+
+    function playVideo() {
+      isPlaying = true;
+      btnPlay.innerHTML = '⏸';
+      
+      let accumulated = 0;
+      let targetScene = 0;
+      for (let i = 0; i < SCENES.length; i++) {
+        if (currentTime >= accumulated && currentTime < accumulated + SCENES[i].duration) {
+          targetScene = i;
+          break;
+        }
+        accumulated += SCENES[i].duration;
+      }
+      renderScene(targetScene);
+
+      intervalTimer = setInterval(() => {
+        currentTime += 0.5;
+        if (currentTime >= TOTAL_DURATION) {
+          pauseVideo();
+          currentTime = TOTAL_DURATION;
+          updateTimeDisplay();
+          subtitlesText.textContent = "Presentación finalizada. Presiona 'Reiniciar' para volver a ver.";
+          stopLipSync();
+          return;
+        }
+
+        let acc = 0;
+        for (let i = 0; i < SCENES.length; i++) {
+          if (currentTime >= acc && currentTime < acc + SCENES[i].duration) {
+            if (i !== currentSceneIndex) {
+              renderScene(i);
+            }
+            break;
+          }
+          acc += SCENES[i].duration;
+        }
+
+        updateTimeDisplay();
+      }, 500);
+    }
+
+    function pauseVideo() {
+      isPlaying = false;
+      btnPlay.innerHTML = '▶';
+      clearInterval(intervalTimer);
+      if ('speechSynthesis' in window) synth.cancel();
+      stopLipSync();
+    }
+
+    btnPlay.addEventListener('click', () => {
+      if (isPlaying) {
+        pauseVideo();
+      } else {
+        if (currentTime >= TOTAL_DURATION) currentTime = 0;
+        playVideo();
+      }
+    });
+
+    btnRestart.addEventListener('click', () => {
+      pauseVideo();
+      currentTime = 0;
+      currentSceneIndex = -1;
+      updateTimeDisplay();
+      playVideo();
+    });
+
+    timelineTrack.addEventListener('click', (e) => {
+      const rect = timelineTrack.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+      currentTime = ratio * TOTAL_DURATION;
+      updateTimeDisplay();
+
+      let acc = 0;
+      for (let i = 0; i < SCENES.length; i++) {
+        if (currentTime >= acc && currentTime < acc + SCENES[i].duration) {
+          renderScene(i);
+          break;
+        }
+        acc += SCENES[i].duration;
+      }
+    });
+
+    btnFullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        videoPlayer.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
+    updateTimeDisplay();
+  </script>
+</body>
+</html>
