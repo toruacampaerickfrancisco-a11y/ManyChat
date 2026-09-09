@@ -24,10 +24,54 @@ process.on('unhandledRejection', (reason) => {
   console.error('[Unhandled Rejection] Promesa sin capturar:', reason);
 });
 
+// --- GESTIÓN DE INACTIVIDAD DE CHAT EN WHATSAPP ---
+const inactivitySessions = new Map();
+
+function clearInactivityTimers(userJid) {
+  if (inactivitySessions.has(userJid)) {
+    const session = inactivitySessions.get(userJid);
+    if (session.nudgeTimer) clearTimeout(session.nudgeTimer);
+    if (session.closeTimer) clearTimeout(session.closeTimer);
+    inactivitySessions.delete(userJid);
+  }
+}
+
+function scheduleInactivityTimers(userJid, senderName = '') {
+  clearInactivityTimers(userJid);
+
+  // 1. Mensaje de seguimiento tras 2.5 minutos de inactividad
+  const nudgeTimer = setTimeout(async () => {
+    try {
+      const nudgeMsg = `⏰ *Hola${senderName ? ' ' + senderName : ''}*, ¿sigues por ahí? 🤔\n\n¿Te gustaría continuar con la conversación o tienes alguna otra duda sobre nuestros cursos o cotizaciones?\n\n💡 _Escribe cualquier duda o *0* para volver al menú principal._`;
+      console.log(`[WhatsApp Inactividad] Enviando recordatorio a ${userJid}`);
+      await whatsappService.sendWhatsAppDirectMessage(userJid, nudgeMsg);
+    } catch (err) {
+      console.error('[WhatsApp Nudge Error]', err);
+    }
+  }, 150000); // 2.5 minutos
+
+  // 2. Mensaje de cierre tras 5 minutos de inactividad total
+  const closeTimer = setTimeout(async () => {
+    try {
+      const closeMsg = `🔒 *Sesión finalizada por inactividad*\n\nHemos cerrado esta conversación por el momento. Puedes volver a escribirnos cuando gustes enviando *'Hola'* o *'0'*. ¡Mucho éxito en tus proyectos! 👋✨\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n━━━━━━━━━━━━━━━━━━━`;
+      console.log(`[WhatsApp Inactividad] Cerrando sesión por inactividad para ${userJid}`);
+      await whatsappService.sendWhatsAppDirectMessage(userJid, closeMsg);
+      inactivitySessions.delete(userJid);
+    } catch (err) {
+      console.error('[WhatsApp Close Error]', err);
+    }
+  }, 300000); // 5 minutos
+
+  inactivitySessions.set(userJid, { nudgeTimer, closeTimer, lastActivity: Date.now() });
+}
+
 // --- MANEJADOR DE MENSAJES DE WHATSAPP (Baileys) ---
 whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, imageBuffer }) => {
   const phone = from.split('@')[0];
   let userMessage = text || '';
+
+  // Limpiar temporizadores de inactividad al recibir mensaje
+  clearInactivityTimers(from);
 
   // 1. Si es audio, transcribir con Groq Whisper
   let isVoice = false;
@@ -77,66 +121,7 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
     return;
   }
 
-  // 3. Manejo de botones de opciones rápidas y tarjetas con banner
-  const cleanMsg = userMessage.trim().toLowerCase();
-  const interactiveService = require('./src/services/interactiveMessageService');
-
-  // Opción 1 o Cursos
-  if (cleanMsg === '1' || cleanMsg === 'btn_cursos' || cleanMsg.includes('cursos') || cleanMsg.includes('opus')) {
-    const card = interactiveService.buildCoursesCard();
-    await whatsappService.sendWhatsAppBannerCard(from, {
-      imageUrl: 'https://clipop.com.mx/concurso_lineas.png',
-      text: card.interactive.body.text,
-      buttons: [
-        { text: '⚡ Cotizar Proyecto' },
-        { text: '👤 Hablar con Asesor' }
-      ],
-      footer: 'CLIPOP Ingeniería'
-    });
-    return;
-  }
-
-  // Opción 2 o Cotizar
-  if (cleanMsg === '2' || cleanMsg === 'btn_cotizar' || cleanMsg.includes('cotizar')) {
-    const card = interactiveService.buildQuotationCard();
-    await whatsappService.sendWhatsAppBannerCard(from, {
-      imageUrl: 'https://clipop.com.mx/concurso_subestacion.png',
-      text: card.interactive.body.text,
-      buttons: [
-        { text: '📚 Ver Cursos' },
-        { text: '👤 Transferir a Ingeniero' }
-      ],
-      footer: 'CLIPOP Ingeniería'
-    });
-    return;
-  }
-
-  // Opción 3 o Asesor Humano
-  if (cleanMsg === '3' || cleanMsg === 'btn_asesor' || cleanMsg.includes('asesor') || cleanMsg.includes('humano')) {
-    if (prisma && lead) {
-      await prisma.lead.update({ where: { id: lead.id }, data: { bot_paused: true } });
-    }
-    await whatsappService.sendWhatsAppDirectMessage(from, '👨‍💼 Un ingeniero asesor de CLIPOP tomará el control de la conversación a la brevedad. ¡Gracias por tu paciencia!');
-    return;
-  }
-
-  // Saludo Inicial ("hola", "0", "inicio", "buenas") -> Video de Bienvenida de Nikola + Botones
-  if (cleanMsg === 'hola' || cleanMsg === '0' || cleanMsg === 'inicio' || cleanMsg === 'buenas' || cleanMsg === 'buenos dias' || cleanMsg === 'buenas tardes') {
-    const welcomeCard = interactiveService.buildWelcomeCard(senderName);
-    await whatsappService.sendWhatsAppVideoCard(from, {
-      videoUrl: 'https://clipop.com.mx/avatar-torre/nikola_bienvenida.mp4',
-      text: welcomeCard.interactive.body.text,
-      buttons: [
-        { text: '📚 Cursos OPUS / CFE' },
-        { text: '⚡ Cotizar Proyecto' },
-        { text: '👤 Asesor Humano' }
-      ],
-      footer: 'CLIPOP • clipop.com.mx'
-    });
-    return;
-  }
-
-  // 4. Procesar mensaje libre con el Agente de IA Omnicanal
+  // 3. Procesar mensaje con el Agente de IA Omnicanal (Reglas Exactas de CLIPOP)
   const response = await agentOrchestrator.processMessage({
     leadId: lead ? lead.id : null,
     platform: 'whatsapp',
@@ -159,6 +144,9 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
     } else {
       await whatsappService.sendWhatsAppDirectMessage(from, response.text);
     }
+
+    // Programar temporizadores de seguimiento por inactividad
+    scheduleInactivityTimers(from, senderName);
 
     if (prisma && lead) {
       try {
