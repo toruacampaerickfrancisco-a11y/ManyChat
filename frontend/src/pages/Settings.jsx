@@ -28,6 +28,7 @@ import {
   Grid, 
   MoreVertical, 
   ChevronDown, 
+  ChevronRight,
   Sparkles, 
   CheckCircle2, 
   Shield, 
@@ -37,9 +38,20 @@ import {
   Clock,
   ToggleLeft,
   ToggleRight,
-  ArrowRight
+  ArrowRight,
+  Video,
+  Image as ImageIcon,
+  Film,
+  Music,
+  UploadCloud,
+  RotateCcw,
+  Eye,
+  Link as LinkIcon,
+  Layers,
+  FileCheck
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+
 
 // Custom SVG Icons for exact ManyChat branding
 const ManyChatLogo = ({ className = "w-5 h-5" }) => (
@@ -150,6 +162,23 @@ export default function Settings() {
   const [automationSearch, setAutomationSearch] = useState('');
   const [selectedAutomations, setSelectedAutomations] = useState([]);
 
+  // Bot Flows State
+  const [coreFlows, setCoreFlows] = useState([]);
+  const [editingFlowKey, setEditingFlowKey] = useState(null);
+  const [flowDrafts, setFlowDrafts] = useState({});
+  const [savingFlowKey, setSavingFlowKey] = useState(null);
+  const [flowFeedback, setFlowFeedback] = useState(null);
+  const [flowSimInput, setFlowSimInput] = useState('0');
+  const [flowSimOutput, setFlowSimOutput] = useState(null);
+
+  // Media Hub State
+  const [mediaList, setMediaList] = useState([]);
+  const [loadingMedia, setLoadingMedia] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [mediaUploadSuccess, setMediaUploadSuccess] = useState(false);
+  const [mediaPreviewItem, setMediaPreviewItem] = useState(null);
+  const [mediaSearch, setMediaSearch] = useState('');
+
   // Rules State
   const [rules, setRules] = useState([]);
   const [editingRule, setEditingRule] = useState(null);
@@ -210,7 +239,41 @@ export default function Settings() {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch Settings & Rules
+  const fetchBotFlows = async () => {
+    try {
+      const res = await fetch('/api/bot/flows');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.coreFlows)) {
+        setCoreFlows(data.coreFlows);
+        const drafts = {};
+        data.coreFlows.forEach(f => {
+          drafts[f.key] = {
+            response: f.currentResponse,
+            mediaUrl: f.mediaUrl || ''
+          };
+        });
+        setFlowDrafts(drafts);
+      }
+    } catch (err) {
+      console.error('[Bot Flows Fetch Error]', err);
+    }
+  };
+
+  const fetchMediaList = async () => {
+    setLoadingMedia(true);
+    try {
+      const res = await fetch('/api/media');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.media)) {
+        setMediaList(data.media);
+      }
+    } catch (err) {
+      console.error('[Media Fetch Error]', err);
+    }
+    setLoadingMedia(false);
+  };
+
+  // Fetch Settings, Rules, Flows & Media
   useEffect(() => {
     fetch('/api/settings')
       .then(res => res.json())
@@ -227,7 +290,143 @@ export default function Settings() {
       .catch(err => console.error('[Settings fetch error]', err));
 
     fetchRules();
+    fetchBotFlows();
+    fetchMediaList();
   }, []);
+
+  const handleSaveFlow = async (key) => {
+    const draft = flowDrafts[key];
+    if (!draft) return;
+    setSavingFlowKey(key);
+    setFlowFeedback(null);
+    try {
+      const res = await fetch('/api/bot/flows/save-core', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key,
+          response: draft.response,
+          mediaUrl: draft.mediaUrl
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFlowFeedback({ key, type: 'success', message: '¡Flujo guardado con éxito! El bot responderá con este contenido inmediatamente.' });
+        fetchBotFlows();
+        setTimeout(() => setFlowFeedback(null), 4000);
+      } else {
+        setFlowFeedback({ key, type: 'error', message: data.error || 'Error al guardar el flujo' });
+      }
+    } catch (err) {
+      setFlowFeedback({ key, type: 'error', message: err.message });
+    }
+    setSavingFlowKey(null);
+  };
+
+  const handleResetFlow = async (key) => {
+    if (!window.confirm('¿Deseas restaurar este flujo a la respuesta oficial original por defecto?')) return;
+    setSavingFlowKey(key);
+    try {
+      const res = await fetch('/api/bot/flows/reset-core', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFlowFeedback({ key, type: 'success', message: '¡Flujo restaurado al texto oficial por defecto!' });
+        fetchBotFlows();
+        setTimeout(() => setFlowFeedback(null), 4000);
+      }
+    } catch (err) {
+      setFlowFeedback({ key, type: 'error', message: err.message });
+    }
+    setSavingFlowKey(null);
+  };
+
+  const handleUploadMedia = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingFile(true);
+    setMediaUploadSuccess(false);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/media/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMediaUploadSuccess(true);
+        fetchMediaList();
+        setTimeout(() => setMediaUploadSuccess(false), 3000);
+      } else {
+        alert(`Error al subir archivo: ${data.error}`);
+      }
+    } catch (err) {
+      alert(`Error de red: ${err.message}`);
+    }
+    setUploadingFile(false);
+    e.target.value = '';
+  };
+
+  const handleDeleteMedia = async (filename) => {
+    if (!window.confirm(`¿Estás seguro de eliminar "${filename}"?`)) return;
+    try {
+      const res = await fetch(`/api/media/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        fetchMediaList();
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleSimulateFlow = () => {
+    if (!flowSimInput.trim()) return;
+    const input = flowSimInput.trim().toLowerCase();
+    
+    let matchedFlow = null;
+    if (['0', 'menu', 'menú', 'hola', 'inicio', 'volver', 'empezar', 'buenas'].some(k => input === k || input.startsWith(k))) {
+      matchedFlow = coreFlows.find(f => f.key === 'flow_menu');
+    } else if (['1', 'pregrabado', 'udemy', 'curso', 'opus'].some(k => input.includes(k))) {
+      matchedFlow = coreFlows.find(f => f.key === 'flow_option1');
+    } else if (['2', 'teams', 'tiempo real', 'virtual'].some(k => input.includes(k))) {
+      matchedFlow = coreFlows.find(f => f.key === 'flow_option2');
+    } else if (['3', 'presencial', 'hermosillo', 'sonora'].some(k => input.includes(k))) {
+      matchedFlow = coreFlows.find(f => f.key === 'flow_option3');
+    } else if (['4', 'cotiz', 'proyecto', 'media tension', 'alta tension'].some(k => input.includes(k))) {
+      matchedFlow = coreFlows.find(f => f.key === 'flow_option4');
+    } else if (['si', 'sí', 'duda'].some(k => input.includes(k))) {
+      matchedFlow = coreFlows.find(f => f.key === 'flow_si');
+    } else if (['no', 'gracias', 'adios', 'bye'].some(k => input.includes(k))) {
+      matchedFlow = coreFlows.find(f => f.key === 'flow_no');
+    } else if (['asesor', 'humano', 'persona', 'francisco', 'telefono'].some(k => input.includes(k))) {
+      matchedFlow = coreFlows.find(f => f.key === 'flow_asesor');
+    }
+
+    if (matchedFlow) {
+      const currentText = flowDrafts[matchedFlow.key]?.response || matchedFlow.currentResponse;
+      setFlowSimOutput({
+        title: matchedFlow.title,
+        key: matchedFlow.key,
+        text: currentText,
+        mediaUrl: flowDrafts[matchedFlow.key]?.mediaUrl || matchedFlow.mediaUrl
+      });
+    } else {
+      setFlowSimOutput({
+        title: 'IA / Respuesta Libre (Gemini)',
+        key: 'ai_fallback',
+        text: `El bot responderá usando el Asistente IA con el System Prompt oficial sobre el catálogo de CLIPOP.`
+      });
+    }
+  };
+
 
   const fetchRules = () => {
     fetch('/api/bot/rules')
@@ -448,6 +647,8 @@ export default function Settings() {
       <header className="h-14 border-b border-gray-200 px-6 flex items-center justify-between bg-white sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">
+            {activeMenu === 'bot_flows' && 'Flujos & Respuestas del Bot'}
+            {activeMenu === 'media_hub' && 'Gestor Multimedia & Archivos'}
             {activeMenu === 'automations' && 'Automatización'}
             {activeMenu === 'general' && 'Configuración'}
             {activeMenu === 'team' && 'Configuración'}
@@ -484,11 +685,11 @@ export default function Settings() {
       <div className="flex-1 flex overflow-hidden">
         
         {/* ManyChat Sub-Sidebar (Left Navigation) */}
-        <aside className="w-60 border-r border-gray-200 bg-white overflow-y-auto p-4 space-y-6 shrink-0">
+        <aside className="w-64 border-r border-gray-200 bg-white overflow-y-auto p-4 space-y-6 shrink-0">
           
           {/* Section: Principal */}
           <div>
-            <div className="px-2 py-1 text-xs font-bold text-gray-900 tracking-tight">
+            <div className="px-2 py-1 text-xs font-bold text-gray-900 tracking-tight uppercase tracking-wider">
               Principal
             </div>
             <div className="mt-1 space-y-0.5 text-xs font-medium">
@@ -500,7 +701,18 @@ export default function Settings() {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                General
+                ⚙️ General
+              </button>
+              <button
+                onClick={() => handleMenuChange('media_hub')}
+                className={`w-full text-left px-2.5 py-1.5 rounded-md transition-colors flex items-center justify-between ${
+                  activeMenu === 'media_hub'
+                    ? 'text-emerald-700 font-bold bg-emerald-50/60 border-l-2 border-emerald-600'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <span className="flex items-center gap-2">📁 Gestor Multimedia</span>
+                <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">{mediaList.length}</span>
               </button>
               <button
                 onClick={() => handleMenuChange('team')}
@@ -510,17 +722,28 @@ export default function Settings() {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                Miembros del equipo
+                👥 Miembros del equipo
               </button>
             </div>
           </div>
 
           {/* Section: Automatización */}
           <div>
-            <div className="px-2 py-1 text-xs font-bold text-gray-900 tracking-tight">
-              Automatización
+            <div className="px-2 py-1 text-xs font-bold text-gray-900 tracking-tight uppercase tracking-wider">
+              Automatización & Bot
             </div>
             <div className="mt-1 space-y-0.5 text-xs font-medium">
+              <button
+                onClick={() => handleMenuChange('bot_flows')}
+                className={`w-full text-left px-2.5 py-1.5 rounded-md transition-colors flex items-center justify-between ${
+                  activeMenu === 'bot_flows'
+                    ? 'text-emerald-700 font-bold bg-emerald-50/60 border-l-2 border-emerald-600'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <span className="flex items-center gap-2">🤖 Flujos del Bot</span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">8 oficial</span>
+              </button>
               <button
                 onClick={() => handleMenuChange('automations')}
                 className={`w-full text-left px-2.5 py-1.5 rounded-md transition-colors ${
@@ -529,7 +752,7 @@ export default function Settings() {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                Mis automatizaciones
+                ⚡ Mis automatizaciones
               </button>
               <button
                 onClick={() => handleMenuChange('keywords')}
@@ -539,7 +762,7 @@ export default function Settings() {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                Palabras clave ({rules.length})
+                🔑 Palabras clave ({rules.length})
               </button>
               <button
                 onClick={() => handleMenuChange('ai')}
@@ -549,14 +772,14 @@ export default function Settings() {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                AI Agent (Gemini)
+                🧠 AI Agent (Gemini)
               </button>
             </div>
           </div>
 
           {/* Section: Bandeja de entrada */}
           <div>
-            <div className="px-2 py-1 text-xs font-bold text-gray-900 tracking-tight">
+            <div className="px-2 py-1 text-xs font-bold text-gray-900 tracking-tight uppercase tracking-wider">
               Bandeja de entrada
             </div>
             <div className="mt-1 space-y-0.5 text-xs font-medium">
@@ -1288,6 +1511,443 @@ export default function Settings() {
           )}
 
           {/* ========================================================================= */}
+          {/* VIEW 9: FLUJOS & RESPUESTAS DEL BOT (BOT FLOW STUDIO) */}
+          {/* ========================================================================= */}
+          {activeMenu === 'bot_flows' && (
+            <div className="space-y-6 animate-in fade-in duration-150">
+              
+              {/* Header Info Banner */}
+              <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 border border-emerald-200/80 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white tracking-wide uppercase">
+                      Control Dinámico en Vivo
+                    </span>
+                    <span className="text-xs font-bold text-slate-700">8 Flujos Oficiales Integrados</span>
+                  </div>
+                  <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
+                    Editor de Menús y Respuestas del Bot
+                  </h2>
+                  <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
+                    Edita los textos, enlaces de Udemy, emojis y archivos multimedia de cualquier opción del menú. Los cambios se guardan en la base de datos y se aplican <b>al instante en WhatsApp, Instagram y Messenger sin reiniciar el servidor</b>.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 self-start md:self-auto">
+                  <button
+                    onClick={fetchBotFlows}
+                    className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Recargar
+                  </button>
+                </div>
+              </div>
+
+              {/* Feedback Alert */}
+              {flowFeedback && (
+                <div className={`p-4 rounded-xl text-xs font-bold flex items-center justify-between animate-in fade-in ${
+                  flowFeedback.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+                }`}>
+                  <span className="flex items-center gap-2">
+                    {flowFeedback.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Shield className="w-4 h-4 text-rose-600" />}
+                    {flowFeedback.message}
+                  </span>
+                  <button onClick={() => setFlowFeedback(null)} className="text-xs underline hover:opacity-70">Cerrar</button>
+                </div>
+              )}
+
+              {/* Core Flows Accordion Cards */}
+              <div className="space-y-4">
+                {coreFlows.map((flow, index) => {
+                  const isExpanded = editingFlowKey === flow.key;
+                  const draft = flowDrafts[flow.key] || { response: flow.currentResponse, mediaUrl: flow.mediaUrl };
+                  const isSavingThis = savingFlowKey === flow.key;
+
+                  return (
+                    <div 
+                      key={flow.key}
+                      className={`border rounded-2xl bg-white transition-all shadow-2xs overflow-hidden ${
+                        isExpanded ? 'border-emerald-500 ring-2 ring-emerald-500/10' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {/* Card Header */}
+                      <div 
+                        onClick={() => setEditingFlowKey(isExpanded ? null : flow.key)}
+                        className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none bg-white hover:bg-gray-50/50"
+                      >
+                        <div className="flex items-start sm:items-center gap-3.5">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                            flow.key === 'flow_menu' ? 'bg-emerald-600 text-white' :
+                            flow.key.startsWith('flow_option') ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
+                          }`}>
+                            {index === 0 ? '0' : index <= 4 ? `${index}` : index === 5 ? 'SI' : index === 6 ? 'NO' : '👤'}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-sm font-bold text-gray-900">{flow.title}</h3>
+                              {flow.isCustomized ? (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                  Personalizado en Panel
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  Oficial por Defecto
+                                </span>
+                              )}
+                              {flow.mediaUrl && (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                                  <Video className="w-3 h-3" /> Multimedia Adjunto
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5">{flow.subtitle}</p>
+                            <p className="text-[11px] font-mono text-gray-400 mt-1">
+                              Triggers: <span className="text-gray-600">{flow.keywords}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+                          <span className="text-xs font-semibold text-[#0084ff] flex items-center gap-1">
+                            {isExpanded ? 'Ocultar Editor' : 'Editar Respuesta'}
+                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Expanded Editor Body */}
+                      {isExpanded && (
+                        <div className="p-6 pt-2 border-t border-gray-100 bg-slate-50/50 space-y-5 animate-in fade-in">
+                          
+                          {/* Textarea Editor */}
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                <FileText className="w-4 h-4 text-emerald-600" />
+                                Mensaje de Respuesta (Markdown & Emojis)
+                              </label>
+                              <span className="text-[11px] text-gray-400">
+                                Usa *texto* para negrita, _texto_ para cursiva y [Título](URL) para enlaces
+                              </span>
+                            </div>
+                            <textarea
+                              rows={8}
+                              value={draft.response}
+                              onChange={(e) => {
+                                setFlowDrafts({
+                                  ...flowDrafts,
+                                  [flow.key]: { ...draft, response: e.target.value }
+                                });
+                              }}
+                              className="w-full border border-gray-300 rounded-xl p-3.5 text-xs text-gray-900 font-mono leading-relaxed bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs"
+                              placeholder="Escribe la respuesta del bot..."
+                            />
+                          </div>
+
+                          {/* Media Selector */}
+                          <div className="p-4 bg-white border border-gray-200 rounded-xl space-y-3 shadow-2xs">
+                            <label className="text-xs font-bold text-gray-800 flex items-center gap-2">
+                              <Film className="w-4 h-4 text-purple-600" />
+                              Archivo Multimedia Adjunto a este Flujo (Opcional)
+                            </label>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                              <select
+                                value={draft.mediaUrl || ''}
+                                onChange={(e) => {
+                                  setFlowDrafts({
+                                    ...flowDrafts,
+                                    [flow.key]: { ...draft, mediaUrl: e.target.value }
+                                  });
+                                }}
+                                className="flex-1 border border-gray-300 rounded-lg p-2.5 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#0084ff]"
+                              >
+                                <option value="">Sin archivo multimedia adjunto (Solo Texto)</option>
+                                <option value="/avatar-torre/nikola_bienvenida.mp4">🎬 Video Oficial de Nikola (nikola_bienvenida.mp4)</option>
+                                {mediaList.map(m => (
+                                  <option key={m.url} value={m.url}>
+                                    {m.type === 'video' ? '🎬' : m.type === 'image' ? '🖼️' : m.type === 'pdf' ? '📄' : '🎵'} {m.name} ({m.sizeFormatted})
+                                  </option>
+                                ))}
+                              </select>
+
+                              {draft.mediaUrl && (
+                                <button
+                                  type="button"
+                                  onClick={() => setMediaPreviewItem({ url: draft.mediaUrl, name: flow.title, type: draft.mediaUrl.endsWith('.mp4') ? 'video' : 'image' })}
+                                  className="px-3.5 py-2 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0"
+                                >
+                                  <Eye className="w-3.5 h-3.5" /> Previsualizar
+                                </button>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-gray-500">
+                              💡 Puedes subir nuevos videos o PDFs en la pestaña <b>Gestor Multimedia</b> y seleccionarlos aquí.
+                            </p>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                            <div>
+                              {flow.isCustomized && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleResetFlow(flow.key)}
+                                  disabled={isSavingThis}
+                                  className="px-3.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl transition-all flex items-center gap-1.5"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5" /> Restaurar Oficial por Defecto
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setEditingFlowKey(null)}
+                                className="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveFlow(flow.key)}
+                                disabled={isSavingThis}
+                                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+                              >
+                                <Save className="w-3.5 h-3.5" />
+                                {isSavingThis ? 'Guardando...' : 'Guardar y Aplicar al Bot'}
+                              </button>
+                            </div>
+                          </div>
+
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Simulation Sandbox */}
+              <div className="border border-gray-200 rounded-2xl p-6 bg-slate-900 text-white shadow-md space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Play className="w-5 h-5 text-emerald-400" />
+                    <div>
+                      <h3 className="text-sm font-bold text-white">Simulador en Vivo de Respuestas</h3>
+                      <p className="text-xs text-slate-400">Escribe cualquier mensaje de prueba para ver qué responderá el bot con tu configuración actual.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={flowSimInput}
+                    onChange={(e) => setFlowSimInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSimulateFlow()}
+                    placeholder="Escribe '0', '1', '2', '3', '4', 'si', 'no', 'asesor', 'cursos opus'..."
+                    className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                  />
+                  <button
+                    onClick={handleSimulateFlow}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0"
+                  >
+                    Simular
+                  </button>
+                </div>
+
+                {flowSimOutput && (
+                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 animate-in fade-in">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-emerald-400 border-b border-slate-800 pb-2">
+                      <span>Coincidencia: <b>{flowSimOutput.title}</b></span>
+                      {flowSimOutput.mediaUrl && <span className="text-amber-400">📎 Incluye Multimedia: {flowSimOutput.mediaUrl}</span>}
+                    </div>
+                    <div className="text-xs font-mono text-slate-200 whitespace-pre-wrap leading-relaxed">
+                      {flowSimOutput.text}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW 10: GESTOR MULTIMEDIA & ARCHIVOS (MEDIA HUB) */}
+          {/* ========================================================================= */}
+          {activeMenu === 'media_hub' && (
+            <div className="space-y-6 animate-in fade-in duration-150">
+              
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                    📁 Gestor Multimedia & Archivos de CLIPOP
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Sube y gestiona videos, imágenes, audios y documentos PDF para usarlos en el catálogo y las respuestas del bot.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <label className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2">
+                    <UploadCloud className="w-4 h-4" />
+                    {uploadingFile ? 'Subiendo Archivo...' : 'Subir Archivo'}
+                    <input
+                      type="file"
+                      disabled={uploadingFile}
+                      onChange={handleUploadMedia}
+                      accept="video/*,image/*,audio/*,.pdf"
+                      className="hidden"
+                    />
+                  </label>
+                  <button
+                    onClick={fetchMediaList}
+                    disabled={loadingMedia}
+                    className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all"
+                    title="Actualizar lista"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loadingMedia ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Upload Success Alert */}
+              {mediaUploadSuccess && (
+                <div className="p-4 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  ¡Archivo subido exitosamente y disponible para asignarse al bot o cursos!
+                </div>
+              )}
+
+              {/* Drag & Drop Hero Card */}
+              <div className="border-2 border-dashed border-gray-300 hover:border-emerald-500 rounded-2xl p-8 bg-slate-50/50 hover:bg-emerald-50/20 text-center transition-all">
+                <div className="max-w-md mx-auto space-y-3">
+                  <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shadow-xs">
+                    <UploadCloud className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900">
+                    Sube videos, imágenes, audios o temarios PDF
+                  </h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    Formatos admitidos: <b>MP4, MOV, PNG, JPG, WEBP, PDF, MP3, OGG</b> (hasta 100MB).
+                  </p>
+                  <label className="inline-block cursor-pointer bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 px-5 py-2 rounded-xl text-xs font-bold shadow-2xs transition-all">
+                    Seleccionar desde mi Computadora
+                    <input
+                      type="file"
+                      disabled={uploadingFile}
+                      onChange={handleUploadMedia}
+                      accept="video/*,image/*,audio/*,.pdf"
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Filter & Search */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    value={mediaSearch}
+                    onChange={(e) => setMediaSearch(e.target.value)}
+                    placeholder="Buscar archivo por nombre..."
+                    className="w-full border border-gray-300 rounded-xl pl-9 pr-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <span className="text-xs text-gray-500 font-semibold">
+                  Total de archivos: {mediaList.length}
+                </span>
+              </div>
+
+              {/* Media Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {mediaList
+                  .filter(m => !mediaSearch || m.name.toLowerCase().includes(mediaSearch.toLowerCase()))
+                  .map(media => (
+                    <div 
+                      key={media.id} 
+                      className="border border-gray-200 rounded-2xl p-4 bg-white hover:shadow-md transition-all flex flex-col justify-between space-y-3 group"
+                    >
+                      <div className="space-y-3">
+                        {/* Thumbnail / Icon Display */}
+                        <div 
+                          onClick={() => setMediaPreviewItem(media)}
+                          className="w-full h-32 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer relative group-hover:opacity-95"
+                        >
+                          {media.type === 'image' ? (
+                            <img src={media.url} alt={media.name} className="w-full h-full object-cover" />
+                          ) : media.type === 'video' ? (
+                            <div className="flex flex-col items-center gap-1 text-purple-600">
+                              <Video className="w-8 h-8" />
+                              <span className="text-[10px] font-bold bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">VIDEO MP4</span>
+                            </div>
+                          ) : media.type === 'pdf' ? (
+                            <div className="flex flex-col items-center gap-1 text-rose-600">
+                              <FileText className="w-8 h-8" />
+                              <span className="text-[10px] font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full">DOCUMENTO PDF</span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-1 text-amber-600">
+                              <Music className="w-8 h-8" />
+                              <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">AUDIO</span>
+                            </div>
+                          )}
+
+                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
+                            <Eye className="w-4 h-4" /> Ver
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-900 truncate" title={media.name}>
+                            {media.name}
+                          </h4>
+                          <div className="flex items-center justify-between text-[10px] text-gray-500 mt-1 font-mono">
+                            <span>{media.sizeFormatted}</span>
+                            <span className="uppercase">{media.ext}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-1">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(media.url);
+                            alert(`Enlace copiado: ${media.url}`);
+                          }}
+                          className="px-2.5 py-1.5 text-[11px] font-bold text-[#0084ff] hover:bg-blue-50 rounded-lg transition-all flex items-center gap-1"
+                          title="Copiar URL"
+                        >
+                          <LinkIcon className="w-3 h-3" /> Copiar Link
+                        </button>
+
+                        {!media.isDefaultNikola && (
+                          <button
+                            onClick={() => handleDeleteMedia(media.filename)}
+                            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                            title="Eliminar archivo"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {mediaList.length === 0 && !loadingMedia && (
+                <div className="text-center py-12 text-gray-500 text-xs">
+                  No hay archivos multimedia subidos todavía. ¡Sube tu primer video o imagen arriba!
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* ========================================================================= */}
           {/* VIEW 8: INBOX SETTINGS */}
           {/* ========================================================================= */}
           {activeMenu === 'inbox_settings' && (
@@ -1305,6 +1965,47 @@ export default function Settings() {
 
         </main>
       </div>
+
+      {/* MODAL: PREVIEW MULTIMEDIA */}
+      {mediaPreviewItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-gray-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+              <h3 className="text-sm font-bold text-gray-900 truncate">{mediaPreviewItem.name}</h3>
+              <button 
+                onClick={() => setMediaPreviewItem(null)} 
+                className="text-gray-400 hover:text-gray-700 font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center max-h-[60vh] overflow-hidden rounded-xl bg-slate-950">
+              {mediaPreviewItem.type === 'video' ? (
+                <video src={mediaPreviewItem.url} controls autoPlay className="max-h-[55vh] max-w-full" />
+              ) : mediaPreviewItem.type === 'image' ? (
+                <img src={mediaPreviewItem.url} alt={mediaPreviewItem.name} className="max-h-[55vh] max-w-full object-contain" />
+              ) : mediaPreviewItem.type === 'pdf' ? (
+                <iframe src={mediaPreviewItem.url} title={mediaPreviewItem.name} className="w-full h-96 rounded-lg" />
+              ) : (
+                <audio src={mediaPreviewItem.url} controls autoPlay className="w-full m-8" />
+              )}
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <span className="text-xs font-mono text-gray-500">{mediaPreviewItem.url}</span>
+              <button
+                type="button"
+                onClick={() => setMediaPreviewItem(null)}
+                className="px-4 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* MODAL: INVITAR MIEMBRO */}
       {isInviteModalOpen && (

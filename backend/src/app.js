@@ -10,6 +10,7 @@ const leadsRoutes = require('./routes/leads.routes');
 const productsRoutes = require('./routes/products.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const videoRoutes = require('./routes/video.routes');
+const mediaRoutes = require('./routes/media.routes');
 
 const app = express();
 
@@ -32,11 +33,16 @@ app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/videos', videoRoutes);
+app.use('/api', mediaRoutes);
 app.use('/api', settingsRoutes);
 
-// Servir videos generados
+// Servir videos generados y uploads multimedia
 const generatedVideosPath = path.join(__dirname, '../generated_videos');
 app.use('/generated-videos', express.static(generatedVideosPath));
+
+const uploadsPath = path.join(__dirname, '../public/uploads');
+app.use('/uploads', express.static(uploadsPath));
+
 
 // Servir frontend compilado en producción con resolución robusta de rutas
 const fs = require('fs');

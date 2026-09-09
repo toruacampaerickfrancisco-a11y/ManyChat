@@ -45,6 +45,20 @@ function adaptLinksForPlatform(text, platform = 'whatsapp') {
   }).join('\n');
 }
 
+async function getDynamicFlowResponse(key, fallbackText) {
+  try {
+    if (prisma) {
+      const setting = await prisma.setting.findUnique({
+        where: { key: `bot_${key}_text` }
+      });
+      if (setting && setting.value && setting.value.trim().length > 0) {
+        return setting.value;
+      }
+    }
+  } catch (e) {}
+  return fallbackText;
+}
+
 class AgentOrchestrator {
   constructor() {
     this.modelName = 'gemini-1.5-flash';
@@ -56,15 +70,16 @@ class AgentOrchestrator {
     const cleanMsg = msg.replace(/[!¡?¿,.\-_#*]/g, '').trim();
 
     if (!cleanMsg) {
-      const menuRule = ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu');
+      const defaultMenu = ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu')?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_menu', defaultMenu);
       return { 
-        text: adaptLinksForPlatform(menuRule.response, platform), 
+        text: adaptLinksForPlatform(responseText, platform), 
         source: 'fallback',
         isWelcome: true
       };
     }
 
-    // 1. EVALUACIÓN PRIORITARIA DE REGLAS EXACTAS ORIGINALES DE CLIPOP
+    // 1. EVALUACIÓN PRIORITARIA DE REGLAS (Con soporte para personalización desde el Panel)
     // A. Menú Principal (0, hola, menu, inicio, buenas)
     if (
       cleanMsg === '0' ||
@@ -86,9 +101,10 @@ class AgentOrchestrator {
       cleanMsg.startsWith('buenas noches') ||
       /^(0|0️⃣|menu|menú|inicio|volver|hola|empezar|welcome_message|get started|buenas|buenos dias|buenas tardes|buenas noches|informes?|info|servicios?)$/i.test(cleanMsg)
     ) {
-      const menuRule = ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu');
+      const defaultMenu = ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu')?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_menu', defaultMenu);
       return { 
-        text: adaptLinksForPlatform(menuRule.response, platform), 
+        text: adaptLinksForPlatform(responseText, platform), 
         source: 'rule',
         isWelcome: true
       };
@@ -105,8 +121,9 @@ class AgentOrchestrator {
       cleanMsg.includes('curso opus') ||
       cleanMsg.includes('cursos opus')
     ) {
-      const r1 = ORIGINAL_BOT_RULES.find(r => r.id === 6);
-      return { text: adaptLinksForPlatform(r1.response, platform), source: 'rule' };
+      const defaultR1 = ORIGINAL_BOT_RULES.find(r => r.id === 6)?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_option1', defaultR1);
+      return { text: adaptLinksForPlatform(responseText, platform), source: 'rule' };
     }
 
     // C. Opción 2: Cursos en tiempo real (Teams)
@@ -117,8 +134,9 @@ class AgentOrchestrator {
       cleanMsg.includes('teams') ||
       cleanMsg.includes('tiempo real')
     ) {
-      const r2 = ORIGINAL_BOT_RULES.find(r => r.id === 9);
-      return { text: adaptLinksForPlatform(r2.response, platform), source: 'rule' };
+      const defaultR2 = ORIGINAL_BOT_RULES.find(r => r.id === 9)?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_option2', defaultR2);
+      return { text: adaptLinksForPlatform(responseText, platform), source: 'rule' };
     }
 
     // D. Opción 3: Cursos presenciales (Hermosillo)
@@ -129,8 +147,9 @@ class AgentOrchestrator {
       cleanMsg.includes('presencial') ||
       cleanMsg.includes('hermosillo')
     ) {
-      const r3 = ORIGINAL_BOT_RULES.find(r => r.id === 12);
-      return { text: adaptLinksForPlatform(r3.response, platform), source: 'rule' };
+      const defaultR3 = ORIGINAL_BOT_RULES.find(r => r.id === 12)?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_option3', defaultR3);
+      return { text: adaptLinksForPlatform(responseText, platform), source: 'rule' };
     }
 
     // E. Opción 4: Cotización de proyectos
@@ -142,8 +161,9 @@ class AgentOrchestrator {
       cleanMsg.includes('media tension') ||
       cleanMsg.includes('alta tension')
     ) {
-      const r4 = ORIGINAL_BOT_RULES.find(r => r.id === 15);
-      return { text: adaptLinksForPlatform(r4.response, platform), source: 'rule' };
+      const defaultR4 = ORIGINAL_BOT_RULES.find(r => r.id === 15)?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_option4', defaultR4);
+      return { text: adaptLinksForPlatform(responseText, platform), source: 'rule' };
     }
 
     // F. Flujo "¿Tienes alguna otra duda?": 'Sí'
@@ -152,8 +172,9 @@ class AgentOrchestrator {
       cleanMsg === 'sí' ||
       /^(s[ií]|s[ií] por favor|s[ií] claro|s[ií] tengo dudas?|tengo una duda|otra duda|duda|dudas)$/i.test(cleanMsg)
     ) {
-      const rSi = ORIGINAL_BOT_RULES.find(r => r.keyword === 'si');
-      return { text: adaptLinksForPlatform(rSi.response, platform), source: 'rule' };
+      const defaultSi = ORIGINAL_BOT_RULES.find(r => r.keyword === 'si')?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_si', defaultSi);
+      return { text: adaptLinksForPlatform(responseText, platform), source: 'rule' };
     }
 
     // G. Flujo "¿Tienes alguna otra duda?": 'No'
@@ -161,8 +182,9 @@ class AgentOrchestrator {
       cleanMsg === 'no' ||
       /^(no|no gracias|ninguna|nada|todo bien|todo claro|gracias|muchas gracias|adi[oó]s|bye)$/i.test(cleanMsg)
     ) {
-      const rNo = ORIGINAL_BOT_RULES.find(r => r.keyword === 'no');
-      return { text: adaptLinksForPlatform(rNo.response, platform), source: 'rule' };
+      const defaultNo = ORIGINAL_BOT_RULES.find(r => r.keyword === 'no')?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_no', defaultNo);
+      return { text: adaptLinksForPlatform(responseText, platform), source: 'rule' };
     }
 
     // H. Contacto con Asesor Humano
@@ -182,8 +204,9 @@ class AgentOrchestrator {
           await prisma.lead.update({ where: { id: leadId }, data: { bot_paused: true } });
         } catch (e) {}
       }
-      const rAsesor = ORIGINAL_BOT_RULES.find(r => r.id === 21);
-      return { text: adaptLinksForPlatform(rAsesor.response, platform), source: 'rule' };
+      const defaultAsesor = ORIGINAL_BOT_RULES.find(r => r.id === 21)?.response || '';
+      const responseText = await getDynamicFlowResponse('flow_asesor', defaultAsesor);
+      return { text: adaptLinksForPlatform(responseText, platform), source: 'rule' };
     }
 
     // 2. Verificar reglas adicionales configuradas en la base de datos
