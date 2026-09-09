@@ -274,6 +274,63 @@ async function sendWhatsAppBannerCard(to, { imageUrl, text, buttons = [], footer
   }
 }
 
+async function sendWhatsAppVideoCard(to, { videoUrl, text, buttons = [], footer = '' }) {
+  if (!sock || connectionStatus !== 'CONNECTED') {
+    return { success: false, reason: 'WhatsApp no está conectado' };
+  }
+
+  try {
+    let jid = to;
+    if (!jid.includes('@')) {
+      const cleanPhone = String(to).replace(/[^0-9]/g, '');
+      jid = `${cleanPhone}@s.whatsapp.net`;
+    }
+
+    let caption = formatForWhatsApp(text);
+    if (buttons && buttons.length > 0) {
+      caption += '\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *Opciones rápidas (escribe el número o nombre):*\n';
+      buttons.forEach((b, idx) => {
+        caption += `👉 *[ ${idx + 1} ]* ${b.title || b.text}\n`;
+      });
+      caption += '━━━━━━━━━━━━━━━━━━━━';
+    }
+    if (footer) {
+      caption += `\n_${footer}_`;
+    }
+
+    // Buscar video local prioritariamente para envío ultrarrápido
+    const localVideoPath = path.join(__dirname, '../frontend/dist/avatar-torre/Nikola_primera_version.mp4');
+    const altLocalPath = path.join(__dirname, '../Avatar_Torre_CFE_Completo/Nikola_primera_version.mp4');
+
+    if (fs.existsSync(localVideoPath)) {
+      await sock.sendMessage(jid, {
+        video: fs.readFileSync(localVideoPath),
+        mimetype: 'video/mp4',
+        caption
+      });
+    } else if (fs.existsSync(altLocalPath)) {
+      await sock.sendMessage(jid, {
+        video: fs.readFileSync(altLocalPath),
+        mimetype: 'video/mp4',
+        caption
+      });
+    } else if (videoUrl) {
+      await sock.sendMessage(jid, {
+        video: { url: videoUrl },
+        mimetype: 'video/mp4',
+        caption
+      });
+    } else {
+      await sock.sendMessage(jid, { text: caption });
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('[WhatsApp Video Card Error]', error);
+    return { success: false, error: error.message };
+  }
+}
+
 function getWhatsAppStatus() {
   return {
     status: connectionStatus,
@@ -289,6 +346,7 @@ module.exports = {
   setMessageHandler,
   sendWhatsAppDirectMessage,
   sendWhatsAppBannerCard,
+  sendWhatsAppVideoCard,
   sendVoiceNote,
   logoutWhatsAppSession,
   getWhatsAppStatus

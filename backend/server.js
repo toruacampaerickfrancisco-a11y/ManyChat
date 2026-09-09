@@ -120,11 +120,11 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
     return;
   }
 
-  // Saludo Inicial ("hola", "0", "inicio", "buenas") -> Tarjeta de Bienvenida con Banner de Nikola
+  // Saludo Inicial ("hola", "0", "inicio", "buenas") -> Video de Bienvenida de Nikola + Botones
   if (cleanMsg === 'hola' || cleanMsg === '0' || cleanMsg === 'inicio' || cleanMsg === 'buenas' || cleanMsg === 'buenos dias' || cleanMsg === 'buenas tardes') {
     const welcomeCard = interactiveService.buildWelcomeCard(senderName);
-    await whatsappService.sendWhatsAppBannerCard(from, {
-      imageUrl: 'https://clipop.com.mx/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg',
+    await whatsappService.sendWhatsAppVideoCard(from, {
+      videoUrl: 'https://clipop.com.mx/avatar-torre/Nikola_primera_version.mp4',
       text: welcomeCard.interactive.body.text,
       buttons: [
         { text: '📚 Cursos OPUS / CFE' },
