@@ -37,6 +37,30 @@ function AdminLayout({ children }) {
   );
 }
 
+// Guardián de Rutas con control de Roles
+function ProtectedRoute({ children, allowedRoles = ['ADMIN', 'CLIENT'] }) {
+  const userJson = localStorage.getItem('clipop_user');
+  
+  if (!userJson) {
+    // Si no ha iniciado sesión, mandar al Login
+    return <Navigate to="/login" replace />;
+  }
+
+  try {
+    const user = JSON.parse(userJson);
+    const userRole = user.role || 'CLIENT';
+
+    if (!allowedRoles.includes(userRole)) {
+      // Si el rol no tiene permiso para este módulo (ej: CLIENT intentando entrar a /admin/settings), redirigir a Dashboard
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+  } catch (e) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <AdminLayout>{children}</AdminLayout>;
+}
+
 function App() {
   return (
     <Router>
@@ -54,15 +78,54 @@ function App() {
         <Route path="/mis-cursos" element={<StudentDashboard />} />
         <Route path="/mis-cursos/:id/play" element={<CoursePlayer />} />
 
-        {/* ZONA ADMINISTRADOR (CRM) */}
+        {/* ZONA ADMINISTRADOR (CRM) CON CONTROL DE ACCESO */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="/admin/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />
-        <Route path="/admin/catalog" element={<AdminLayout><Catalog /></AdminLayout>} />
-        <Route path="/admin/leads" element={<AdminLayout><Leads /></AdminLayout>} />
-        <Route path="/admin/chats" element={<AdminLayout><Chats /></AdminLayout>} />
-        <Route path="/admin/settings" element={<AdminLayout><Settings /></AdminLayout>} />
         
-        {/* Ruta para manejar errores 404 y evitar pantallas blancas */}
+        {/* Permitido para ADMIN y CLIENT (francisco@clipop.com.mx) */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'CLIENT']}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/catalog"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'CLIENT']}>
+              <Catalog />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Solo permitido para ADMIN (admin@clipop.com.mx) */}
+        <Route
+          path="/admin/leads"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <Leads />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/chats"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <Chats />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* Ruta para manejar errores 404 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

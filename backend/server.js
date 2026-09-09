@@ -171,11 +171,16 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
 
 // --- INICIO DEL SERVIDOR ---
 const PORT = config.PORT;
-app.listen(PORT, () => {
+const userService = require('./src/services/userService');
+
+app.listen(PORT, async () => {
   console.log(`===================================================`);
   console.log(`🚀 [CLIPOP Enterprise AI Agent] Servidor en puerto ${PORT}`);
   console.log(`📡 Modo: ${config.NODE_ENV} | Webhook Meta: /api/webhooks/meta`);
   console.log(`===================================================`);
+
+  // Inicializar y sincronizar usuarios autorizados en la base de datos
+  await userService.initUserTableAndSeed();
 
   // Auto-iniciar sesión de WhatsApp
   whatsappService.startWhatsAppSession().catch(err => {

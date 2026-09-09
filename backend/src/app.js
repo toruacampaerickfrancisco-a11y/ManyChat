@@ -12,6 +12,7 @@ const videoRoutes = require('./routes/video.routes');
 const mediaRoutes = require('./routes/media.routes');
 const productsRoutes = require('./routes/products.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
 });
 
 // Rutas de API
+app.use('/api/auth', authRoutes);
 app.use('/api/webhooks/meta', metaWebhookRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/leads', leadsRoutes);
