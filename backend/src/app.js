@@ -7,10 +7,11 @@ const errorHandler = require('./middlewares/errorHandler');
 const metaWebhookRoutes = require('./routes/metaWebhook.routes');
 const whatsappRoutes = require('./routes/whatsapp.routes');
 const leadsRoutes = require('./routes/leads.routes');
-const productsRoutes = require('./routes/products.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const videoRoutes = require('./routes/video.routes');
 const mediaRoutes = require('./routes/media.routes');
+const productsRoutes = require('./routes/products.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
 
@@ -34,7 +35,9 @@ app.use('/api/leads', leadsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api', mediaRoutes);
+app.use('/api', dashboardRoutes);
 app.use('/api', settingsRoutes);
+
 
 // Servir videos generados y uploads multimedia
 const generatedVideosPath = path.join(__dirname, '../generated_videos');

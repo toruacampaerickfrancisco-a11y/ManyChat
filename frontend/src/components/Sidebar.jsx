@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Users, MessageSquare, Settings, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, Users, MessageSquare, Settings, LogOut, Menu } from 'lucide-react';
 
 export default function Sidebar() {
   const navItems = [
     { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/admin/catalog', icon: ShoppingBag, label: 'Catálogo' },
+    { to: '/admin/catalog', icon: GraduationCap, label: 'Cursos' },
     { to: '/admin/leads', icon: Users, label: 'Leads' },
     { to: '/admin/chats', icon: MessageSquare, label: 'Chats IA' },
     { to: '/admin/settings', icon: Settings, label: 'Configuración' },
