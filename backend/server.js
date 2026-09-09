@@ -124,7 +124,7 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
   if (cleanMsg === 'hola' || cleanMsg === '0' || cleanMsg === 'inicio' || cleanMsg === 'buenas' || cleanMsg === 'buenos dias' || cleanMsg === 'buenas tardes') {
     const welcomeCard = interactiveService.buildWelcomeCard(senderName);
     await whatsappService.sendWhatsAppVideoCard(from, {
-      videoUrl: 'https://clipop.com.mx/avatar-torre/Nikola_primera_version.mp4',
+      videoUrl: 'https://clipop.com.mx/avatar-torre/nikola_bienvenida.mp4',
       text: welcomeCard.interactive.body.text,
       buttons: [
         { text: '📚 Cursos OPUS / CFE' },

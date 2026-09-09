@@ -299,8 +299,9 @@ async function sendWhatsAppVideoCard(to, { videoUrl, text, buttons = [], footer 
     }
 
     // Buscar video local prioritariamente para envío ultrarrápido
-    const localVideoPath = path.join(__dirname, '../frontend/dist/avatar-torre/Nikola_primera_version.mp4');
-    const altLocalPath = path.join(__dirname, '../Avatar_Torre_CFE_Completo/Nikola_primera_version.mp4');
+    const localVideoPath = path.join(__dirname, '../frontend/dist/avatar-torre/nikola_bienvenida.mp4');
+    const altLocalPath = path.join(__dirname, '../Avatar_Torre_CFE_Completo/nikola_bienvenida.mp4');
+    const fallbackPath = path.join(__dirname, '../frontend/dist/avatar-torre/Nikola_primera_version.mp4');
 
     if (fs.existsSync(localVideoPath)) {
       await sock.sendMessage(jid, {
@@ -311,6 +312,12 @@ async function sendWhatsAppVideoCard(to, { videoUrl, text, buttons = [], footer 
     } else if (fs.existsSync(altLocalPath)) {
       await sock.sendMessage(jid, {
         video: fs.readFileSync(altLocalPath),
+        mimetype: 'video/mp4',
+        caption
+      });
+    } else if (fs.existsSync(fallbackPath)) {
+      await sock.sendMessage(jid, {
+        video: fs.readFileSync(fallbackPath),
         mimetype: 'video/mp4',
         caption
       });
