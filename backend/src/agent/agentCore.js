@@ -8,19 +8,60 @@ if (config.GEMINI_API_KEY) {
   genAI = new GoogleGenerativeAI(config.GEMINI_API_KEY);
 }
 
+function adaptLinksForPlatform(text, platform = 'whatsapp') {
+  if (!text) return text;
+  const plat = (platform || 'whatsapp').toLowerCase();
+  let lines = text.split('\n');
+
+  lines = lines.filter(line => {
+    // En WhatsApp, quitar el enlace de WhatsApp Directo
+    if (plat === 'whatsapp') {
+      if (line.includes('wa.me') || line.includes('WhatsApp Directo') || line.includes('WhatsApp Asesor') || line.includes('WhatsApp:')) return false;
+    }
+    // En Facebook / Messenger, quitar el enlace de Facebook
+    if (plat === 'messenger' || plat === 'facebook' || plat === 'page') {
+      if (line.includes('facebook.com') || line.includes('Facebook Clipop') || line.includes('Facebook:')) return false;
+    }
+    // En Instagram, quitar el enlace de Instagram
+    if (plat === 'instagram') {
+      if (line.includes('instagram.com') || line.includes('Instagram Clipop') || line.includes('Instagram:')) return false;
+    }
+    return true;
+  });
+
+  // Limpiar separadores horizontales tipo " | " cuando se elimina un ítem
+  return lines.map(line => {
+    if (line.includes('━━━━━━━━━━━━━━━━━━━')) return line;
+    if (line.includes('|')) {
+      const parts = line.split('|').map(p => p.trim()).filter(p => {
+        if (plat === 'whatsapp' && (p.includes('wa.me') || p.includes('WhatsApp'))) return false;
+        if ((plat === 'messenger' || plat === 'facebook' || plat === 'page') && p.includes('facebook.com')) return false;
+        if (plat === 'instagram' && p.includes('instagram.com')) return false;
+        return p.length > 0;
+      });
+      return parts.join(' | ');
+    }
+    return line;
+  }).join('\n');
+}
+
 class AgentOrchestrator {
   constructor() {
     this.modelName = 'gemini-1.5-flash';
   }
 
-  async processMessage({ leadId, platform, phoneOrId, senderName, userMessage }) {
+  async processMessage({ leadId, platform = 'whatsapp', phoneOrId, senderName, userMessage }) {
     const rawMsg = (userMessage || '').trim();
     const msg = rawMsg.toLowerCase();
     const cleanMsg = msg.replace(/[!¡?¿,.\-_#*]/g, '').trim();
 
     if (!cleanMsg) {
       const menuRule = ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu');
-      return { text: menuRule.response, source: 'fallback' };
+      return { 
+        text: adaptLinksForPlatform(menuRule.response, platform), 
+        source: 'fallback',
+        isWelcome: true
+      };
     }
 
     // 1. EVALUACIÓN PRIORITARIA DE REGLAS EXACTAS ORIGINALES DE CLIPOP
@@ -46,7 +87,11 @@ class AgentOrchestrator {
       /^(0|0️⃣|menu|menú|inicio|volver|hola|empezar|welcome_message|get started|buenas|buenos dias|buenas tardes|buenas noches|informes?|info|servicios?)$/i.test(cleanMsg)
     ) {
       const menuRule = ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu');
-      return { text: menuRule.response, source: 'rule' };
+      return { 
+        text: adaptLinksForPlatform(menuRule.response, platform), 
+        source: 'rule',
+        isWelcome: true
+      };
     }
 
     // B. Opción 1: Cursos pregrabados (Udemy)
@@ -61,7 +106,7 @@ class AgentOrchestrator {
       cleanMsg.includes('cursos opus')
     ) {
       const r1 = ORIGINAL_BOT_RULES.find(r => r.id === 6);
-      return { text: r1.response, source: 'rule' };
+      return { text: adaptLinksForPlatform(r1.response, platform), source: 'rule' };
     }
 
     // C. Opción 2: Cursos en tiempo real (Teams)
@@ -73,7 +118,7 @@ class AgentOrchestrator {
       cleanMsg.includes('tiempo real')
     ) {
       const r2 = ORIGINAL_BOT_RULES.find(r => r.id === 9);
-      return { text: r2.response, source: 'rule' };
+      return { text: adaptLinksForPlatform(r2.response, platform), source: 'rule' };
     }
 
     // D. Opción 3: Cursos presenciales (Hermosillo)
@@ -85,7 +130,7 @@ class AgentOrchestrator {
       cleanMsg.includes('hermosillo')
     ) {
       const r3 = ORIGINAL_BOT_RULES.find(r => r.id === 12);
-      return { text: r3.response, source: 'rule' };
+      return { text: adaptLinksForPlatform(r3.response, platform), source: 'rule' };
     }
 
     // E. Opción 4: Cotización de proyectos
@@ -98,7 +143,7 @@ class AgentOrchestrator {
       cleanMsg.includes('alta tension')
     ) {
       const r4 = ORIGINAL_BOT_RULES.find(r => r.id === 15);
-      return { text: r4.response, source: 'rule' };
+      return { text: adaptLinksForPlatform(r4.response, platform), source: 'rule' };
     }
 
     // F. Flujo "¿Tienes alguna otra duda?": 'Sí'
@@ -108,7 +153,7 @@ class AgentOrchestrator {
       /^(s[ií]|s[ií] por favor|s[ií] claro|s[ií] tengo dudas?|tengo una duda|otra duda|duda|dudas)$/i.test(cleanMsg)
     ) {
       const rSi = ORIGINAL_BOT_RULES.find(r => r.keyword === 'si');
-      return { text: rSi.response, source: 'rule' };
+      return { text: adaptLinksForPlatform(rSi.response, platform), source: 'rule' };
     }
 
     // G. Flujo "¿Tienes alguna otra duda?": 'No'
@@ -117,7 +162,7 @@ class AgentOrchestrator {
       /^(no|no gracias|ninguna|nada|todo bien|todo claro|gracias|muchas gracias|adi[oó]s|bye)$/i.test(cleanMsg)
     ) {
       const rNo = ORIGINAL_BOT_RULES.find(r => r.keyword === 'no');
-      return { text: rNo.response, source: 'rule' };
+      return { text: adaptLinksForPlatform(rNo.response, platform), source: 'rule' };
     }
 
     // H. Contacto con Asesor Humano
@@ -138,7 +183,7 @@ class AgentOrchestrator {
         } catch (e) {}
       }
       const rAsesor = ORIGINAL_BOT_RULES.find(r => r.id === 21);
-      return { text: rAsesor.response, source: 'rule' };
+      return { text: adaptLinksForPlatform(rAsesor.response, platform), source: 'rule' };
     }
 
     // 2. Verificar reglas adicionales configuradas en la base de datos
@@ -149,7 +194,7 @@ class AgentOrchestrator {
           const kw = rule.keyword.toLowerCase();
           if ((rule.match_type === 'exact' && msg === kw) ||
               (rule.match_type === 'contains' && msg.includes(kw))) {
-            return { text: rule.response, source: 'db_rule' };
+            return { text: adaptLinksForPlatform(rule.response, platform), source: 'db_rule' };
           }
         }
       }
@@ -158,7 +203,11 @@ class AgentOrchestrator {
     // 3. Si no hay Gemini API Key configurada, devolver el menú de bienvenida
     if (!genAI || !config.GEMINI_API_KEY) {
       const menuRule = ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu');
-      return { text: menuRule.response, source: 'fallback' };
+      return { 
+        text: adaptLinksForPlatform(menuRule.response, platform), 
+        source: 'fallback',
+        isWelcome: true
+      };
     }
 
     // 4. Si es una pregunta libre, invocar a Gemini con el System Prompt oficial de CLIPOP
@@ -191,13 +240,17 @@ class AgentOrchestrator {
       const result = await chat.sendMessage(userMessage);
       const response = await result.response;
       return {
-        text: response.text(),
+        text: adaptLinksForPlatform(response.text(), platform),
         source: 'gemini'
       };
     } catch (error) {
       console.error('[Agent Gemini Error]', error.message);
       const menuRule = ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu');
-      return { text: menuRule.response, source: 'error_fallback' };
+      return { 
+        text: adaptLinksForPlatform(menuRule.response, platform), 
+        source: 'error_fallback',
+        isWelcome: true
+      };
     }
   }
 }
