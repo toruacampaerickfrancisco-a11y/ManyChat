@@ -42,43 +42,94 @@ function handleIncomingEvent(req, res) {
   res.status(200).send('EVENT_RECEIVED');
 
   const body = req.body;
+
+  // A. Eventos de WhatsApp Cloud API (whatsapp_business_account)
+  if (body.object === 'whatsapp_business_account') {
+    (body.entry || []).forEach(entry => {
+      (entry.changes || []).forEach(change => {
+        const value = change.value;
+        if (value && value.messages && value.messages.length > 0) {
+          const msg = value.messages[0];
+          const senderPhone = msg.from;
+          const mid = msg.id;
+          const senderName = (value.contacts && value.contacts[0]?.profile?.name) || '';
+
+          let text = '';
+          if (msg.type === 'text') {
+            text = msg.text?.body || '';
+          } else if (msg.type === 'interactive') {
+            text = msg.interactive?.button_reply?.id || msg.interactive?.button_reply?.title || msg.interactive?.list_reply?.id || '';
+          } else if (msg.type === 'button') {
+            text = msg.button?.text || msg.button?.payload || '';
+          }
+
+          if (isDuplicate(mid)) return;
+
+          processMetaMessageAsync({
+            senderPsid: senderPhone,
+            text,
+            platform: 'whatsapp',
+            senderName,
+            mid
+          }).catch(err => console.error('[WhatsApp Cloud Async Error]', err));
+        }
+      });
+    });
+    return;
+  }
+
+  // B. Eventos de Messenger y Facebook Page
   if (body.object === 'page' || body.object === 'instagram') {
     (body.entry || []).forEach(entry => {
       const webhookEvent = entry.messaging ? entry.messaging[0] : null;
-      if (!webhookEvent || !webhookEvent.message) return;
+      if (!webhookEvent) return;
 
       const senderPsid = webhookEvent.sender.id;
-      const mid = webhookEvent.message.mid;
-      const text = webhookEvent.message.text || '';
+      let text = '';
+      let mid = '';
 
-      // Deduplicar
+      if (webhookEvent.message) {
+        mid = webhookEvent.message.mid;
+        text = webhookEvent.message.quick_reply?.payload || webhookEvent.message.text || '';
+      } else if (webhookEvent.postback) {
+        mid = 'pb_' + Date.now();
+        text = webhookEvent.postback.payload || webhookEvent.postback.title || '';
+      }
+
       if (isDuplicate(mid)) {
         console.log(`[Meta Deduplicator] Mensaje duplicado ignorado: ${mid}`);
         return;
       }
 
-      // Procesar en segundo plano de forma asíncrona
-      processMetaMessageAsync({ senderPsid, text, platform: body.object, mid }).catch(err => {
+      processMetaMessageAsync({
+        senderPsid,
+        text,
+        platform: body.object,
+        senderName: '',
+        mid
+      }).catch(err => {
         console.error('[Meta Async Processing Error]', err);
       });
     });
   }
 }
 
-async function processMetaMessageAsync({ senderPsid, text, platform, mid }) {
+async function processMetaMessageAsync({ senderPsid, text, platform, senderName = '', mid }) {
   console.log(`[Meta Event Ingesta] De ${senderPsid} (${platform}): "${text}"`);
   if (!text) return;
+
+  const cleanText = text.trim().toLowerCase();
 
   let lead = null;
   try {
     if (prisma) {
       lead = await prisma.lead.upsert({
         where: { phone_or_id: senderPsid },
-        update: {},
+        update: { name: senderName || undefined },
         create: {
-          platform: platform === 'instagram' ? 'instagram' : 'messenger',
+          platform: platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger'),
           phone_or_id: senderPsid,
-          name: `Usuario ${platform}`
+          name: senderName || `Usuario ${platform}`
         }
       });
 
@@ -100,12 +151,41 @@ async function processMetaMessageAsync({ senderPsid, text, platform, mid }) {
     return;
   }
 
-  // Invocar al Agente de IA
+  // 1. Manejo de botones interactivos directos
+  const interactiveService = require('../services/interactiveMessageService');
+  if (cleanText === 'btn_cursos' || cleanText.includes('ver cursos') || cleanText.includes('cursos opus')) {
+    const card = interactiveService.buildCoursesCard();
+    await sendMetaGraphMessage(senderPsid, card.interactive.body.text);
+    return;
+  }
+
+  if (cleanText === 'btn_cotizar' || cleanText.includes('cotizar proyecto')) {
+    const card = interactiveService.buildQuotationCard();
+    await sendMetaGraphMessage(senderPsid, card.interactive.body.text);
+    return;
+  }
+
+  if (cleanText === 'btn_asesor' || cleanText.includes('hablar con asesor') || cleanText.includes('humano')) {
+    if (prisma && lead) {
+      await prisma.lead.update({ where: { id: lead.id }, data: { bot_paused: true } });
+    }
+    await sendMetaGraphMessage(senderPsid, '👨‍💼 Un ingeniero asesor de CLIPOP tomará el control de la conversación a la brevedad. ¡Gracias por tu paciencia!');
+    return;
+  }
+
+  // 2. Si es saludo inicial ("hola", "inicio", "buenas", "0"), enviar bienvenida interactiva
+  if (cleanText === 'hola' || cleanText === 'buenas' || cleanText === 'buenos dias' || cleanText === 'buenas tardes' || cleanText === '0') {
+    const welcomeCard = interactiveService.buildWelcomeCard(senderName);
+    await sendMetaGraphMessage(senderPsid, welcomeCard.interactive.body.text);
+    return;
+  }
+
+  // 3. Invocar al Agente de IA para preguntas y cotizaciones
   const agentResponse = await agentOrchestrator.processMessage({
     leadId: lead ? lead.id : null,
-    platform: platform === 'instagram' ? 'instagram' : 'messenger',
+    platform: platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger'),
     phoneOrId: senderPsid,
-    senderName: '',
+    senderName,
     userMessage: text
   });
 

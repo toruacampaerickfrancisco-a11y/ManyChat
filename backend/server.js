@@ -77,7 +77,66 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
     return;
   }
 
-  // 3. Procesar mensaje con el Agente de IA Omnicanal
+  // 3. Manejo de botones de opciones rápidas y tarjetas con banner
+  const cleanMsg = userMessage.trim().toLowerCase();
+  const interactiveService = require('./src/services/interactiveMessageService');
+
+  // Opción 1 o Cursos
+  if (cleanMsg === '1' || cleanMsg === 'btn_cursos' || cleanMsg.includes('cursos') || cleanMsg.includes('opus')) {
+    const card = interactiveService.buildCoursesCard();
+    await whatsappService.sendWhatsAppBannerCard(from, {
+      imageUrl: 'https://clipop.com.mx/concurso_lineas.png',
+      text: card.interactive.body.text,
+      buttons: [
+        { text: '⚡ Cotizar Proyecto' },
+        { text: '👤 Hablar con Asesor' }
+      ],
+      footer: 'CLIPOP Ingeniería'
+    });
+    return;
+  }
+
+  // Opción 2 o Cotizar
+  if (cleanMsg === '2' || cleanMsg === 'btn_cotizar' || cleanMsg.includes('cotizar')) {
+    const card = interactiveService.buildQuotationCard();
+    await whatsappService.sendWhatsAppBannerCard(from, {
+      imageUrl: 'https://clipop.com.mx/concurso_subestacion.png',
+      text: card.interactive.body.text,
+      buttons: [
+        { text: '📚 Ver Cursos' },
+        { text: '👤 Transferir a Ingeniero' }
+      ],
+      footer: 'CLIPOP Ingeniería'
+    });
+    return;
+  }
+
+  // Opción 3 o Asesor Humano
+  if (cleanMsg === '3' || cleanMsg === 'btn_asesor' || cleanMsg.includes('asesor') || cleanMsg.includes('humano')) {
+    if (prisma && lead) {
+      await prisma.lead.update({ where: { id: lead.id }, data: { bot_paused: true } });
+    }
+    await whatsappService.sendWhatsAppDirectMessage(from, '👨‍💼 Un ingeniero asesor de CLIPOP tomará el control de la conversación a la brevedad. ¡Gracias por tu paciencia!');
+    return;
+  }
+
+  // Saludo Inicial ("hola", "0", "inicio", "buenas") -> Tarjeta de Bienvenida con Banner de Nikola
+  if (cleanMsg === 'hola' || cleanMsg === '0' || cleanMsg === 'inicio' || cleanMsg === 'buenas' || cleanMsg === 'buenos dias' || cleanMsg === 'buenas tardes') {
+    const welcomeCard = interactiveService.buildWelcomeCard(senderName);
+    await whatsappService.sendWhatsAppBannerCard(from, {
+      imageUrl: 'https://clipop.com.mx/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg',
+      text: welcomeCard.interactive.body.text,
+      buttons: [
+        { text: '📚 Cursos OPUS / CFE' },
+        { text: '⚡ Cotizar Proyecto' },
+        { text: '👤 Asesor Humano' }
+      ],
+      footer: 'CLIPOP • clipop.com.mx'
+    });
+    return;
+  }
+
+  // 4. Procesar mensaje libre con el Agente de IA Omnicanal
   const response = await agentOrchestrator.processMessage({
     leadId: lead ? lead.id : null,
     platform: 'whatsapp',

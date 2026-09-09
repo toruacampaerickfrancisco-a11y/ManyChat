@@ -233,6 +233,47 @@ async function sendVoiceNote(to, audioBuffer) {
   }
 }
 
+async function sendWhatsAppBannerCard(to, { imageUrl, text, buttons = [], footer = '' }) {
+  if (!sock || connectionStatus !== 'CONNECTED') {
+    return { success: false, reason: 'WhatsApp no está conectado' };
+  }
+
+  try {
+    let jid = to;
+    if (!jid.includes('@')) {
+      const cleanPhone = String(to).replace(/[^0-9]/g, '');
+      jid = `${cleanPhone}@s.whatsapp.net`;
+    }
+
+    let caption = formatForWhatsApp(text);
+    if (buttons && buttons.length > 0) {
+      caption += '\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *Opciones rápidas (escribe el número o nombre):*\n';
+      buttons.forEach((b, idx) => {
+        caption += `👉 *[ ${idx + 1} ]* ${b.title || b.text}\n`;
+      });
+      caption += '━━━━━━━━━━━━━━━━━━━━';
+    }
+    if (footer) {
+      caption += `\n_${footer}_`;
+    }
+
+    // Si hay URL de imagen, enviar tarjeta con imagen
+    if (imageUrl) {
+      await sock.sendMessage(jid, {
+        image: { url: imageUrl },
+        caption
+      });
+    } else {
+      await sock.sendMessage(jid, { text: caption });
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('[WhatsApp Banner Card Error]', error);
+    return { success: false, error: error.message };
+  }
+}
+
 function getWhatsAppStatus() {
   return {
     status: connectionStatus,
@@ -247,6 +288,7 @@ module.exports = {
   requestPairingCodeForPhone,
   setMessageHandler,
   sendWhatsAppDirectMessage,
+  sendWhatsAppBannerCard,
   sendVoiceNote,
   logoutWhatsAppSession,
   getWhatsAppStatus
