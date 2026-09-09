@@ -1,7 +1,8 @@
 const { prisma } = require('../config/database');
 const { DEFAULT_PRODUCTS } = require('../config/constants');
 
-let inMemoryProducts = [...DEFAULT_PRODUCTS];
+let inMemoryProducts = [...(DEFAULT_PRODUCTS || [])];
+
 
 async function getProducts(req, res) {
   try {

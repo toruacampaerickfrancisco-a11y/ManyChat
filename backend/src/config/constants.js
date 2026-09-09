@@ -121,7 +121,92 @@ const ORIGINAL_BOT_RULES = [
   }
 ];
 
+const DEFAULT_PRODUCTS = [
+  {
+    id: "1",
+    name: "Curso Gratuito Introductorio: Análisis de Precios Unitarios",
+    titulo: "Curso Gratuito Introductorio: Análisis de Precios Unitarios",
+    category: "CURSO",
+    status: "ACTIVO",
+    is_active: true,
+    price: 0,
+    author: "FRANCISCO RAMÓN GARDEA HERNÁNDEZ",
+    url: "https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED",
+    enlace: "https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED",
+    rating: "5.0",
+    valoraciones: "48",
+    estudiantes: "320",
+    badge: "Gratuito",
+    badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
+    description: "Curso introductorio de precios unitarios gratuito en Udemy.",
+    descripcion: "Curso introductorio de precios unitarios gratuito en Udemy.",
+    imagen: "/concurso_lineas.png"
+  },
+  {
+    id: "2",
+    name: "Precios Unitarios OPUS 22, 24, Neodata y Excel",
+    titulo: "Precios Unitarios OPUS 22, 24, Neodata y Excel",
+    category: "CURSO",
+    status: "ACTIVO",
+    is_active: true,
+    price: 349,
+    author: "FRANCISCO RAMÓN GARDEA HERNÁNDEZ",
+    url: "https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/",
+    enlace: "https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/",
+    rating: "5.0",
+    valoraciones: "52",
+    estudiantes: "410",
+    badge: "Más Vendido",
+    badgeColor: "bg-amber-100 text-amber-800 border-amber-300",
+    description: "Domina el análisis de precios unitarios en OPUS 22, OPUS 24, Neodata y hojas de cálculo.",
+    descripcion: "Domina el análisis de precios unitarios en OPUS 22, OPUS 24, Neodata y hojas de cálculo.",
+    imagen: "/concurso_lineas.png"
+  },
+  {
+    id: "3",
+    name: "Cómo Presentar Concursos para CFE desde cero (OPUS 2020)",
+    titulo: "Cómo Presentar Concursos para CFE desde cero (OPUS 2020)",
+    category: "CURSO",
+    status: "ACTIVO",
+    is_active: true,
+    price: 399,
+    author: "FRANCISCO RAMÓN GARDEA HERNÁNDEZ",
+    url: "https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/",
+    enlace: "https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/",
+    rating: "4.9",
+    valoraciones: "36",
+    estudiantes: "245",
+    badge: "Destacado",
+    badgeColor: "bg-blue-100 text-blue-800 border-blue-300",
+    description: "Aprende paso a paso a integrar una propuesta técnica y económica ganadora bajo normativa de CFE.",
+    descripcion: "Aprende paso a paso a integrar una propuesta técnica y económica ganadora bajo normativa de CFE.",
+    imagen: "/concurso_subestacion.png"
+  },
+  {
+    id: "4",
+    name: "Análisis de Precios Unitarios 100% Práctico (OPUS 2025)",
+    titulo: "Análisis de Precios Unitarios 100% Práctico (OPUS 2025)",
+    category: "CURSO",
+    status: "ACTIVO",
+    is_active: true,
+    price: 449,
+    author: "FRANCISCO RAMÓN GARDEA HERNÁNDEZ",
+    url: "https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F",
+    enlace: "https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F",
+    rating: "5.0",
+    valoraciones: "29",
+    estudiantes: "180",
+    badge: "Nuevo 2025",
+    badgeColor: "bg-indigo-100 text-indigo-800 border-indigo-300",
+    description: "El curso más actualizado con OPUS 2025 para elaboración de presupuestos y licitaciones de alto nivel.",
+    descripcion: "El curso más actualizado con OPUS 2025 para elaboración de presupuestos y licitaciones de alto nivel.",
+    imagen: "/concurso_subestacion.png"
+  }
+];
+
 module.exports = {
   SYSTEM_PROMPT: DEFAULT_SYSTEM_PROMPT,
-  ORIGINAL_BOT_RULES
+  ORIGINAL_BOT_RULES,
+  DEFAULT_PRODUCTS
 };
+
