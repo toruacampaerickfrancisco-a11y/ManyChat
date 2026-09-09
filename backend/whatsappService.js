@@ -338,6 +338,18 @@ async function sendWhatsAppVideoCard(to, { videoUrl, text, buttons = [], footer 
   }
 }
 
+function isWhatsAppConnected() {
+  return connectionStatus === 'CONNECTED';
+}
+
+function getLatestQrCode() {
+  return qrCodeDataUrl;
+}
+
+async function requestPairingCode(phoneNumber) {
+  return requestPairingCodeForPhone(phoneNumber);
+}
+
 function getWhatsAppStatus() {
   return {
     status: connectionStatus,
@@ -350,6 +362,9 @@ function getWhatsAppStatus() {
 module.exports = {
   startWhatsAppSession,
   requestPairingCodeForPhone,
+  requestPairingCode,
+  isWhatsAppConnected,
+  getLatestQrCode,
   setMessageHandler,
   sendWhatsAppDirectMessage,
   sendWhatsAppBannerCard,
@@ -358,3 +373,4 @@ module.exports = {
   logoutWhatsAppSession,
   getWhatsAppStatus
 };
+

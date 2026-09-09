@@ -151,36 +151,29 @@ async function processMetaMessageAsync({ senderPsid, text, platform, senderName 
     return;
   }
 
-  // 1. Manejo de botones interactivos directos
+  // 1. Manejo de botones interactivos directos si aplica
   const interactiveService = require('../services/interactiveMessageService');
-  if (cleanText === 'btn_cursos' || cleanText.includes('ver cursos') || cleanText.includes('cursos opus')) {
+  if (cleanText === 'btn_cursos') {
     const card = interactiveService.buildCoursesCard();
-    await sendMetaGraphMessage(senderPsid, card.interactive.body.text);
+    await sendMetaGraphMessage(senderPsid, card.interactive.body.text, platform);
     return;
   }
 
-  if (cleanText === 'btn_cotizar' || cleanText.includes('cotizar proyecto')) {
+  if (cleanText === 'btn_cotizar') {
     const card = interactiveService.buildQuotationCard();
-    await sendMetaGraphMessage(senderPsid, card.interactive.body.text);
+    await sendMetaGraphMessage(senderPsid, card.interactive.body.text, platform);
     return;
   }
 
-  if (cleanText === 'btn_asesor' || cleanText.includes('hablar con asesor') || cleanText.includes('humano')) {
+  if (cleanText === 'btn_asesor') {
     if (prisma && lead) {
       await prisma.lead.update({ where: { id: lead.id }, data: { bot_paused: true } });
     }
-    await sendMetaGraphMessage(senderPsid, '👨‍💼 Un ingeniero asesor de CLIPOP tomará el control de la conversación a la brevedad. ¡Gracias por tu paciencia!');
+    await sendMetaGraphMessage(senderPsid, '👨‍💼 Un ingeniero asesor de CLIPOP tomará el control de la conversación a la brevedad. ¡Gracias por tu paciencia!', platform);
     return;
   }
 
-  // 2. Si es saludo inicial ("hola", "inicio", "buenas", "0"), enviar bienvenida interactiva
-  if (cleanText === 'hola' || cleanText === 'buenas' || cleanText === 'buenos dias' || cleanText === 'buenas tardes' || cleanText === '0') {
-    const welcomeCard = interactiveService.buildWelcomeCard(senderName);
-    await sendMetaGraphMessage(senderPsid, welcomeCard.interactive.body.text);
-    return;
-  }
-
-  // 3. Invocar al Agente de IA para preguntas y cotizaciones
+  // 2. Procesar con el Agente de IA Omnicanal (Menús y Reglas Oficiales de CLIPOP)
   const agentResponse = await agentOrchestrator.processMessage({
     leadId: lead ? lead.id : null,
     platform: platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger'),
@@ -190,8 +183,8 @@ async function processMetaMessageAsync({ senderPsid, text, platform, senderName 
   });
 
   if (agentResponse && agentResponse.text) {
-    console.log(`[Meta Agent Response] Enviando respuesta a ${senderPsid}: "${agentResponse.text.substring(0, 60)}..."`);
-    await sendMetaGraphMessage(senderPsid, agentResponse.text);
+    console.log(`[Meta Agent Response] Enviando respuesta a ${senderPsid} (${platform}): "${agentResponse.text.substring(0, 60)}..."`);
+    await sendMetaGraphMessage(senderPsid, agentResponse.text, platform);
 
     // Guardar respuesta de IA en historial
     if (prisma && lead) {

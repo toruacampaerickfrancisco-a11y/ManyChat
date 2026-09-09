@@ -1,6 +1,42 @@
 const config = require('../config/env');
 
-async function sendMetaGraphMessage(recipientId, messageText) {
+async function sendMetaGraphMessage(recipientId, messageText, platform = 'messenger') {
+  const isWhatsApp = platform === 'whatsapp' || (/^\+?[0-9]{8,15}$/.test(String(recipientId).replace(/[^0-9]/g, '')) && !String(recipientId).includes('_'));
+
+  if (isWhatsApp && config.WHATSAPP_PHONE_NUMBER_ID && config.META_ACCESS_TOKEN) {
+    try {
+      const cleanPhone = String(recipientId).replace(/[^0-9]/g, '');
+      const url = `https://graph.facebook.com/v21.0/${config.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.META_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: cleanPhone,
+          type: 'text',
+          text: { body: messageText }
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        console.error('[WhatsApp Cloud API Error Response]', data);
+        return false;
+      }
+
+      console.log(`[WhatsApp Cloud API Success] Mensaje enviado a ${cleanPhone}`);
+      return true;
+    } catch (err) {
+      console.error('[WhatsApp Cloud API Send Exception]', err.message);
+      return false;
+    }
+  }
+
+  // Messenger / Instagram
   if (!config.META_ACCESS_TOKEN) {
     console.warn('[Meta Graph Service] META_ACCESS_TOKEN no configurado.');
     return false;
@@ -73,3 +109,4 @@ module.exports = {
   sendMetaGraphMessage,
   sendWhatsAppInteractiveMessage
 };
+
