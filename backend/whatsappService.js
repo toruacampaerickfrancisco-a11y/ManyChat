@@ -10,12 +10,39 @@ let connectionStatus = 'DISCONNECTED'; // 'DISCONNECTED', 'QR_READY', 'CONNECTIN
 let connectedNumber = null;
 let messageHandler = null;
 let activePairingCode = null;
+let isConnecting = false;
+let reconnectTimeout = null;
 
 function setMessageHandler(handler) {
   messageHandler = handler;
 }
 
 async function startWhatsAppSession() {
+  if (connectionStatus === 'CONNECTED' && sock) {
+    console.log('[WhatsApp Singleton] Sesión ya activa y conectada. Omitiendo duplicado.');
+    return;
+  }
+
+  if (isConnecting) {
+    console.log('[WhatsApp Singleton] Intento de conexión ya en progreso. Omitiendo multilogin.');
+    return;
+  }
+
+  isConnecting = true;
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout);
+    reconnectTimeout = null;
+  }
+
+  // Cerrar y limpiar limpiamente socket anterior para prevenir multilogin y choques de sesión
+  if (sock) {
+    try {
+      sock.ev.removeAllListeners();
+      if (sock.ws) sock.ws.close();
+    } catch (e) {}
+    sock = null;
+  }
+
   try {
     const authDir = path.join(__dirname, 'auth_info_baileys');
     if (!fs.existsSync(authDir)) {
@@ -44,6 +71,7 @@ async function startWhatsAppSession() {
 
       if (qr) {
         connectionStatus = 'QR_READY';
+        isConnecting = false;
         try {
           qrCodeDataUrl = await QRCode.toDataURL(qr, { width: 300, margin: 2 });
           console.log('[WhatsApp QR] Nuevo Código QR generado para escanear');
@@ -53,8 +81,19 @@ async function startWhatsAppSession() {
       }
 
       if (connection === 'close') {
+        isConnecting = false;
         const statusCode = (lastDisconnect?.error)?.output?.statusCode;
         const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+        // Limpieza de socket cerrado
+        if (sock) {
+          try {
+            sock.ev.removeAllListeners();
+            if (sock.ws) sock.ws.close();
+          } catch (e) {}
+          sock = null;
+        }
+
         if (!shouldReconnect) {
           console.log('[WhatsApp] Sesión previa expirada o cerrada. Limpiando credenciales para nuevo inicio limpio...');
           connectionStatus = 'DISCONNECTED';
@@ -66,17 +105,18 @@ async function startWhatsAppSession() {
               fs.rmSync(authDir, { recursive: true, force: true });
             }
           } catch (e) {}
-          setTimeout(() => {
+          reconnectTimeout = setTimeout(() => {
             startWhatsAppSession();
-          }, 1500);
+          }, 2000);
         } else {
           connectionStatus = 'CONNECTING';
-          setTimeout(() => {
+          reconnectTimeout = setTimeout(() => {
             startWhatsAppSession();
-          }, 3000);
+          }, 4000);
         }
       } else if (connection === 'open') {
         console.log('[WhatsApp] ¡Sesión vinculada con éxito!');
+        isConnecting = false;
         connectionStatus = 'CONNECTED';
         qrCodeDataUrl = null;
         activePairingCode = null;
