@@ -68,7 +68,7 @@ const CHAPTERS = [
     title: "Cotiza tu Proyecto con Nosotros",
     subtitle: "Hagamos Sinergia en tu Próxima Licitación",
     tag: "CONSULTORÍA INMEDIATA",
-    speech: "Si tienes un proyecto o licitación en puerta, contáctanos hoy mismo por WhatsApp al 52 662 474 5958 o al correo clipopoficial@gmail.com. Nuestro equipo de ingenieros está listo para apoyarte a ganar tu próximo concurso. ¡Mucho éxito!",
+    speech: "Si tienes un proyecto o licitación en puerta, contáctanos hoy mismo por WhatsApp al 52 662 474 5958 o al correo contacto@clipop.com.mx. Nuestro equipo de ingenieros está listo para apoyarte a ganar tu próximo concurso. ¡Mucho éxito!",
     bulletPoints: [
       "Atención directa por WhatsApp las 24 horas",
       "Revisión confidencial de catálogo de conceptos y planos",

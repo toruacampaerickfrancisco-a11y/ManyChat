@@ -195,7 +195,7 @@ export default function Settings() {
     {
       id: 1,
       name: 'Francisco Gardea Hernandez',
-      email: 'contacto@gardeah.com',
+      email: 'contacto@clipop.com.mx',
       avatar: '/ing_francisco_avatar.png',
       isOwner: true,
       inboxRole: true,

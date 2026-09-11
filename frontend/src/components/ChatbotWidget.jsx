@@ -170,13 +170,13 @@ export default function ChatbotWidget() {
   const resetInactivityTimer = () => {
     clearTimers();
     const lastMsg = messages[messages.length - 1];
-    const isAskingInactivity = lastMsg && lastMsg.role === 'model' && lastMsg.text.includes('¿Sigues');
+    const isAskingInactivity = lastMsg && lastMsg.role === 'model' && (lastMsg.text.includes('¿Sigues') || lastMsg.text.includes('¿sigues'));
 
     if (isAskingInactivity) {
       closeTimerRef.current = setTimeout(() => {
         setMessages(prev => [
           ...prev,
-          { role: 'model', text: '🔒 Hemos cerrado la conversación por inactividad. Puedes volver a escribir cuando gustes enviando "Hola" o seleccionando una opción del menú. ¡Mucho éxito en tus proyectos! 👋✨' }
+          { role: 'model', text: '🔒 *Sesión finalizada por inactividad.*\n\nHemos dado por finalizada esta sesión. Puedes volver a escribirnos cuando gustes enviando **"Menú"** o **"0"** para consultar las opciones disponibles. ¡Mucho éxito en tus proyectos! 👋✨' }
         ]);
         setTimeout(() => {
           setIsOpen(false);
@@ -189,7 +189,7 @@ export default function ChatbotWidget() {
       inactivityTimerRef.current = setTimeout(() => {
         setMessages(prev => [
           ...prev,
-          { role: 'model', text: '⏰ ¿Sigues por ahí? ¿Te gustaría continuar con la conversación o tienes alguna otra duda sobre nuestros cursos y cotizaciones? 😊\n\n💡 *Escribe cualquier duda o pulsa una opción para continuar.*' }
+          { role: 'model', text: '⏰ *¿Sigues por ahí?* 🤔\n\n❓ *¿Deseas continuar con la conversación?*\n👉 *Opciones:* **SÍ** o **NO**\n\n💡 _O escribe **"Menú"** o **"0"** para ver las opciones disponibles._' }
         ]);
       }, 150000); // 2.5 minutos
     }
@@ -273,6 +273,8 @@ export default function ChatbotWidget() {
   const lastModelMsg = messages[messages.length - 1]?.text?.toLowerCase() || '';
   const isCoursesTopic = lastModelMsg.includes('udemy') || lastModelMsg.includes('pregrabados') || lastModelMsg.includes('opus');
   const isQuotationTopic = lastModelMsg.includes('cotización') || lastModelMsg.includes('cotizacion') || lastModelMsg.includes('alta tensión');
+  const isAskingContinuation = lastModelMsg.includes('continuar') || lastModelMsg.includes('¿deseas') || lastModelMsg.includes('¿quieres') || lastModelMsg.includes('opciones:') || lastModelMsg.includes('¿sigues');
+  const isSessionClosed = lastModelMsg.includes('sesión finalizada') || lastModelMsg.includes('sesion finalizada');
 
   return (
     <>
@@ -464,7 +466,7 @@ export default function ChatbotWidget() {
               </p>
               <div className="flex flex-wrap gap-2">
                 <a
-                  href="mailto:clipopoficial@gmail.com?subject=Solicitud%20de%20Cotizaci%C3%B3n%20-%20Media%20y%20Alta%20Tensi%C3%B3n"
+                  href="mailto:contacto@clipop.com.mx?subject=Solicitud%20de%20Cotizaci%C3%B3n%20-%20Media%20y%20Alta%20Tensi%C3%B3n"
                   className="flex-1 py-2 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[11px] font-bold text-center flex items-center justify-center gap-1 shadow-xs"
                 >
                   <Mail className="w-3.5 h-3.5" /> Enviar Correo
@@ -495,36 +497,82 @@ export default function ChatbotWidget() {
 
         {/* Píldoras Interactivas de Acción Rápida */}
         <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 overflow-x-auto flex gap-1.5 scrollbar-none shrink-0">
-          <button
-            onClick={() => sendQuery('1')}
-            className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
-          >
-            🎓 1. Cursos Udemy
-          </button>
-          <button
-            onClick={() => sendQuery('2')}
-            className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
-          >
-            💻 2. Cursos Teams
-          </button>
-          <button
-            onClick={() => sendQuery('3')}
-            className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
-          >
-            📍 3. Presenciales
-          </button>
-          <button
-            onClick={() => sendQuery('4')}
-            className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
-          >
-            ⚡ 4. Cotización
-          </button>
-          <button
-            onClick={() => sendQuery('menu')}
-            className="shrink-0 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-600 rounded-full text-[11px] font-bold transition-all shadow-2xs active:scale-95"
-          >
-            🏠 Menú
-          </button>
+          {isAskingContinuation ? (
+            <>
+              <button
+                onClick={() => sendQuery('Sí')}
+                className="shrink-0 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full text-[11px] shadow-sm flex items-center gap-1.5 active:scale-95 transition-all"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" /> ✅ SÍ (Continuar)
+              </button>
+              <button
+                onClick={() => sendQuery('No')}
+                className="shrink-0 px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-full text-[11px] shadow-sm flex items-center gap-1.5 active:scale-95 transition-all"
+              >
+                <X className="w-3.5 h-3.5" /> ❌ NO (Terminar)
+              </button>
+              <button
+                onClick={() => sendQuery('menu')}
+                className="shrink-0 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+              >
+                🏠 Menú
+              </button>
+            </>
+          ) : isSessionClosed ? (
+            <>
+              <button
+                onClick={() => sendQuery('menu')}
+                className="shrink-0 px-4 py-1.5 bg-[#1a4a49] hover:bg-[#133c3b] text-white font-bold rounded-full text-[11px] shadow-sm flex items-center gap-1.5 active:scale-95 transition-all"
+              >
+                🏠 Menú de Opciones
+              </button>
+              <button
+                onClick={() => sendQuery('1')}
+                className="shrink-0 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs active:scale-95"
+              >
+                🎓 Cursos Udemy
+              </button>
+              <button
+                onClick={() => sendQuery('4')}
+                className="shrink-0 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs active:scale-95"
+              >
+                ⚡ Cotizaciones
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => sendQuery('1')}
+                className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+              >
+                🎓 1. Cursos Udemy
+              </button>
+              <button
+                onClick={() => sendQuery('2')}
+                className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+              >
+                💻 2. Cursos Teams
+              </button>
+              <button
+                onClick={() => sendQuery('3')}
+                className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+              >
+                📍 3. Presenciales
+              </button>
+              <button
+                onClick={() => sendQuery('4')}
+                className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#1a4a49] hover:text-white border border-gray-200 text-gray-700 rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 active:scale-95"
+              >
+                ⚡ 4. Cotización
+              </button>
+              <button
+                onClick={() => sendQuery('menu')}
+                className="shrink-0 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-600 rounded-full text-[11px] font-bold transition-all shadow-2xs active:scale-95"
+              >
+                🏠 Menú
+              </button>
+            </>
+          )}
         </div>
 
         {/* Input Bar */}

@@ -37,7 +37,7 @@ export default function Contacto() {
     } catch (err) {
       console.error('Error submitting contact form:', err);
       // Fallback a mailto si falla la red
-      const mailtoUrl = `mailto:clipopoficial@gmail.com?subject=Mensaje de Contacto - ${encodeURIComponent(formData.nombre)}&body=Nombre: ${encodeURIComponent(formData.nombre)}%0ACorreo: ${encodeURIComponent(formData.email)}%0AMensaje: ${encodeURIComponent(formData.mensaje)}`;
+      const mailtoUrl = `mailto:contacto@clipop.com.mx?subject=Mensaje de Contacto - ${encodeURIComponent(formData.nombre)}&body=Nombre: ${encodeURIComponent(formData.nombre)}%0ACorreo: ${encodeURIComponent(formData.email)}%0AMensaje: ${encodeURIComponent(formData.mensaje)}`;
       window.location.href = mailtoUrl;
     } finally {
       setSubmitting(false);
@@ -178,7 +178,7 @@ export default function Contacto() {
               <div className="h-px bg-[#235857] my-3"></div>
               
               <p className="text-[#a5d6d6] text-sm">Correo Electrónico</p>
-              <p className="font-semibold">clipopoficial@gmail.com</p>
+              <p className="font-semibold">contacto@clipop.com.mx</p>
             </div>
           </div>
         </div>

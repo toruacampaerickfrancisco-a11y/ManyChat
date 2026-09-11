@@ -42,7 +42,7 @@ function scheduleInactivityTimers(userJid, senderName = '') {
   // 1. Mensaje de seguimiento tras 2.5 minutos de inactividad
   const nudgeTimer = setTimeout(async () => {
     try {
-      const nudgeMsg = `⏰ *Hola${senderName ? ' ' + senderName : ''}*, ¿sigues por ahí? 🤔\n\n¿Deseas continuar con la conversación? (Responde *'Sí'* o *'No'*).\n✉️ Recuerda que también puedes enviar tus dudas o documentos a: *clipopoficial@gmail.com*\n\n💡 _Escribe *0* para volver al menú principal._`;
+      const nudgeMsg = `⏰ *Hola${senderName ? ' ' + senderName : ''}*, ¿sigues por ahí? 🤔\n\n❓ *¿Deseas continuar con la conversación?*\n👉 *Opciones:* *'SÍ'* o *'NO'*\n\n✉️ Recuerda que también puedes enviar tus dudas o documentos a: *contacto@clipop.com.mx*\n\n💡 _O escribe *0* o *'Menú'* para volver al menú principal._`;
       console.log(`[WhatsApp Inactividad] Enviando recordatorio a ${userJid}`);
       await whatsappService.sendWhatsAppDirectMessage(userJid, nudgeMsg);
     } catch (err) {
@@ -53,7 +53,7 @@ function scheduleInactivityTimers(userJid, senderName = '') {
   // 2. Mensaje de cierre tras 5 minutos de inactividad total
   const closeTimer = setTimeout(async () => {
     try {
-      const closeMsg = `🔒 *Conversación cerrada por ausencia e inactividad*\n\nHemos dado por finalizada esta sesión por falta de respuesta. Puedes volver a escribirnos en cualquier momento enviando *'Hola'* o *'0'*. ¡Mucho éxito en tus proyectos! 👋✨\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n✉️ *Correo:* clipopoficial@gmail.com\n━━━━━━━━━━━━━━━━━━━`;
+      const closeMsg = `🔒 *Sesión finalizada por inactividad*\n\nHemos dado por finalizada esta sesión. Puedes volver a escribirnos en cualquier momento para ver las opciones enviando *'Menú'* o *'0'*. ¡Mucho éxito en tus proyectos! 👋✨\n\n━━━━━━━━━━━━━━━━━━━\n🌐 *Sitio Web:* https://clipop.com.mx\n📸 *Instagram:* https://instagram.com/clipopoficial\n🔵 *Facebook:* https://facebook.com/profile.php?id=61591801231145\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━`;
       console.log(`[WhatsApp Inactividad] Cerrando sesión por ausencia/inactividad para ${userJid}`);
       await whatsappService.sendWhatsAppDirectMessage(userJid, closeMsg);
       inactivitySessions.delete(userJid);
