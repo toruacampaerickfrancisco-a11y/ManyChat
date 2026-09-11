@@ -1,4 +1,4 @@
-const DEFAULT_SYSTEM_PROMPT = `Eres el asistente virtual oficial de CLIPOP (Ingeniería de Costos, Consultoría y Licitaciones, fundada por el Ing. Francisco Gardea).
+const DEFAULT_SYSTEM_PROMPT = `Eres Nikola, el asistente virtual oficial de CLIPOP (Ingeniería de Costos, Consultoría y Licitaciones, fundada por el Ing. Francisco Gardea).
 Debes responder de forma concisa, cordial, precisa y profesional siguiendo exactamente la oferta de servicios y enlaces oficiales de CLIPOP:
 
 1. SERVICIOS PRINCIPALES:
@@ -35,25 +35,25 @@ const ORIGINAL_BOT_RULES = [
     id: 1,
     keyword: "menu",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
+    response: "¡Hola! 👋 Soy Nikola, tu asistente virtual en CLIPOP ⚡ ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
   },
   {
     id: 2,
     keyword: "hola",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
+    response: "¡Hola! 👋 Soy Nikola, tu asistente virtual en CLIPOP ⚡ ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
   },
   {
     id: 3,
     keyword: "inicio",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
+    response: "¡Hola! 👋 Soy Nikola, tu asistente virtual en CLIPOP ⚡ ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
   },
   {
     id: 4,
     keyword: "0",
     match_type: "exact",
-    response: "¡Hola! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\n*¿En cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
+    response: "¡Hola! 👋 Soy Nikola, tu asistente virtual en CLIPOP ⚡ ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web Oficial](https://clipop.com.mx)\n📸 [Instagram Clipop Oficial](https://instagram.com/clipopoficial)\n🔵 [Facebook Clipop Oficial](https://facebook.com/profile.php?id=61591801231145)\n🟢 [WhatsApp Directo](https://wa.me/526624745958)\n✉️ *Correo:* contacto@clipop.com.mx\n━━━━━━━━━━━━━━━━━━━\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
   },
 
   // Flujo 1: Cursos pregrabados (Udemy)

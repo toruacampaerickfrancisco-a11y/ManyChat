@@ -155,7 +155,7 @@ const parseMessage = (text, onQuickAction) => {
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [showTeaser, setShowTeaser] = useState(false);
-  const initialGreeting = '¡Hola que tal! 👋 Muchas gracias por contactarnos, será un placer atenderte.\n\nPlatícanos, ¿en cuál de nuestros servicios estás interesado?\n\n1️⃣ **Cursos pregrabados (Udemy)**\n2️⃣ **Cursos en tiempo real por Teams**\n3️⃣ **Cursos presenciales (Hermosillo)**\n4️⃣ **Cotización de proyectos de media o alta tensión**';
+  const initialGreeting = '¡Hola! 👋 Soy Nikola, tu asistente virtual en CLIPOP ⚡ ¿En qué te puedo ayudar hoy?\n\nPlatícanos, ¿en cuál de nuestros servicios estás interesado?\n\n1️⃣ **Cursos pregrabados (Udemy)**\n2️⃣ **Cursos en tiempo real por Teams**\n3️⃣ **Cursos presenciales (Hermosillo)**\n4️⃣ **Cotización de proyectos de media o alta tensión**';
   
   const [messages, setMessages] = useState([
     { role: 'model', text: initialGreeting }
@@ -297,12 +297,14 @@ export default function ChatbotWidget() {
             >
               ×
             </button>
-            <div className="w-8 h-8 rounded-full bg-[#1a4a49] text-white flex items-center justify-center shrink-0 text-xs font-bold shadow-xs">
-              🤖
-            </div>
+            <img
+              src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+              alt="Nikola"
+              className="w-8 h-8 rounded-full object-cover border border-[#1a4a49]/30 shadow-xs shrink-0"
+            />
             <div className="text-xs">
-              <p className="font-bold text-gray-800">¡Hola! ¿Tienes dudas?</p>
-              <p className="text-gray-600 mt-0.5">Consulta cursos, OPUS o cotiza proyectos al instante.</p>
+              <p className="font-bold text-gray-800">¡Hola! Soy Nikola ⚡</p>
+              <p className="text-gray-600 mt-0.5">¿En qué te puedo ayudar hoy? Cursos, OPUS o cotizaciones.</p>
               <button
                 onClick={() => {
                   setShowTeaser(false);
@@ -322,11 +324,15 @@ export default function ChatbotWidget() {
         <span className="absolute inset-0 rounded-full bg-[#1a4a49] opacity-60 animate-ping"></span>
         <button
           onClick={() => setIsOpen(true)}
-          className="relative w-14 h-14 bg-gradient-to-tr from-[#143d3c] via-[#1a4a49] to-[#256c6b] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/30"
-          aria-label="Abrir Asistente Virtual Clipop"
+          className="relative w-14 h-14 bg-gradient-to-tr from-[#143d3c] via-[#1a4a49] to-[#256c6b] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/50 overflow-hidden"
+          aria-label="Abrir Asistente Virtual Nikola"
         >
-          <Bot className="w-7 h-7 animate-pulse" />
-          <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full shadow-xs"></span>
+          <img
+            src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+            alt="Nikola"
+            className="w-full h-full object-cover"
+          />
+          <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full shadow-xs"></span>
         </button>
       </div>
 
@@ -343,20 +349,22 @@ export default function ChatbotWidget() {
 
           <div className="flex items-center gap-3 relative z-10">
             <div className="relative">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-inner">
-                <Bot className="w-5 h-5 text-emerald-300" />
-              </div>
+              <img
+                src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+                alt="Nikola"
+                className="w-10 h-10 rounded-2xl object-cover border border-white/30 shadow-md"
+              />
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-[#1a4a49] rounded-full"></span>
             </div>
             <div>
               <h3 className="font-bold text-sm leading-tight flex items-center gap-1.5 text-white">
-                Asistente Clipop
+                Nikola
                 <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full">
-                  IA Activa ⚡
+                  Asistente Virtual ⚡
                 </span>
               </h3>
               <p className="text-[11px] text-gray-300 mt-0.5 flex items-center gap-1">
-                <span>Ingeniería & Capacitación</span>
+                <span>Ingeniería & Capacitación CLIPOP</span>
               </p>
             </div>
           </div>
@@ -404,9 +412,11 @@ export default function ChatbotWidget() {
                 }`}
               >
                 {isModel && (
-                  <div className="w-7 h-7 rounded-full bg-[#1a4a49]/10 border border-[#1a4a49]/20 text-[#1a4a49] flex items-center justify-center shrink-0 mt-1 font-bold text-xs">
-                    🤖
-                  </div>
+                  <img
+                    src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+                    alt="Nikola"
+                    className="w-7 h-7 rounded-full object-cover border border-[#1a4a49]/30 shrink-0 mt-1 shadow-xs"
+                  />
                 )}
                 <div
                   className={`max-w-[85%] sm:max-w-[82%] p-3.5 rounded-2xl shadow-xs transition-all ${
@@ -495,10 +505,12 @@ export default function ChatbotWidget() {
           {/* Animación de Pensamiento (Loading) */}
           {isLoading && (
             <div className="flex gap-2 items-center text-gray-400 text-xs italic pl-2">
-              <div className="w-6 h-6 rounded-full bg-[#1a4a49]/10 text-[#1a4a49] flex items-center justify-center text-xs font-bold animate-spin">
-                ⏳
-              </div>
-              <span>Clipop AI está redactando una respuesta...</span>
+              <img
+                src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+                alt="Nikola"
+                className="w-6 h-6 rounded-full object-cover border border-[#1a4a49]/30 animate-pulse"
+              />
+              <span>Nikola está redactando una respuesta...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
