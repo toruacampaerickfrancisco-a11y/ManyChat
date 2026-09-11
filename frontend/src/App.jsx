@@ -9,6 +9,8 @@ import Cursos from './pages/public/Cursos';
 import Servicios from './pages/public/Servicios';
 import Contacto from './pages/public/Contacto';
 import PresentadorVirtual from './pages/public/PresentadorVirtual';
+import AvisoPrivacidad from './pages/public/AvisoPrivacidad';
+import TerminosCondiciones from './pages/public/TerminosCondiciones';
 import Login from './pages/auth/Login';
 
 // Vistas del Estudiante
@@ -72,6 +74,11 @@ function App() {
         <Route path="/servicios" element={<Servicios />} />
         <Route path="/contacto" element={<Contacto />} />
         <Route path="/presentador-virtual" element={<PresentadorVirtual />} />
+        <Route path="/aviso-de-privacidad" element={<AvisoPrivacidad />} />
+        <Route path="/privacidad" element={<AvisoPrivacidad />} />
+        <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
+        <Route path="/terminos" element={<TerminosCondiciones />} />
+        <Route path="/eliminacion-datos" element={<TerminosCondiciones />} />
         <Route path="/login" element={<Login />} />
 
         {/* ZONA ESTUDIANTE */}
