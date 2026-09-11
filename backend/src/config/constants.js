@@ -7,6 +7,7 @@ Debes responder de forma concisa, cordial, precisa y profesional siguiendo exact
      * [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)
      * [Cómo Presentar Concursos para CFE (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)
      * [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)
+     * [Opus 2020. Análisis de Precios Unitarios](https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65)
      * [Ver Catálogo Completo](https://clipop.com.mx/cursos)
      * Cupones de descuento: escribir a contacto@clipop.com.mx
    - 2️⃣ Cursos virtuales en tiempo real: Impartidos mediante Microsoft Teams. Las convocatorias se publican en redes sociales, o pueden programar un curso en una fecha específica escribiendo a contacto@clipop.com.mx.
@@ -60,7 +61,7 @@ const ORIGINAL_BOT_RULES = [
     id: 6,
     keyword: "1",
     match_type: "exact",
-    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en Udemy:\n\n1️⃣ [Curso Gratuito Introductorio](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n2️⃣ [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ [Cómo Presentar Concursos para CFE desde cero (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n🌐 [Ver Catálogo Completo en Clipop](https://clipop.com.mx/cursos)\n🎁 *Cupones de descuento y dudas:* Escríbenos a *contacto@clipop.com.mx*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web](https://clipop.com.mx) | 📸 [Instagram Clipop](https://instagram.com/clipopoficial) | 🔵 [Facebook Clipop](https://facebook.com/profile.php?id=61591801231145)\n━━━━━━━━━━━━━━━━━━━\n\n❓ *¿Deseas continuar con la conversación?*\n👉 *Opciones:* *'SÍ'* o *'NO'* (o escribe *0* para el menú principal)."
+    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en Udemy:\n\n1️⃣ [Curso Gratuito Introductorio](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n2️⃣ [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ [Cómo Presentar Concursos para CFE desde cero (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n5️⃣ [Opus 2020. Análisis de Precios Unitarios](https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65)\n\n🌐 [Ver Catálogo Completo en Clipop](https://clipop.com.mx/cursos)\n🎁 *Cupones de descuento y dudas:* Escríbenos a *contacto@clipop.com.mx*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web](https://clipop.com.mx) | 📸 [Instagram Clipop](https://instagram.com/clipopoficial) | 🔵 [Facebook Clipop](https://facebook.com/profile.php?id=61591801231145)\n━━━━━━━━━━━━━━━━━━━\n\n❓ *¿Deseas continuar con la conversación?*\n👉 *Opciones:* *'SÍ'* o *'NO'* (o escribe *0* para el menú principal)."
   },
 
   // Flujo 2: Cursos en tiempo real (Teams)
@@ -218,6 +219,26 @@ const DEFAULT_PRODUCTS = [
     description: "El curso más actualizado con OPUS 2025 para elaboración de presupuestos y licitaciones de alto nivel.",
     descripcion: "El curso más actualizado con OPUS 2025 para elaboración de presupuestos y licitaciones de alto nivel.",
     imagen: "/concurso_subestacion.png"
+  },
+  {
+    id: "5",
+    name: "Opus 2020. Análisis de precios unitarios",
+    titulo: "Opus 2020. Análisis de precios unitarios",
+    category: "CURSO",
+    status: "ACTIVO",
+    is_active: true,
+    price: 1999,
+    author: "FRANCISCO RAMÓN GARDEA HERNÁNDEZ",
+    url: "https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65",
+    enlace: "https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65",
+    rating: "4.5",
+    valoraciones: "72",
+    estudiantes: "362",
+    badge: "OPUS 2020",
+    badgeColor: "bg-purple-100 text-purple-800 border-purple-300",
+    description: "Desarrollo de concursos y licitaciones publicas y privadas con OPUS 2020.",
+    descripcion: "Desarrollo de concursos y licitaciones publicas y privadas con OPUS 2020.",
+    imagen: "/concurso_lineas.png"
   }
 ];
 

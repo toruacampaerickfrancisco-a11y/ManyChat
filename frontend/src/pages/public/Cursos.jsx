@@ -57,6 +57,19 @@ const CURSOS_DATA = [
     estudiantes: "3",
     badge: "Nuevo Curso",
     badgeColor: "bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]", // Verde Esmeralda
+  },
+  {
+    id: 5,
+    titulo: "Opus 2020. Análisis de precios unitarios",
+    tag: "OPUS 2020 / CONCURSOS Y LICITACIONES",
+    descripcion: "Desarrollo de concursos y licitaciones públicas y privadas. Domina la estructuración de propuestas técnico-económicas, análisis de precios unitarios y optimización de presupuestos con OPUS.",
+    enlace: "https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65",
+    imagen: "/concurso_lineas.png",
+    rating: "4.5",
+    valoraciones: "72",
+    estudiantes: "362",
+    badge: "OPUS 2020",
+    badgeColor: "bg-[#f3e8ff] text-[#7e22ce] border-[#e9d5ff]", // Morado elegante
   }
 ];
 
@@ -130,6 +143,27 @@ const TESTIMONIOS_DATA = [
     rating: 4,
     comentario: "Excelente curso introductorio y gratuito. Explica muy bien los conceptos de FSR y costos indirectos de forma muy clara. Muy agradecido por este material.",
     curso: "APU OPUS (Gratis)"
+  },
+  {
+    id: 11,
+    nombre: "Werner Omar Prado",
+    rating: 4,
+    comentario: "Un curso completo, te introduce bastante bien a lo que es OPUS y sirve como una muy buena referencia para versiones más nuevas del programa. Muy recomendable para concursos y licitaciones.",
+    curso: "Opus 2020. Análisis de precios unitarios"
+  },
+  {
+    id: 12,
+    nombre: "Álvarez Arzate",
+    rating: 5,
+    comentario: "Excelente curso, el instructor da una muy buena explicación y muy detallada sobre cómo trabajar precios unitarios de manera profesional.",
+    curso: "Opus 2020. Análisis de precios unitarios"
+  },
+  {
+    id: 13,
+    nombre: "Cesar Axel",
+    rating: 5,
+    comentario: "Me encantó el curso en verdad, explica el manejo del software sin tantos rodeos pero de manera muy objetiva. En todas las sesiones da tips y recomendaciones en base a su experiencia real en licitaciones. 10/10.",
+    curso: "Opus 2020. Análisis de precios unitarios"
   }
 ];
 

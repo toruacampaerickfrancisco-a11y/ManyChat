@@ -42,6 +42,15 @@ const OFFICIAL_COURSES = [
     badgeColor: 'bg-teal-600 text-white',
     url: 'https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F',
     actionText: 'Ver Curso OPUS 2025'
+  },
+  {
+    id: 'c5',
+    title: 'Opus 2020. Análisis de precios unitarios',
+    rating: '4.5',
+    badge: 'Licitaciones',
+    badgeColor: 'bg-purple-600 text-white',
+    url: 'https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65',
+    actionText: 'Ver Curso en Udemy'
   }
 ];
 

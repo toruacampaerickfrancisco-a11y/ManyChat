@@ -10,30 +10,59 @@ async function getProducts(req, res) {
       const dbProducts = await prisma.product.findMany({
         orderBy: { createdAt: 'desc' }
       });
+
+      // Asegurar sincronización de productos por defecto si falta alguno en la base de datos
+      const existingUrls = new Set((dbProducts || []).map(p => (p.link || '').toLowerCase()));
+      const missingDefaults = (DEFAULT_PRODUCTS || []).filter(dp => !existingUrls.has((dp.url || dp.enlace || '').toLowerCase()));
+
+      if (missingDefaults.length > 0) {
+        for (const missing of missingDefaults) {
+          try {
+            const created = await prisma.product.create({
+              data: {
+                name: missing.name,
+                description: missing.description,
+                price: missing.price,
+                image_url: missing.imagen,
+                link: missing.url,
+                is_active: true
+              }
+            });
+            dbProducts.push(created);
+          } catch (createErr) {
+            console.warn('[Sync Default Product Warning]', createErr.message);
+          }
+        }
+      }
+
       if (dbProducts && dbProducts.length > 0) {
-        const formatted = dbProducts.map(p => ({
-          id: p.id,
-          name: p.name,
-          titulo: p.name,
-          description: p.description || '',
-          descripcion: p.description || '',
-          long_description: p.long_description || '',
-          competencies: p.competencies || [],
-          price: p.price,
-          image_url: p.image_url || '/concurso_subestacion.png',
-          imagen: p.image_url || '/concurso_subestacion.png',
-          link: p.link || '#',
-          url: p.link || '#',
-          enlace: p.link || '#',
-          is_active: p.is_active,
-          status: p.is_active ? 'ACTIVO' : 'INACTIVO',
-          rating: '5.0',
-          valoraciones: '1',
-          estudiantes: '1',
-          badge: 'Curso Oficial',
-          badgeColor: 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]',
-          author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ'
-        }));
+        const defaultMap = new Map((DEFAULT_PRODUCTS || []).map(dp => [(dp.url || '').toLowerCase(), dp]));
+        const formatted = dbProducts.map(p => {
+          const matchDefault = defaultMap.get((p.link || '').toLowerCase());
+          return {
+            id: p.id,
+            name: p.name,
+            titulo: p.name,
+            description: p.description || matchDefault?.description || '',
+            descripcion: p.description || matchDefault?.descripcion || '',
+            long_description: p.long_description || '',
+            competencies: p.competencies || [],
+            price: p.price,
+            image_url: p.image_url || matchDefault?.imagen || '/concurso_subestacion.png',
+            imagen: p.image_url || matchDefault?.imagen || '/concurso_subestacion.png',
+            link: p.link || matchDefault?.url || '#',
+            url: p.link || matchDefault?.url || '#',
+            enlace: p.link || matchDefault?.enlace || '#',
+            is_active: p.is_active,
+            status: p.is_active ? 'ACTIVO' : 'INACTIVO',
+            rating: matchDefault?.rating || '5.0',
+            valoraciones: matchDefault?.valoraciones || '1',
+            estudiantes: matchDefault?.estudiantes || '1',
+            badge: matchDefault?.badge || 'Curso Oficial',
+            badgeColor: matchDefault?.badgeColor || 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]',
+            author: 'FRANCISCO RAMÓN GARDEA HERNÁNDEZ'
+          };
+        });
 
         let result = formatted;
         if (req.query.active === 'true') {
