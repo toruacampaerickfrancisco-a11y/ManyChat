@@ -298,7 +298,7 @@ export default function ChatbotWidget() {
               ×
             </button>
             <img
-              src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+              src="/avatar-torre/nikola_avatar.jpg"
               alt="Nikola"
               className="w-8 h-8 rounded-full object-cover border border-[#1a4a49]/30 shadow-xs shrink-0"
             />
@@ -328,7 +328,7 @@ export default function ChatbotWidget() {
           aria-label="Abrir Asistente Virtual Nikola"
         >
           <img
-            src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+            src="/avatar-torre/nikola_avatar.jpg"
             alt="Nikola"
             className="w-full h-full object-cover"
           />
@@ -350,7 +350,7 @@ export default function ChatbotWidget() {
           <div className="flex items-center gap-3 relative z-10">
             <div className="relative">
               <img
-                src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+                src="/avatar-torre/nikola_avatar.jpg"
                 alt="Nikola"
                 className="w-10 h-10 rounded-2xl object-cover border border-white/30 shadow-md"
               />
@@ -413,7 +413,7 @@ export default function ChatbotWidget() {
               >
                 {isModel && (
                   <img
-                    src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+                    src="/avatar-torre/nikola_avatar.jpg"
                     alt="Nikola"
                     className="w-7 h-7 rounded-full object-cover border border-[#1a4a49]/30 shrink-0 mt-1 shadow-xs"
                   />
@@ -506,7 +506,7 @@ export default function ChatbotWidget() {
           {isLoading && (
             <div className="flex gap-2 items-center text-gray-400 text-xs italic pl-2">
               <img
-                src="/avatar-torre/Avatar_Torre_Estilo_Pixar.jpg"
+                src="/avatar-torre/nikola_avatar.jpg"
                 alt="Nikola"
                 className="w-6 h-6 rounded-full object-cover border border-[#1a4a49]/30 animate-pulse"
               />
