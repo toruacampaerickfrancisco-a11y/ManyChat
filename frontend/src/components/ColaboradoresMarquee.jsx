@@ -8,6 +8,9 @@ import logocolaboradores from '../assets/logos-colaboradores/LOGOCOLABORADORES.j
 import onetzal from '../assets/logos-colaboradores/Onetzal.jpeg';
 import rgElectricidad from '../assets/logos-colaboradores/RG_ELECTRICIDAD.jpeg';
 import syncom from '../assets/logos-colaboradores/SYNCOM.jpeg';
+import alfaQuatte from '../assets/logos-colaboradores/ALFA_QUATTE.jpeg';
+import cielco from '../assets/logos-colaboradores/CIELCO.jpeg';
+import proin from '../assets/logos-colaboradores/PROIN.png';
 
 export default function ColaboradoresMarquee() {
   const LOGOS = [
@@ -16,6 +19,9 @@ export default function ColaboradoresMarquee() {
     { src: infraestructuraZerimar, name: "Infraestructura Zerimar" },
     { src: ingenieriaElectrica, name: "Ingeniería Eléctrica" },
     { src: industream, name: "Industream" },
+    { src: alfaQuatte, name: "Alfa Quatte" },
+    { src: cielco, name: "Cielco" },
+    { src: proin, name: "Proin" },
     { src: logocolaboradores, name: "Colaboradores" },
     { src: onetzal, name: "Onetzal" },
     { src: rgElectricidad, name: "RG Electricidad" },
