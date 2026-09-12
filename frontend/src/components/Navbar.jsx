@@ -48,9 +48,6 @@ export default function Navbar() {
             }}
             className="h-12 md:h-14 object-contain transition-transform duration-200 group-hover:scale-105" 
           />
-          <span className="text-gray-400 text-xs font-semibold tracking-wider border-l border-gray-200 pl-3 hidden sm:inline-block">
-            RFC: CCE2602093B3
-          </span>
         </Link>
       </div>
 
