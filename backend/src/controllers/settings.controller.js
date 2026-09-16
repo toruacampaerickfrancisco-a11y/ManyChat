@@ -14,13 +14,13 @@ const CORE_FLOW_DEFS = [
     subtitle: 'Respuesta inicial cuando el usuario saluda o escribe 0 / menu',
     keywords: '0, menu, menú, hola, inicio, empezar',
     defaultResponse: ORIGINAL_BOT_RULES.find(r => r.keyword === 'menu')?.response || '',
-    mediaType: 'video',
-    defaultMediaUrl: '/avatar-torre/nikola_bienvenida.mp4'
+    mediaType: 'none',
+    defaultMediaUrl: ''
   },
   {
     key: 'flow_option1',
     title: 'Opción 1: Cursos Pregrabados (Udemy)',
-    subtitle: 'Catálogo de cursos oficiales en Udemy con precios y enlaces',
+    subtitle: 'Catálogo de los 5 cursos oficiales en Udemy con enlaces',
     keywords: '1, pregrabados, udemy, cursos, opus, precios unitarios',
     defaultResponse: ORIGINAL_BOT_RULES.find(r => r.id === 6)?.response || '',
     mediaType: 'none',

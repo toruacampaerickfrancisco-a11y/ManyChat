@@ -19,6 +19,7 @@ etorua.pem
 auth_info_baileys/
 auth_session.tar.gz
 auth_session.zip
+backend/generated_videos/
 
 # Production build
 # dist/ se incluye para despliegue directo en el servidor

@@ -202,10 +202,28 @@ async function requestPairingCodeForPhone(phoneNumber) {
 
 function formatForWhatsApp(text) {
   if (!text) return "";
-  // Transforma links markdown [Título](url) en formato limpio para WhatsApp: 👉 *Título:* \nurl
-  return text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, title, url) => {
-    return `👉 *${title}:*\n${url}`;
+  let formatted = text;
+
+  // 1. Convertir negritas dobles de Markdown a negritas de WhatsApp: **texto** -> *texto*
+  formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '*$1*');
+
+  // 2. Manejar líneas con separador tipo ' | ' que contienen links
+  const lines = formatted.split('\n');
+  const processedLines = lines.map(line => {
+    if (line.includes('|') && !line.includes('━━━━')) {
+      const parts = line.split('|').map(p => p.trim()).filter(Boolean);
+      return parts.join('\n');
+    }
+    return line;
   });
+  formatted = processedLines.join('\n');
+
+  // 3. Formatear links markdown [Título](url) de forma limpia
+  formatted = formatted.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, title, url) => {
+    return `*${title}:*\n${url}`;
+  });
+
+  return formatted;
 }
 
 async function sendWhatsAppDirectMessage(to, text) {
@@ -413,6 +431,7 @@ module.exports = {
   sendWhatsAppVideoCard,
   sendVoiceNote,
   logoutWhatsAppSession,
-  getWhatsAppStatus
+  getWhatsAppStatus,
+  formatForWhatsApp
 };
 

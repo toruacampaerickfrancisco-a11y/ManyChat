@@ -141,14 +141,8 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
       } else {
         await whatsappService.sendWhatsAppDirectMessage(from, response.text);
       }
-    } else if (response.isWelcome) {
-      // Si es el saludo inicial o menú de bienvenida, enviar video de Nikola con el menú
-      console.log(`[WhatsApp Welcome] Enviando video de bienvenida de Nikola a ${from}...`);
-      const videoResult = await whatsappService.sendWhatsAppVideoCard(from, { text: response.text });
-      if (!videoResult || !videoResult.success) {
-        await whatsappService.sendWhatsAppDirectMessage(from, response.text);
-      }
     } else {
+      // Envío de texto directo y limpio, 100% unificado con el bot de la página web
       await whatsappService.sendWhatsAppDirectMessage(from, response.text);
     }
 

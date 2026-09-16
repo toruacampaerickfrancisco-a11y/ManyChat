@@ -151,26 +151,18 @@ async function processMetaMessageAsync({ senderPsid, text, platform, senderName 
     return;
   }
 
-  // 1. Manejo de botones interactivos directos si aplica
-  const interactiveService = require('../services/interactiveMessageService');
-  if (cleanText === 'btn_cursos') {
-    const card = interactiveService.buildCoursesCard();
-    await sendMetaGraphMessage(senderPsid, card.interactive.body.text, platform);
-    return;
-  }
-
-  if (cleanText === 'btn_cotizar') {
-    const card = interactiveService.buildQuotationCard();
-    await sendMetaGraphMessage(senderPsid, card.interactive.body.text, platform);
-    return;
-  }
-
-  if (cleanText === 'btn_asesor') {
-    if (prisma && lead) {
-      await prisma.lead.update({ where: { id: lead.id }, data: { bot_paused: true } });
-    }
-    await sendMetaGraphMessage(senderPsid, '👨‍💼 Un ingeniero asesor de CLIPOP tomará el control de la conversación a la brevedad. ¡Gracias por tu paciencia!', platform);
-    return;
+  // 1. Mapeo de botones interactivos al flujo unificado oficial
+  let effectiveMessage = text;
+  if (cleanText === 'btn_cursos' || cleanText === 'btn_cursos_opus') {
+    effectiveMessage = '1';
+  } else if (cleanText === 'btn_teams') {
+    effectiveMessage = '2';
+  } else if (cleanText === 'btn_presencial') {
+    effectiveMessage = '3';
+  } else if (cleanText === 'btn_cotizar') {
+    effectiveMessage = '4';
+  } else if (cleanText === 'btn_asesor') {
+    effectiveMessage = 'asesor';
   }
 
   // 2. Procesar con el Agente de IA Omnicanal (Menús y Reglas Oficiales de CLIPOP)
@@ -179,7 +171,7 @@ async function processMetaMessageAsync({ senderPsid, text, platform, senderName 
     platform: platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger'),
     phoneOrId: senderPsid,
     senderName,
-    userMessage: text
+    userMessage: effectiveMessage
   });
 
   if (agentResponse && agentResponse.text) {

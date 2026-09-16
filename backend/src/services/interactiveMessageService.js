@@ -16,7 +16,7 @@ function buildWelcomeCard(senderName = '') {
         }
       },
       body: {
-        text: `⚡ *¡Hola${nameGreeting}! Bienvenido a CLIPOP Ingeniería y Consultoría.*\n\nSoy *Nikola*, tu asesor técnico virtual. Estamos especializados en proyectos de media/alta tensión de CFE y cursos de precios unitarios con OPUS 2025.\n\n¿En qué podemos apoyarte hoy? Selecciona una opción:`
+        text: `⚡ *¡Hola${nameGreeting}! Bienvenido a CLIPOP.* ¿En qué te podemos apoyar hoy?\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n_Escribe el número de la opción o presiona un botón:_`
       },
       footer: {
         text: 'CLIPOP • clipop.com.mx'
@@ -27,21 +27,21 @@ function buildWelcomeCard(senderName = '') {
             type: 'reply',
             reply: {
               id: 'btn_cursos',
-              title: '📚 Cursos OPUS / CFE'
+              title: '1️⃣ Cursos (Udemy)'
+            }
+          },
+          {
+            type: 'reply',
+            reply: {
+              id: 'btn_teams',
+              title: '2️⃣ Teams en Vivo'
             }
           },
           {
             type: 'reply',
             reply: {
               id: 'btn_cotizar',
-              title: '⚡ Cotizar Proyecto'
-            }
-          },
-          {
-            type: 'reply',
-            reply: {
-              id: 'btn_asesor',
-              title: '👤 Asesor Humano'
+              title: '4️⃣ Cotizar Proyecto'
             }
           }
         ]
@@ -62,10 +62,10 @@ function buildCoursesCard() {
         }
       },
       body: {
-        text: `🎓 *CATÁLOGO DE CURSOS Y DIPLOMADOS OFICIALES*\n\n1️⃣ *Concurso de Obra para Líneas de Distribución CFE*\n👉 https://www.udemy.com/course/concurso-de-obra-publica-para-lineas-de-distribucion-cfe/\n\n2️⃣ *Propuesta Técnica y Económica para Subestaciones Eléctricas*\n👉 https://www.udemy.com/course/concurso-de-obra-publica-para-subestacion-electrica-cfe/\n\n✅ Acceso de por vida en Udemy\n✅ Certificado oficial\n✅ Archivos de trabajo y catálogos en OPUS incluidos.`
+        text: `🎓 *CURSOS ESPECIALIZADOS EN UDEMY*\n\n1️⃣ *Curso Gratuito Introductorio APU*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n2️⃣ *Precios Unitarios OPUS 22, 24, Neodata y Excel*\n👉 https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/\n\n3️⃣ *Cómo Presentar Concursos para CFE (OPUS 2020)*\n👉 https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/\n\n4️⃣ *Análisis de Precios Unitarios (OPUS 2025)*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F\n\n5️⃣ *Opus 2020. Análisis de Precios Unitarios*\n👉 https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65\n\n🌐 *Catálogo Completo:* https://clipop.com.mx/cursos\n✉️ *Dudas y cupones:* contacto@clipop.com.mx`
       },
       footer: {
-        text: 'Instructores Certificados CFE & OPUS'
+        text: 'CLIPOP • Ingeniería de Costos'
       },
       action: {
         buttons: [
@@ -80,7 +80,7 @@ function buildCoursesCard() {
             type: 'reply',
             reply: {
               id: 'btn_asesor',
-              title: '👤 Hablar con Asesor'
+              title: '👤 Asesor Humano'
             }
           }
         ]
@@ -101,10 +101,10 @@ function buildQuotationCard() {
         }
       },
       body: {
-        text: `⚡ *COTIZACIÓN DE PROYECTOS Y CONSULTORÍA TÉCNICA*\n\nRealizamos estudios, ingeniería y construcción para:\n• 🏗️ Subestaciones Eléctricas (Media y Alta Tensión)\n• ⚡ Líneas de Distribución Aéreas y Subterráneas\n• 📋 Integración de Licitaciones y Precios Unitarios (OPUS)\n• 📊 Estudios de Código de Red y Calidad de Energía\n\n_Por favor, indícanos el tipo de proyecto, ubicación o compártenos tu plano/catálogo de conceptos en este chat._`
+        text: `⚡ *COTIZACIÓN DE PROYECTOS DE MEDIA O ALTA TENSIÓN*\n\nPara cotizar un proyecto, por favor envíanos la información técnica (catálogo de conceptos, especificaciones, planos y condiciones comerciales) a:\n\n✉️ *contacto@clipop.com.mx*\n📌 Asunto: *Solicitud de cotización*\n\nNuestro equipo de ingeniería de costos se comunicará a la brevedad.`
       },
       footer: {
-        text: 'Ing. Francisco Ramón Gardea Hernández'
+        text: 'Ingeniería y Consultoría CLIPOP'
       },
       action: {
         buttons: [
@@ -119,7 +119,7 @@ function buildQuotationCard() {
             type: 'reply',
             reply: {
               id: 'btn_asesor',
-              title: '👤 Transferir a Ingeniero'
+              title: '👤 Asesor Humano'
             }
           }
         ]
