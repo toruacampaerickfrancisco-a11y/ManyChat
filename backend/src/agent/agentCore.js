@@ -110,7 +110,7 @@ class AgentOrchestrator {
       };
     }
 
-    // B. Opción 1: Cursos pregrabados (Udemy)
+    // B. Opción 1: Cursos pregrabados
     if (
       cleanMsg === '1' ||
       cleanMsg === '1️⃣' ||

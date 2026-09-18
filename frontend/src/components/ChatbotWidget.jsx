@@ -108,7 +108,7 @@ const parseMessage = (text, onQuickAction) => {
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [showTeaser, setShowTeaser] = useState(false);
-  const initialGreeting = '¡Hola!  Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._';
+  const initialGreeting = '¡Hola!  Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._';
 
   const [messages, setMessages] = useState([
     { role: 'model', text: initialGreeting }

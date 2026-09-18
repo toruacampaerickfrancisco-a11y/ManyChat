@@ -1,502 +1,410 @@
-import { useState, useEffect } from 'react';
-import { Star, Users, MessageSquare, ChevronLeft, ChevronRight, BookOpen, Quote, Award, Calculator, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Star, Users, ChevronLeft, ChevronRight, Quote, Award, CheckCircle2, Check, ExternalLink } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ChatbotWidget from '../../components/ChatbotWidget';
 import ColaboradoresMarquee from '../../components/ColaboradoresMarquee';
 
-const CURSOS_DATA = [
-  {
-    id: 'hotmart-1',
-    titulo: "Curso de Análisis de Precios Unitarios. OPUS y Neodata, Proyectos de la Vida Real, CFE",
-    tag: "HOTMART MASTERCLASS / OPUS Y NEODATA / CFE",
-    descripcion: "Aprende a desarrollar precios unitarios desde cero, dominando los softwares líderes: Opus y Neodata. Enfocado en proyectos reales y licitaciones de CFE con clases personalizadas uno a uno por Teams y más de 40 horas de capacitación.",
-    enlace: "https://go.hotmart.com/K93054265G",
-    imagen: "/curso_hotmart_opus_neodata.jpg",
-    rating: "5.0",
-    valoraciones: "48",
-    estudiantes: "320",
-    badge: "Hotmart Masterclass",
-    badgeColor: "bg-[#ffedd5] text-[#c2410c] border-[#fed7aa]", // Naranja Hotmart
-  },
-  {
-    id: 1,
-    titulo: "Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel",
-    tag: "OPUS 22 / OPUS 24 / NEODATA / EXCEL",
-    descripcion: "Curso completo enfocado en estructurar presupuestos y análisis de precios unitarios (APU) desde cero, dominando los softwares líderes en la industria de la construcción.",
-    enlace: "https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/",
-    imagen: "/concurso_subestacion.png",
-    rating: "4.4",
-    valoraciones: "226",
-    estudiantes: "1,244",
-    badge: "Más Vendido",
-    badgeColor: "bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]", // Azul
-  },
-  {
-    id: 2,
-    titulo: "Cómo Presentar Concursos para CFE desde cero con OPUS 2020",
-    tag: "NORMATIVA CFE / OPUS 2020",
-    descripcion: "Guía práctica y metodológica para armar y presentar propuestas de licitaciones técnico-económicas para la Comisión Federal de Electricidad (CFE) en México cumpliendo toda la normativa vigente.",
-    enlace: "https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/",
-    imagen: "/concurso_lineas.png",
-    rating: "4.9",
-    valoraciones: "24",
-    estudiantes: "77",
-    badge: "Mejor Valorado",
-    badgeColor: "bg-[#fef3c7] text-[#b45309] border-[#fde68a]", // Naranja/Crema
-  },
-  {
-    id: 3,
-    titulo: "OPUS. ANALISIS DE PRECIOS UNITARIOS. GRATIS!!",
-    tag: "CURSO INTRODUCTORIO",
-    descripcion: "Curso de especialización introductorio y dinámico para aprender a trabajar con la CFE, abordando la elaboración de licitaciones, concursos y análisis de precios unitarios utilizando OPUS.",
-    enlace: "https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED",
-    imagen: "/concurso_redes.png",
-    rating: "4.6",
-    valoraciones: "62",
-    estudiantes: "754",
-    badge: "Acceso Gratuito",
-    badgeColor: "bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]", // Verde
-  },
-  {
-    id: 4,
-    titulo: "Análisis de Precios Unitarios 100% Práctico. OPUS 2025",
-    tag: "OPUS 2025 / LICITACIONES CFE",
-    descripcion: "Curso del Ing. Francisco Gardea enfocado en el manejo de OPUS 2025, estructuración de concursos de CFE, elaboración de precios unitarios conforme a especificaciones vigentes y desarrollo de entregables y anexos económicos con ejemplos prácticos de Líneas de Transmisión de CFE.",
-    enlace: "https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F",
-    imagen: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
-    rating: "5.0",
-    valoraciones: "2",
-    estudiantes: "3",
-    badge: "Nuevo Curso",
-    badgeColor: "bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]", // Verde Esmeralda
-  },
-  {
-    id: 5,
-    titulo: "Opus 2020. Análisis de precios unitarios",
-    tag: "OPUS 2020 / CONCURSOS Y LICITACIONES",
-    descripcion: "Desarrollo de concursos y licitaciones públicas y privadas. Domina la estructuración de propuestas técnico-económicas, análisis de precios unitarios y optimización de presupuestos con OPUS.",
-    enlace: "https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65",
-    imagen: "/concurso_lineas.png",
-    rating: "4.5",
-    valoraciones: "72",
-    estudiantes: "362",
-    badge: "OPUS 2020",
-    badgeColor: "bg-[#f3e8ff] text-[#7e22ce] border-[#e9d5ff]", // Morado elegante
-  }
-];
+const HOTMART_COURSE = {
+  id: 'hotmart-masterclass',
+  titulo: 'Curso de Análisis de Precios Unitarios. OPUS y Neodata, Proyectos de la Vida Real, CFE',
+  tag: 'HOTMART MASTERCLASS / OPUS Y NEODATA / CFE',
+  descripcion: 'Aprende a desarrollar precios unitarios desde cero, dominando los softwares líderes: Opus y Neodata. Enfocado en proyectos reales y licitaciones de CFE con clases personalizadas uno a uno por Teams y más de 40 horas de capacitación profesional intensiva.',
+  enlace: 'https://go.hotmart.com/K93054265G',
+  imagen: '/curso_hotmart_opus_neodata.jpg',
+  rating: '5.0',
+  valoraciones: '48',
+  estudiantes: '320+',
+  badge: 'Programa Más Completo',
+  puntosClave: [
+    'Más de 40 horas de formación práctica paso a paso',
+    'Dominio de OPUS y Neodata aplicados a proyectos reales',
+    'Clases y asesorías personalizadas 1 a 1 por Microsoft Teams',
+    'Metodología completa para licitaciones técnico-económicas CFE'
+  ]
+};
 
-const TESTIMONIOS_DATA = [
+const UDEMY_CURSOS_CON_RESENAS = [
   {
     id: 1,
-    nombre: "Carlos Mendoza",
-    rating: 5,
-    comentario: "Excelente curso, muy bien estructurado. Te lleva de la mano paso a paso sobre cómo armar la propuesta técnica y económica conforme a las bases de CFE. ¡Totalmente recomendado!",
-    curso: "Cómo Presentar Concursos para CFE"
+    titulo: 'Precios Unitarios OPUS 22, OPUS 24, Neodata y Excel',
+    tag: 'OPUS 22 / OPUS 24 / NEODATA / EXCEL',
+    descripcion: 'Curso completo enfocado en estructurar presupuestos y análisis de precios unitarios (APU) desde cero, dominando los softwares líderes en la industria de la construcción.',
+    imagen: '/concurso_subestacion.png',
+    rating: '4.4',
+    valoraciones: '226',
+    estudiantes: '1,244',
+    badge: 'Más Vendido',
+    badgeColor: 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]',
+    testimonio: {
+      nombre: 'Ana Laura Gutiérrez',
+      rating: 5,
+      comentario: 'La comparación y uso práctico entre OPUS, Neodata y Excel es fantástica. El instructor tiene un dominio completo del tema y aclara dudas rápidamente. Me ayudó mucho en mi trabajo.',
+      detalles: 'Estudiante verificada en Udemy'
+    }
   },
   {
     id: 2,
-    nombre: "Juan Carlos",
-    rating: 5,
-    comentario: "Excelente presentación. Es un gran tema para aprender precios unitarios el elegir formas de licitaciones y concursos de CFE para el desarrollo de sus obras. Considero que el instructor esta consciente de que es un tema de gran interés y su preparación y conocimiento lleva de la mano.",
-    curso: "APU 100% Práctico. OPUS 2025"
+    titulo: 'Cómo Presentar Concursos para CFE desde cero con OPUS 2020',
+    tag: 'NORMATIVA CFE / OPUS 2020',
+    descripcion: 'Guía práctica y metodológica para armar y presentar propuestas de licitaciones técnico-económicas para la Comisión Federal de Electricidad (CFE) en México cumpliendo toda la normativa vigente.',
+    imagen: '/concurso_lineas.png',
+    rating: '4.9',
+    valoraciones: '24',
+    estudiantes: '77',
+    badge: 'Mejor Valorado',
+    badgeColor: 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]',
+    testimonio: {
+      nombre: 'Carlos Mendoza',
+      rating: 5,
+      comentario: 'Excelente curso, muy bien estructurado. Te lleva de la mano paso a paso sobre cómo armar la propuesta técnica y económica conforme a las bases de CFE. ¡Totalmente recomendado!',
+      detalles: 'Estudiante verificado en Udemy'
+    }
   },
   {
     id: 3,
-    nombre: "Ana Laura Gutiérrez",
-    rating: 5,
-    comentario: "La comparación y uso práctico entre OPUS, Neodata y Excel es fantástica. El instructor tiene un dominio completo del tema y aclara dudas rápidamente. Me ayudó mucho en mi trabajo.",
-    curso: "Precios Unitarios OPUS, Neodata y Excel"
+    titulo: 'OPUS. ANALISIS DE PRECIOS UNITARIOS. GRATIS!!',
+    tag: 'CURSO INTRODUCTORIO',
+    descripcion: 'Curso de especialización introductorio y dinámico para aprender a trabajar con la CFE, abordando la elaboración de licitaciones, concursos y análisis de precios unitarios utilizando OPUS.',
+    imagen: '/concurso_redes.png',
+    rating: '4.6',
+    valoraciones: '62',
+    estudiantes: '754',
+    badge: 'Acceso Gratuito',
+    badgeColor: 'bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]',
+    testimonio: {
+      nombre: 'Hugo',
+      rating: 5,
+      comentario: 'GRACIAS Ing. FRANCISCO GARDEA y a SIR ENERGY por este excelente curso dinámico. Con la mayoría de parámetros se aprende a trabajar con la CFE de manera profesional. Invito a más ingenieros y arquitectos a participar.',
+      detalles: 'Estudiante verificado en Udemy'
+    }
   },
   {
     id: 4,
-    nombre: "Francisco",
-    rating: 5,
-    comentario: "Excelente curso del Ing. Francisco Gardea. Como siempre, comparte información muy valiosa y aplicable al trabajo diario. Destaco especialmente el manejo de OPUS 2025, la estructuración de concursos de CFE y el desarrollo de anexos económicos con ejemplos prácticos.",
-    curso: "APU 100% Práctico. OPUS 2025"
+    titulo: 'Análisis de Precios Unitarios 100% Práctico (OPUS 2025)',
+    tag: 'OPUS 2025 / LICITACIONES CFE',
+    descripcion: 'Curso del Ing. Francisco Gardea enfocado en el manejo de OPUS 2025, estructuración de concursos de CFE, elaboración de precios unitarios conforme a especificaciones vigentes y desarrollo de entregables y anexos económicos con ejemplos prácticos de Líneas de Transmisión de CFE.',
+    imagen: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+    rating: '5.0',
+    valoraciones: '29',
+    estudiantes: '180',
+    badge: 'Nuevo 2025',
+    badgeColor: 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]',
+    testimonio: {
+      nombre: 'Juan Carlos',
+      rating: 5,
+      comentario: 'Excelente presentación. Es un gran tema para aprender precios unitarios el elegir formas de licitaciones y concursos de CFE para el desarrollo de sus obras. El instructor tiene amplio dominio y preparación.',
+      detalles: 'Estudiante verificado en Udemy'
+    }
   },
   {
     id: 5,
-    nombre: "Yinet",
-    rating: 5,
-    comentario: "Fue muy útil y fácil de seguir. La explicación de los conceptos fue clara y el desarrollo de un ejemplo práctico permitió comprender mejor el uso de las herramientas y funciones principales del programa. Excelente para iniciar en OPUS.",
-    curso: "APU OPUS (Gratis)"
-  },
-  {
-    id: 6,
-    nombre: "Ing. Roberto Solís",
-    rating: 5,
-    comentario: "Explicaciones claras y objetivas. Un curso sumamente práctico para quienes nos dedicamos a la formulación de ofertas de concursos públicos y privados. Gran inversión.",
-    curso: "Cómo Presentar Concursos para CFE"
-  },
-  {
-    id: 7,
-    nombre: "Hugo",
-    rating: 5,
-    comentario: "GRACIAS Ing. FRANCISCO GARDEA y a SIR ENERGY por este excelente curso dinámico. Con la mayoría de parámetros se aprende a trabajar con la CFE de manera profesional. Invito a más ingenieros y arquitectos a participar.",
-    curso: "APU OPUS (Gratis)"
-  },
-  {
-    id: 8,
-    nombre: "Jorge T. Valdez",
-    rating: 5,
-    comentario: "Muy buena metodología de enseñanza. Ideal tanto para quienes inician en análisis de precios unitarios como para los que ya tenemos experiencia y buscamos optimizar tiempos con OPUS.",
-    curso: "Precios Unitarios OPUS, Neodata y Excel"
-  },
-  {
-    id: 9,
-    nombre: "David Alirio Sandoval",
-    rating: 5,
-    comentario: "Buen curso, se explica bien el tema de los análisis de precios unitarios con OPUS, adicionalmente hace una revisión general del alcance del programa para generación de entregables en procesos de licitación y contratos.",
-    curso: "APU OPUS (Gratis)"
-  },
-  {
-    id: 10,
-    nombre: "Esteban R. H.",
-    rating: 4,
-    comentario: "Excelente curso introductorio y gratuito. Explica muy bien los conceptos de FSR y costos indirectos de forma muy clara. Muy agradecido por este material.",
-    curso: "APU OPUS (Gratis)"
-  },
-  {
-    id: 11,
-    nombre: "Werner Omar Prado",
-    rating: 4,
-    comentario: "Un curso completo, te introduce bastante bien a lo que es OPUS y sirve como una muy buena referencia para versiones más nuevas del programa. Muy recomendable para concursos y licitaciones.",
-    curso: "Opus 2020. Análisis de precios unitarios"
-  },
-  {
-    id: 12,
-    nombre: "Álvarez Arzate",
-    rating: 5,
-    comentario: "Excelente curso, el instructor da una muy buena explicación y muy detallada sobre cómo trabajar precios unitarios de manera profesional.",
-    curso: "Opus 2020. Análisis de precios unitarios"
-  },
-  {
-    id: 13,
-    nombre: "Cesar Axel",
-    rating: 5,
-    comentario: "Me encantó el curso en verdad, explica el manejo del software sin tantos rodeos pero de manera muy objetiva. En todas las sesiones da tips y recomendaciones en base a su experiencia real en licitaciones. 10/10.",
-    curso: "Opus 2020. Análisis de precios unitarios"
+    titulo: 'Opus 2020. Análisis de precios unitarios',
+    tag: 'OPUS 2020 / CONCURSOS Y LICITACIONES',
+    descripcion: 'Desarrollo de concursos y licitaciones públicas y privadas. Domina la estructuración de propuestas técnico-económicas, análisis de precios unitarios y optimización de presupuestos con OPUS.',
+    imagen: '/concurso_lineas.png',
+    rating: '4.5',
+    valoraciones: '72',
+    estudiantes: '362',
+    badge: 'OPUS 2020',
+    badgeColor: 'bg-[#f3e8ff] text-[#7e22ce] border-[#e9d5ff]',
+    testimonio: {
+      nombre: 'Cesar Axel',
+      rating: 5,
+      comentario: 'Me encantó el curso en verdad, explica el manejo del software sin tantos rodeos pero de manera muy objetiva. En todas las sesiones da tips y recomendaciones en base a su experiencia real en licitaciones. 10/10.',
+      detalles: 'Estudiante verificado en Udemy'
+    }
   }
 ];
 
 export default function Cursos() {
-  const [cursosList, setCursosList] = useState(CURSOS_DATA);
-  const [currentCurso, setCurrentCurso] = useState(0);
-  const [currentTestimonio, setCurrentTestimonio] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Cargar cursos dinámicos desde la API de catálogo
-  useEffect(() => {
-    fetch('/api/products?activeOnly=true')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          const formatted = data.map(item => ({
-            id: item.id,
-            titulo: item.titulo || item.name,
-            tag: item.tag || `${item.category || 'CURSO'} / CLIPOP`,
-            descripcion: item.descripcion || item.description || '',
-            enlace: item.enlace || item.url || item.link || '#',
-            imagen: item.imagen || item.image_url || '/concurso_subestacion.png',
-            rating: item.rating || '5.0',
-            valoraciones: item.valoraciones || '12',
-            estudiantes: item.estudiantes || '150',
-            badge: item.badge || 'Disponible',
-            badgeColor: item.badgeColor || 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]'
-          }));
-          setCursosList(formatted);
-        }
-      })
-      .catch(err => console.error('Error cargando cursos dinámicos:', err));
-  }, []);
-
-  // Auto-play opcional para el carrusel de cursos (cada 8 segundos)
-  useEffect(() => {
-    if (cursosList.length === 0) return;
-    const interval = setInterval(() => {
-      setCurrentCurso((prev) => (prev >= cursosList.length - 1 ? 0 : prev + 1));
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [cursosList.length]);
-
-  // Auto-play para el carrusel de testimonios (cada 5 segundos)
+  // Auto-play cada 7 segundos
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTestimonio((prev) => (prev === TESTIMONIOS_DATA.length - 1 ? 0 : prev + 1));
-    }, 5000);
+      setCurrentIndex((prev) => (prev >= UDEMY_CURSOS_CON_RESENAS.length - 1 ? 0 : prev + 1));
+    }, 7000);
     return () => clearInterval(interval);
   }, []);
 
-  const handlePrevCurso = () => {
-    setCurrentCurso((prev) => (prev === 0 ? cursosList.length - 1 : prev - 1));
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? UDEMY_CURSOS_CON_RESENAS.length - 1 : prev - 1));
   };
 
-  const handleNextCurso = () => {
-    setCurrentCurso((prev) => (prev === cursosList.length - 1 ? 0 : prev + 1));
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === UDEMY_CURSOS_CON_RESENAS.length - 1 ? 0 : prev + 1));
   };
 
-  const handlePrevTestimonio = () => {
-    setCurrentTestimonio((prev) => (prev === 0 ? TESTIMONIOS_DATA.length - 1 : prev - 1));
-  };
-
-  const handleNextTestimonio = () => {
-    setCurrentTestimonio((prev) => (prev === TESTIMONIOS_DATA.length - 1 ? 0 : prev + 1));
-  };
-
-  // Renderizar las estrellitas de calificación
   const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
-        stars.push(<Star key={i} size={16} className="fill-amber-400 text-amber-400" />);
+        stars.push(<Star key={i} size={15} className="fill-amber-400 text-amber-400" />);
       } else {
-        stars.push(<Star key={i} size={16} className="text-gray-300" />);
+        stars.push(<Star key={i} size={15} className="text-gray-300" />);
       }
     }
     return stars;
   };
+
+  const currentItem = UDEMY_CURSOS_CON_RESENAS[currentIndex];
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800 flex flex-col">
       <Navbar />
 
       <main className="flex-grow flex flex-col">
-        {/* Cabecera / Sección Introducción */}
-        <div className="w-full py-10 bg-gray-50 flex flex-col items-center justify-center text-center px-6 border-b border-gray-100">
-          <span className="text-[#1a4a49] text-xs font-bold uppercase tracking-widest bg-[#1a4a49]/10 px-3 py-1 rounded-full mb-3">
-            Formación Profesional
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1a4a49]">
-            Nuestros Cursos en Udemy
-          </h2>
-          <p className="text-gray-500 text-sm md:text-base mt-2 max-w-xl">
-            Aprende a formular presupuestos ganadores de obra y licitaciones para la CFE con instructores altamente calificados.
-          </p>
-        </div>
+        {/* 1. SECCIÓN PRINCIPAL: NUESTRO CURSO MÁS COMPLETO ALOJADO EN HOTMART */}
+        <section className="w-full py-12 md:py-16 bg-gradient-to-b from-gray-50 via-white to-gray-50 border-b border-gray-200/70">
+          <div className="max-w-6xl mx-auto px-6">
 
-        {/* 1. Carrusel de Cursos Principal */}
-        <section className="py-12 px-6 bg-white flex items-center justify-center">
-          <div className="w-full max-w-5xl">
-            <div className="relative h-[480px] md:h-[420px] rounded-3xl overflow-hidden shadow-2xl bg-black group/carousel">
-
-              {/* Slides del Carrusel */}
-              {cursosList.map((curso, index) => (
-                <div
-                  key={curso.id || index}
-                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${index === currentCurso ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                    }`}
-                >
-                  {/* Imagen de fondo */}
-                  <img
-                    src={curso.imagen}
-                    alt={curso.titulo}
-                    onError={(e) => {
-                      const img = curso.imagen || '';
-                      if (img.endsWith('.jpeg')) {
-                        e.target.src = img.replace('.jpeg', '.jpg');
-                      } else if (img.endsWith('.png')) {
-                        e.target.src = img.replace('.png', '.jpg');
-                      } else if (img.endsWith('.jpg')) {
-                        e.target.src = img.replace('.jpg', '.png');
-                      } else {
-                        e.target.src = `/Banner${(index % 5) + 1}.jpeg`;
-                      }
-                    }}
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Gradiente oscuro superior y lateral para excelente legibilidad */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black/95 via-black/75 to-black/30 md:bg-gradient-to-r md:from-black/90 md:via-black/75 md:to-black/40"></div>
-
-                  {/* Insignia / Badge de Udemy y Rating (Esquina Superior Derecha) */}
-                  <div className="absolute top-6 right-6 flex flex-col items-end gap-2 z-20">
-                    <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-md border ${curso.badgeColor}`}>
-                      {curso.badge}
-                    </span>
-                  </div>
-
-                  {/* Contenido del Curso (Parte Central/Inferior) */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 text-white z-20 max-w-3xl">
-                    <span className="text-[#f5c29b] text-[10px] md:text-xs font-bold tracking-widest uppercase mb-2 block">
-                      {curso.tag}
-                    </span>
-
-                    <h3 className="text-xl md:text-3xl font-extrabold mb-4 leading-tight drop-shadow-md">
-                      {curso.titulo}
-                    </h3>
-
-                    <p className="text-white/80 text-xs md:text-sm leading-relaxed mb-6 line-clamp-3 md:line-clamp-none">
-                      {curso.descripcion}
-                    </p>
-
-                    {/* Stats de Udemy (Inspirados en la captura del usuario, cliqueables) */}
-                    <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-6 text-xs md:text-sm text-gray-200">
-                      <a
-                        href={`${curso.enlace}#reviews`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg backdrop-blur-sm cursor-pointer transition-all border border-transparent hover:border-amber-400/40 text-white"
-                        title="Ver valoraciones en Udemy"
-                      >
-                        <span className="font-bold text-amber-400">{curso.rating}</span>
-                        <div className="flex">{renderStars(parseFloat(curso.rating))}</div>
-                        <span className="text-white/80 hover:text-white underline">({curso.valoraciones} valoraciones)</span>
-                      </a>
-
-                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                        <Users size={14} className="text-gray-300" />
-                        <span><strong>{curso.estudiantes}</strong> estudiantes</span>
-                      </div>
-                    </div>
-
-                    {/* Acciones */}
-                    <div>
-                      <a
-                        href={curso.enlace}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#c0392b] hover:bg-[#a93226] text-white font-bold text-xs tracking-wider uppercase transition-all shadow-lg hover:shadow-xl rounded-full transform hover:-translate-y-0.5"
-                      >
-                        Acceder al Curso
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Botón Izquierda */}
-              <button
-                onClick={handlePrevCurso}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/15 hover:bg-white/35 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 shadow-md"
-                aria-label="Curso anterior"
-              >
-                <ChevronLeft size={20} strokeWidth={2.5} />
-              </button>
-
-              {/* Botón Derecha */}
-              <button
-                onClick={handleNextCurso}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/15 hover:bg-white/35 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 shadow-md"
-                aria-label="Siguiente curso"
-              >
-                <ChevronRight size={20} strokeWidth={2.5} />
-              </button>
-
-              {/* Puntos Indicadores (Paginación) */}
-              <div className="absolute bottom-6 right-8 z-30 flex gap-2">
-                {cursosList.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentCurso(idx)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentCurso ? 'bg-[#c0392b] scale-125' : 'bg-white/40 hover:bg-white/70'
-                      }`}
-                    aria-label={`Ir al curso ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 2. Sección del Mini Carrusel de Reseñas de Udemy */}
-        <section className="py-16 px-6 bg-gray-50 border-t border-b border-gray-200/50 flex flex-col items-center justify-center">
-          <div className="w-full max-w-4xl">
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center justify-center gap-2 mb-2">
-                <div className="flex text-amber-400">
-                  {renderStars(5)}
-                </div>
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                  Calificaciones reales
-                </span>
-              </div>
-              <h3 className="text-2xl md:text-3xl font-bold text-[#1a4a49]">
-                Lo que dicen nuestros alumnos en Udemy
-              </h3>
-              <p className="text-gray-500 text-xs md:text-sm mt-1">
-                Comentarios y testimonios tomados directamente de la plataforma
+            {/* Encabezado Principal */}
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <h1 className="text-3xl md:text-5xl font-extrabold text-[#1a4a49] tracking-tight leading-tight">
+                Nuestro curso más completo en Hotmart
+              </h1>
+              <p className="text-gray-600 text-sm md:text-base mt-3 leading-relaxed">
+                Formación profesional avanzada y personalizada para dominar el análisis de precios unitarios y licitaciones de CFE con las herramientas líderes de la industria.
               </p>
             </div>
 
-            {/* Slider de Testimonios */}
-            <div className="relative min-h-[220px] bg-white rounded-2xl border border-gray-100 shadow-xl p-8 md:p-12 flex flex-col justify-between group/reviews">
+            {/* Tarjeta Destacada del Curso Hotmart */}
+            <div className="relative bg-white rounded-3xl border border-gray-200/80 shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-stretch">
 
-              {/* Icono de Comillas Gigante */}
-              <div className="absolute top-6 right-8 text-gray-100 z-0">
-                <Quote size={80} className="stroke-[1.5]" />
-              </div>
+                {/* Columna Izquierda: Imagen y Badges */}
+                <div className="lg:col-span-5 relative min-h-[300px] lg:min-h-[420px] bg-slate-900 overflow-hidden flex items-center justify-center">
+                  <img
+                    src={HOTMART_COURSE.imagen}
+                    alt={HOTMART_COURSE.titulo}
+                    onError={(e) => {
+                      e.target.src = '/concurso_subestacion.png';
+                    }}
+                    className="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
 
-              {TESTIMONIOS_DATA.map((testimonio, index) => (
-                <div
-                  key={testimonio.id}
-                  className={`transition-all duration-500 ease-in-out ${index === currentTestimonio
-                    ? 'block opacity-100 translate-x-0 relative z-10'
-                    : 'hidden opacity-0 translate-x-4'
-                    }`}
-                >
-                  {/* Estrellas */}
-                  <div className="flex gap-1 mb-4">
-                    {renderStars(testimonio.rating)}
+                  {/* Badge Flotante */}
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="px-3 py-1.5 bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
+                      {HOTMART_COURSE.badge}
+                    </span>
                   </div>
 
-                  {/* Texto de la Reseña */}
-                  <p className="text-gray-700 italic text-sm md:text-base leading-relaxed mb-6 font-medium">
-                    "{testimonio.comentario}"
-                  </p>
-
-                  {/* Autor e Información */}
-                  <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-                    <div>
-                      <h4 className="font-bold text-gray-800 text-sm md:text-base">
-                        {testimonio.nombre}
-                      </h4>
-                      <p className="text-xs text-gray-400">
-                        Estudiante verificado en Udemy
-                      </p>
+                  {/* Stats en imagen */}
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white text-xs backdrop-blur-md bg-black/40 px-4 py-2.5 rounded-xl border border-white/10">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-amber-400">{HOTMART_COURSE.rating}</span>
+                      <div className="flex">{renderStars(5)}</div>
+                      <span className="text-white/80">({HOTMART_COURSE.valoraciones})</span>
                     </div>
-
-                    <div className="bg-[#1a4a49]/5 px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold text-[#1a4a49] flex items-center gap-1">
-                      <Award size={12} />
-                      {testimonio.curso}
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <Users size={14} className="text-gray-300" />
+                      <span>{HOTMART_COURSE.estudiantes} alumnos</span>
                     </div>
                   </div>
                 </div>
-              ))}
 
-              {/* Botón de control izquierdo */}
-              <button
-                onClick={handlePrevTestimonio}
-                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-800 w-8 h-8 rounded-full border border-gray-200/70 flex items-center justify-center opacity-0 group-hover/reviews:opacity-100 transition-opacity duration-300 shadow-sm"
-                aria-label="Reseña anterior"
-              >
-                <ChevronLeft size={16} strokeWidth={2.5} />
-              </button>
+                {/* Columna Derecha: Contenido, Puntos Clave y Botón */}
+                <div className="lg:col-span-7 p-6 sm:p-8 md:p-10 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[#c2410c] text-xs font-bold tracking-widest uppercase block mb-2">
+                      {HOTMART_COURSE.tag}
+                    </span>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 leading-snug">
+                      {HOTMART_COURSE.titulo}
+                    </h2>
+                    <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6">
+                      {HOTMART_COURSE.descripcion}
+                    </p>
 
-              {/* Botón de control derecho */}
-              <button
-                onClick={handleNextTestimonio}
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-800 w-8 h-8 rounded-full border border-gray-200/70 flex items-center justify-center opacity-0 group-hover/reviews:opacity-100 transition-opacity duration-300 shadow-sm"
-                aria-label="Siguiente reseña"
-              >
-                <ChevronRight size={16} strokeWidth={2.5} />
-              </button>
+                    {/* Puntos destacados */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+                      {HOTMART_COURSE.puntosClave.map((punto, idx) => (
+                        <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-gray-700 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                          <CheckCircle2 size={16} className="text-[#1a4a49] shrink-0 mt-0.5" />
+                          <span>{punto}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* Paginación de reseñas */}
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {TESTIMONIOS_DATA.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentTestimonio(idx)}
-                    className={`w-2 h-2 rounded-full transition-all ${idx === currentTestimonio ? 'bg-[#1a4a49] scale-110' : 'bg-gray-300 hover:bg-gray-400'
-                      }`}
-                    aria-label={`Ir a reseña ${idx + 1}`}
-                  />
-                ))}
+                  {/* Botón único hacia Hotmart */}
+                  <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-xs text-gray-500 text-center sm:text-left">
+                      <span className="block font-semibold text-gray-800">Alojado exclusivamente en Hotmart</span>
+                      <span>Acceso inmediato y garantía de satisfacción</span>
+                    </div>
+
+                    <a
+                      href={HOTMART_COURSE.enlace}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-gradient-to-r from-[#c2410c] to-[#ea580c] hover:from-[#9a3412] hover:to-[#c2410c] text-white font-extrabold text-sm tracking-wider uppercase transition-all shadow-lg hover:shadow-xl rounded-full transform hover:-translate-y-0.5"
+                    >
+                      <span>Acceder en Hotmart</span>
+                      <ExternalLink size={16} />
+                    </a>
+                  </div>
+
+                </div>
               </div>
             </div>
+
           </div>
         </section>
 
+        {/* 2. SECCIÓN UNIFICADA: LEYENDA DEL BENEFICIO + CARRUSEL DE CURSOS UDEMY Y RESEÑAS */}
+        <section className="w-full py-14 px-6 bg-gradient-to-b from-gray-50 to-white">
+          <div className="max-w-6xl mx-auto">
+
+            {/* Encabezado: Leyenda de beneficio y controles */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 px-2 gap-4">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-[#c2410c] bg-[#ffedd5] px-3 py-1 rounded-full border border-[#fed7aa] inline-block mb-3">
+                  Beneficio Incluido
+                </span>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1a4a49] leading-snug">
+                  Al adquirir el curso en Hotmart tienes acceso a todos nuestros cursos en Udemy
+                </h2>
+                <p className="text-xs md:text-sm text-gray-500 mt-1.5">
+                  Desliza para conocer los cursos de Udemy y las opiniones de los estudiantes incluidos en tu compra.
+                </p>
+              </div>
+
+              {/* Botones de Navegación */}
+              <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+                <button
+                  onClick={handlePrev}
+                  className="w-10 h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-100 text-gray-700 flex items-center justify-center transition-all shadow-sm hover:shadow"
+                  aria-label="Anterior curso"
+                >
+                  <ChevronLeft size={18} strokeWidth={2.5} />
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="w-10 h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-100 text-gray-700 flex items-center justify-center transition-all shadow-sm hover:shadow"
+                  aria-label="Siguiente curso"
+                >
+                  <ChevronRight size={18} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+
+            {/* Tarjeta Contenedora del Carrusel: Curso + Reseña */}
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden transition-all duration-500">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+
+                {/* Lado Izquierdo (7 Cols): Ficha del Curso de Udemy */}
+                <div className="lg:col-span-7 p-6 sm:p-8 md:p-10 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-gray-100">
+                  <div>
+                    {/* Tags y Badges */}
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${currentItem.badgeColor}`}>
+                        {currentItem.badge}
+                      </span>
+                      <span className="text-[11px] font-bold text-gray-500 tracking-wider uppercase">
+                        {currentItem.tag}
+                      </span>
+                    </div>
+
+                    {/* Título */}
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3 leading-snug">
+                      {currentItem.titulo}
+                    </h3>
+
+                    {/* Descripción */}
+                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-6">
+                      {currentItem.descripcion}
+                    </p>
+
+                    {/* Métricas Udemy */}
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-700 mb-6 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-extrabold text-amber-500 text-sm">{currentItem.rating}</span>
+                        <div className="flex">{renderStars(parseFloat(currentItem.rating))}</div>
+                        <span className="text-gray-500">({currentItem.valoraciones} valoraciones)</span>
+                      </div>
+                      <div className="h-4 w-px bg-gray-200"></div>
+                      <div className="flex items-center gap-1.5 font-semibold text-gray-800">
+                        <Users size={14} className="text-[#1a4a49]" />
+                        <span>{currentItem.estudiantes} estudiantes</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Inclusión garantizada sin botón a Udemy */}
+                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-xs md:text-sm text-emerald-800 font-bold bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200/60">
+                      <Check size={16} className="text-emerald-600 stroke-[3]" /> Curso 100% incluido al adquirir la Masterclass en Hotmart
+                    </span>
+                  </div>
+                </div>
+
+                {/* Lado Derecho (5 Cols): Reseña / Testimonio del Alumno */}
+                <div className="lg:col-span-5 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-6 sm:p-8 md:p-10 flex flex-col justify-between relative">
+
+                  {/* Icono decorativo de comillas */}
+                  <Quote size={80} className="absolute top-4 right-4 text-gray-200/80 -z-0 pointer-events-none stroke-[1]" />
+
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[11px] font-bold text-[#1a4a49] uppercase tracking-wider bg-[#1a4a49]/10 px-2.5 py-1 rounded-md">
+                        Reseña del Alumno
+                      </span>
+                      <div className="flex gap-1">
+                        {renderStars(currentItem.testimonio.rating)}
+                      </div>
+                    </div>
+
+                    <p className="text-gray-700 italic text-sm md:text-base leading-relaxed mb-6 font-medium">
+                      "{currentItem.testimonio.comentario}"
+                    </p>
+                  </div>
+
+                  <div className="relative z-10 border-t border-gray-200/70 pt-4 flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-sm">
+                        {currentItem.testimonio.nombre}
+                      </h4>
+                      <p className="text-[11px] text-gray-500">
+                        {currentItem.testimonio.detalles}
+                      </p>
+                    </div>
+
+                    <div className="w-9 h-9 rounded-full bg-[#1a4a49]/10 text-[#1a4a49] flex items-center justify-center font-bold text-xs">
+                      <Award size={18} />
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Barra inferior de paginación con puntos */}
+              <div className="bg-gray-50 border-t border-gray-100 px-6 py-3 flex items-center justify-between">
+                <span className="text-xs text-gray-500 font-medium">
+                  Curso {currentIndex + 1} de {UDEMY_CURSOS_CON_RESENAS.length}
+                </span>
+
+                <div className="flex gap-1.5">
+                  {UDEMY_CURSOS_CON_RESENAS.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`h-2 rounded-full transition-all ${idx === currentIndex ? 'w-6 bg-[#1a4a49]' : 'w-2 bg-gray-300 hover:bg-gray-400'
+                        }`}
+                      aria-label={`Ir al curso ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
 
       </main>
 

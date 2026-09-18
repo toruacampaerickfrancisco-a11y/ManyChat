@@ -2,15 +2,11 @@ const DEFAULT_SYSTEM_PROMPT = `Eres Nikola, el asistente virtual oficial de CLIP
 Debes responder de forma concisa, cordial, precisa y profesional siguiendo exactamente la oferta de servicios y enlaces oficiales de CLIPOP:
 
 1. SERVICIOS PRINCIPALES:
-   - 1️⃣ Cursos pregrabados (Hotmart y Udemy):
-     * [NUEVO: Análisis de Precios Unitarios OPUS y Neodata (Hotmart)](https://go.hotmart.com/K93054265G)
-     * [Curso Gratuito Introductorio: Análisis de Precios Unitarios (Udemy)](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)
-     * [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)
-     * [Cómo Presentar Concursos para CFE desde cero (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)
-     * [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)
-     * [Opus 2020. Análisis de Precios Unitarios](https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65)
-     * [Ver Catálogo Completo en Clipop](https://clipop.com.mx/cursos)
-     * Cupones de descuento: escribir a contacto@clipop.com.mx
+   - 1️⃣ Cursos pregrabados:
+  * Nuestro curso más completo: [Análisis de Precios Unitarios OPUS y Neodata, Proyectos CFE](https://go.hotmart.com/K93054265G)
+  * BENEFICIO ESPECIAL: Al adquirir el curso más completo, el alumno recibe acceso a todos nuestros cursos especializados (OPUS 22/24/Neodata, Concursos CFE, OPUS 2025, etc.) incluidos sin costo extra.
+  * Catálogo completo y detalles en la web: [Ver Cursos en Clipop](https://clipop.com.mx/cursos)
+  * Asesoría y dudas: contacto@clipop.com.mx
    - 2️⃣ Cursos en tiempo real por Teams: Impartidos mediante Microsoft Teams. Convocatorias en redes oficiales, o programación personalizada a contacto@clipop.com.mx.
    - 3️⃣ Cursos presenciales (Hermosillo): Abiertos al público en la ciudad de Hermosillo, Sonora. Convocatorias en redes oficiales. Para cursos en otras ciudades de México, escribir a contacto@clipop.com.mx.
    - 4️⃣ Cotización de proyectos de media o alta tensión: Para cotizar un proyecto, enviar catálogo de conceptos, especificaciones, planos y condiciones comerciales a contacto@clipop.com.mx con el asunto "Solicitud de cotización".
@@ -35,33 +31,54 @@ const ORIGINAL_BOT_RULES = [
     id: 1,
     keyword: "menu",
     match_type: "exact",
-    response: "¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
+    response: "¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
   },
   {
     id: 2,
     keyword: "hola",
     match_type: "exact",
-    response: "¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
+    response: "¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
   },
   {
     id: 3,
     keyword: "inicio",
     match_type: "exact",
-    response: "¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
+    response: "¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
   },
   {
     id: 4,
     keyword: "0",
     match_type: "exact",
-    response: "¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
+    response: "¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n*Platícanos, ¿en cuál de nuestros servicios estás interesado?*\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda._"
   },
 
-  // Flujo 1: Cursos pregrabados (Hotmart y Udemy)
+  // Flujo 1: Cursos pregrabados
   {
     id: 6,
     keyword: "1",
     match_type: "exact",
-    response: "¡Excelente! 🎓 Actualmente contamos con los siguientes cursos especializados en Hotmart y Udemy:\n\n⭐ [NUEVO: Análisis de Precios Unitarios OPUS y Neodata (Hotmart)](https://go.hotmart.com/K93054265G)\n\n1️⃣ [Curso Gratuito Introductorio: Análisis de Precios Unitarios](https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED)\n\n2️⃣ [Precios Unitarios OPUS 22, 24, Neodata y Excel](https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/)\n\n3️⃣ [Cómo Presentar Concursos para CFE desde cero (OPUS 2020)](https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/)\n\n4️⃣ [Análisis de Precios Unitarios 100% Práctico (OPUS 2025)](https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F)\n\n5️⃣ [Opus 2020. Análisis de Precios Unitarios](https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65)\n\n🌐 [Ver Catálogo Completo en Clipop](https://clipop.com.mx/cursos)\n🎁 *Cupones de descuento y dudas:* Escríbenos a *contacto@clipop.com.mx*\n\n━━━━━━━━━━━━━━━━━━━\n🌐 [Sitio Web](https://clipop.com.mx) | 📸 [Instagram Clipop](https://instagram.com/clipopoficial) | 🔵 [Facebook Clipop](https://facebook.com/profile.php?id=61591801231145)\n━━━━━━━━━━━━━━━━━━━\n\n❓ *¿Deseas continuar con la conversación?*\n👉 *Opciones:* *'SÍ'* o *'NO'* (o escribe *0* para el menú principal)."
+    response: `¡Excelente! 🎓 Te presentamos nuestro programa de formación profesional:
+
+⭐ *NUESTRO CURSO MÁS COMPLETO:*
+👉 [Análisis de Precios Unitarios OPUS y Neodata (CFE)](https://go.hotmart.com/K93054265G)
+
+🎁 *¡BENEFICIO EXCLUSIVO!*
+Al adquirir nuestro curso más completo, *tienes acceso incluido a todos nuestros cursos especializados*:
+• Precios Unitarios OPUS 22, 24, Neodata y Excel
+• Cómo Presentar Concursos para CFE desde cero
+• Análisis de Precios Unitarios 100% Práctico (OPUS 2025)
+• OPUS 2020. Análisis de Precios Unitarios
+• Curso Gratuito Introductorio APU
+
+🌐 [Ver Catálogo y Detalles en Clipop](https://clipop.com.mx/cursos)
+📧 *Dudas y asesoría:* contacto@clipop.com.mx
+
+━━━━━━━━━━━━━━━━━━━
+🌐 [Sitio Web](https://clipop.com.mx) | 📸 [Instagram](https://instagram.com/clipopoficial) | 📘 [Facebook](https://facebook.com/profile.php?id=61591801231145)
+━━━━━━━━━━━━━━━━━━━
+
+❓ *¿Deseas continuar con la conversación?*
+👉 *Opciones:* *'SÍ'* o *'NO'* (o escribe *0* para el menú principal).`
   },
 
   // Flujo 2: Cursos en tiempo real (Teams)
@@ -107,13 +124,13 @@ const ORIGINAL_BOT_RULES = [
     id: 18,
     keyword: "si",
     match_type: "exact",
-    response: "¡Excelente! 😊 ¿En qué más te podemos apoyar o sobre qué tema es tu consulta?\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n✉️ *Correo oficial:* contacto@clipop.com.mx\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda directamente._"
+    response: "¡Excelente! 😊 ¿En qué más te podemos apoyar o sobre qué tema es tu consulta?\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n✉️ *Correo oficial:* contacto@clipop.com.mx\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda directamente._"
   },
   {
     id: 19,
     keyword: "sí",
     match_type: "exact",
-    response: "¡Excelente! 😊 ¿En qué más te podemos apoyar o sobre qué tema es tu consulta?\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n✉️ *Correo oficial:* contacto@clipop.com.mx\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda directamente._"
+    response: "¡Excelente! 😊 ¿En qué más te podemos apoyar o sobre qué tema es tu consulta?\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n✉️ *Correo oficial:* contacto@clipop.com.mx\n\n💡 _Responde con el número (1, 2, 3 o 4) o escribe tu duda directamente._"
   },
 
   // Flujo: Finalizar conversación ("no")

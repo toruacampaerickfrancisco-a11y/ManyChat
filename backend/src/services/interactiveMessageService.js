@@ -16,7 +16,7 @@ function buildWelcomeCard(senderName = '') {
         }
       },
       body: {
-        text: `⚡ *¡Hola${nameGreeting}! Bienvenido a CLIPOP.* ¿En qué te podemos apoyar hoy?\n\n1️⃣ *Cursos pregrabados (Udemy)*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n_Escribe el número de la opción o presiona un botón:_`
+        text: `⚡ *¡Hola${nameGreeting}! Bienvenido a CLIPOP.* ¿En qué te podemos apoyar hoy?\n\n1️⃣ *Cursos pregrabados*\n2️⃣ *Cursos en tiempo real por Teams*\n3️⃣ *Cursos presenciales (Hermosillo)*\n4️⃣ *Cotización de proyectos de media o alta tensión*\n\n_Escribe el número de la opción o presiona un botón:_`
       },
       footer: {
         text: 'CLIPOP • clipop.com.mx'
@@ -27,7 +27,7 @@ function buildWelcomeCard(senderName = '') {
             type: 'reply',
             reply: {
               id: 'btn_cursos',
-              title: '1️⃣ Cursos (Udemy)'
+              title: '1️⃣ Cursos pregrabados'
             }
           },
           {
@@ -62,7 +62,21 @@ function buildCoursesCard() {
         }
       },
       body: {
-        text: `🎓 *CURSOS ESPECIALIZADOS EN UDEMY*\n\n1️⃣ *Curso Gratuito Introductorio APU*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-gratis/?referralCode=F897FBB286B09C70CCED\n\n2️⃣ *Precios Unitarios OPUS 22, 24, Neodata y Excel*\n👉 https://www.udemy.com/course/precios-unitarios-opus-22-opus-24-neodata-y-excel/\n\n3️⃣ *Cómo Presentar Concursos para CFE (OPUS 2020)*\n👉 https://www.udemy.com/course/como-presentar-concursos-para-cfe-desde-cero-con-opus-2020/\n\n4️⃣ *Análisis de Precios Unitarios (OPUS 2025)*\n👉 https://www.udemy.com/course/analisis-de-precios-unitarios-100-practico-opus-2025/?referralCode=7AB469DC79C4A895813F\n\n5️⃣ *Opus 2020. Análisis de Precios Unitarios*\n👉 https://www.udemy.com/course/opus-2020-analisis-de-precios-unitarios/?referralCode=37ABE3618B5C83C37D65\n\n🌐 *Catálogo Completo:* https://clipop.com.mx/cursos\n✉️ *Dudas y cupones:* contacto@clipop.com.mx`
+        text: `🎓 *CURSOS PREGRABADOS - CLIPOP*
+
+⭐ *NUESTRO CURSO MÁS COMPLETO:*
+👉 https://go.hotmart.com/K93054265G
+
+🎁 *¡BENEFICIO EXCLUSIVO!*
+Al adquirir nuestro curso más completo, tienes acceso a *todos nuestros cursos especializados incluidos sin costo adicional*:
+• Precios Unitarios OPUS 22, 24, Neodata y Excel
+• Cómo Presentar Concursos para CFE desde cero
+• Análisis de Precios Unitarios 100% Práctico (OPUS 2025)
+• OPUS 2020. Análisis de Precios Unitarios
+• Curso Gratuito Introductorio APU
+
+🌐 *Ver Catálogo Completo:* https://clipop.com.mx/cursos
+📧 *Dudas y asesoría:* contacto@clipop.com.mx`
       },
       footer: {
         text: 'CLIPOP • Ingeniería de Costos'
