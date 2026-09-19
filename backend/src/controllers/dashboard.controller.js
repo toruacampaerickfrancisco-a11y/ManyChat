@@ -5,7 +5,7 @@ const config = require('../config/env');
 const fs = require('fs');
 const path = require('path');
 
-let inMemoryPageViews = 2480;
+let inMemoryPageViews = 0;
 
 async function getDashboardStats(req, res) {
   try {
@@ -76,11 +76,11 @@ async function getDashboardStats(req, res) {
       }
     });
 
-    // Asegurar métricas base representativas del negocio
-    const totalWeb = Math.max(webCount, 185);
-    const totalWhatsapp = Math.max(whatsappCount, 342);
-    const totalFacebook = Math.max(facebookCount, 268);
-    const totalInstagram = Math.max(instagramCount, 94);
+    // Métricas 100% reales contabilizadas desde hoy / base de datos
+    const totalWeb = webCount;
+    const totalWhatsapp = whatsappCount;
+    const totalFacebook = facebookCount;
+    const totalInstagram = instagramCount;
     const totalInteractions = totalWeb + totalWhatsapp + totalFacebook + totalInstagram;
 
     // 4. Actividad Reciente Unificada
@@ -99,7 +99,31 @@ async function getDashboardStats(req, res) {
       }
     });
 
-    // 5. Datos para la Gráfica de Tendencia Semanal (Últimos 7 días)
+    // 5. Recopilar mensajes reales para la gráfica de los últimos 7 días
+    const allMessages = [];
+    allLeads.forEach(l => {
+      const p = (l.platform || '').toLowerCase();
+      let platformKey = 'web';
+      if (p === 'whatsapp') platformKey = 'whatsapp';
+      else if (p === 'facebook' || p === 'messenger') platformKey = 'facebook';
+      else if (p === 'instagram') platformKey = 'instagram';
+
+      if (l.conversations && l.conversations.length > 0) {
+        l.conversations.forEach(c => {
+          allMessages.push({
+            platform: platformKey,
+            timestamp: new Date(c.timestamp || l.updatedAt || Date.now())
+          });
+        });
+      } else {
+        allMessages.push({
+          platform: platformKey,
+          timestamp: new Date(l.updatedAt || Date.now())
+        });
+      }
+    });
+
+    // 6. Datos para la Gráfica de Tendencia Semanal (Últimos 7 días) con datos 100% reales
     const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     const now = new Date();
     const trendData = [];
@@ -108,16 +132,13 @@ async function getDashboardStats(req, res) {
       d.setDate(now.getDate() - i);
       const dayName = daysOfWeek[d.getDay()];
       const dayNum = d.getDate();
-      
-      const wFactor = 0.8 + ((6 - i) * 0.04);
-      const fFactor = 0.85 + (i * 0.03);
-      const webFactor = 0.75 + (i * 0.05);
-      const igFactor = 0.7 + (i * 0.04);
+      const dateStr = d.toDateString();
 
-      const dWhatsapp = Math.round((totalWhatsapp / 7) * wFactor);
-      const dFacebook = Math.round((totalFacebook / 7) * fFactor);
-      const dWeb = Math.round((totalWeb / 7) * webFactor);
-      const dInstagram = Math.round((totalInstagram / 7) * igFactor);
+      const dayMsgs = allMessages.filter(m => m.timestamp.toDateString() === dateStr);
+      const dWhatsapp = dayMsgs.filter(m => m.platform === 'whatsapp').length;
+      const dFacebook = dayMsgs.filter(m => m.platform === 'facebook').length;
+      const dWeb = dayMsgs.filter(m => m.platform === 'web').length;
+      const dInstagram = dayMsgs.filter(m => m.platform === 'instagram').length;
 
       trendData.push({
         day: dayName,
@@ -130,15 +151,15 @@ async function getDashboardStats(req, res) {
       });
     }
 
-    // 6. Distribución de Canales
+    // 7. Distribución de Canales Real
     const channelDistribution = [
-      { name: 'WhatsApp', key: 'whatsapp', count: totalWhatsapp, percentage: Math.round((totalWhatsapp / totalInteractions) * 100), color: '#16a34a' },
-      { name: 'Facebook Messenger', key: 'facebook', count: totalFacebook, percentage: Math.round((totalFacebook / totalInteractions) * 100), color: '#2563eb' },
-      { name: 'Chatbot Web Oficial', key: 'web', count: totalWeb, percentage: Math.round((totalWeb / totalInteractions) * 100), color: '#70294d' },
-      { name: 'Instagram Direct', key: 'instagram', count: totalInstagram, percentage: Math.round((totalInstagram / totalInteractions) * 100), color: '#9333ea' }
+      { name: 'WhatsApp', key: 'whatsapp', count: totalWhatsapp, percentage: totalInteractions > 0 ? Math.round((totalWhatsapp / totalInteractions) * 100) : 0, color: '#16a34a' },
+      { name: 'Facebook Messenger', key: 'facebook', count: totalFacebook, percentage: totalInteractions > 0 ? Math.round((totalFacebook / totalInteractions) * 100) : 0, color: '#2563eb' },
+      { name: 'Chatbot Web Oficial', key: 'web', count: totalWeb, percentage: totalInteractions > 0 ? Math.round((totalWeb / totalInteractions) * 100) : 0, color: '#70294d' },
+      { name: 'Instagram Direct', key: 'instagram', count: totalInstagram, percentage: totalInteractions > 0 ? Math.round((totalInstagram / totalInteractions) * 100) : 0, color: '#9333ea' }
     ];
 
-    // 7. Estado de Servicios
+    // 8. Estado de Servicios
     const waStatusData = whatsappService.getWhatsAppStatus ? whatsappService.getWhatsAppStatus() : { status: 'CONNECTED', connectedNumber: '6624745958' };
 
     res.json({
@@ -151,8 +172,8 @@ async function getDashboardStats(req, res) {
         facebookInteractions: totalFacebook,
         instagramInteractions: totalInstagram,
         totalCourses: coursesCount,
-        totalLeads: Math.max(leadsCount, 4),
-        totalMessages: Math.max(messagesCount, totalInteractions),
+        totalLeads: leadsCount,
+        totalMessages: messagesCount,
         whatsappStatus: waStatusData.status || 'CONNECTED',
         whatsappPhone: waStatusData.connectedNumber || '6624745958',
         metaStatus: 'CONECTADO',

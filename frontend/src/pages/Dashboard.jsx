@@ -22,15 +22,15 @@ import { useNavigate } from 'react-router-dom';
 export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
-    pageViews: 2480,
-    totalInteractions: 889,
-    webInteractions: 185,
-    whatsappInteractions: 342,
-    facebookInteractions: 268,
-    instagramInteractions: 94,
-    totalCourses: 5,
-    totalLeads: 4,
-    totalMessages: 889,
+    pageViews: 0,
+    totalInteractions: 0,
+    webInteractions: 0,
+    whatsappInteractions: 0,
+    facebookInteractions: 0,
+    instagramInteractions: 0,
+    totalCourses: 0,
+    totalLeads: 0,
+    totalMessages: 0,
     whatsappStatus: 'CONNECTED',
     whatsappPhone: '6624745958',
     metaStatus: 'CONECTADO',
@@ -122,7 +122,7 @@ export default function Dashboard() {
             <p className="text-[11px] text-gray-500 mt-1">Visitas en clipop.com.mx</p>
           </div>
           <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-1.5 text-[10px] text-emerald-700 font-semibold">
-            <TrendingUp className="w-3 h-3" /> +16.8% este mes
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Conteo activo en vivo
           </div>
         </div>
 
@@ -241,11 +241,12 @@ export default function Dashboard() {
             <div className="h-64 flex items-end justify-between gap-3 pt-4 px-2">
               {trendData.map((d, index) => {
                 const isHovered = hoveredDay === index;
-                const totalH = Math.max(Math.round((d.total / maxTotal) * 100), 12);
-                const waH = (d.whatsapp / d.total) * 100;
-                const fbH = (d.facebook / d.total) * 100;
-                const webH = (d.web / d.total) * 100;
-                const igH = (d.instagram / d.total) * 100;
+                const hasData = (d.total || 0) > 0;
+                const totalH = hasData ? Math.max(Math.round((d.total / maxTotal) * 100), 10) : 0;
+                const waH = hasData ? (d.whatsapp / d.total) * 100 : 0;
+                const fbH = hasData ? (d.facebook / d.total) * 100 : 0;
+                const webH = hasData ? (d.web / d.total) * 100 : 0;
+                const igH = hasData ? (d.instagram / d.total) * 100 : 0;
 
                 return (
                   <div 
@@ -282,18 +283,27 @@ export default function Dashboard() {
                       </div>
                     )}
 
-                    {/* Barra apilada con esquinas suaves */}
-                    <div 
-                      className={`w-full max-w-[42px] rounded-xl overflow-hidden flex flex-col-reverse transition-all duration-300 ${
-                        isHovered ? 'ring-2 ring-gray-900/50 shadow-md' : 'shadow-2xs'
-                      }`}
-                      style={{ height: `${totalH}%` }}
-                    >
-                      <div style={{ height: `${waH}%` }} className="bg-emerald-600 hover:brightness-105 transition-all"></div>
-                      <div style={{ height: `${fbH}%` }} className="bg-blue-600 hover:brightness-105 transition-all"></div>
-                      <div style={{ height: `${webH}%` }} className="bg-[#70294D] hover:brightness-105 transition-all"></div>
-                      <div style={{ height: `${igH}%` }} className="bg-purple-600 hover:brightness-105 transition-all"></div>
-                    </div>
+                    {/* Barra apilada o indicador base según datos reales */}
+                    {hasData ? (
+                      <div 
+                        className={`w-full max-w-[42px] rounded-xl overflow-hidden flex flex-col-reverse transition-all duration-300 ${
+                          isHovered ? 'ring-2 ring-gray-900/50 shadow-md' : 'shadow-2xs'
+                        }`}
+                        style={{ height: `${totalH}%` }}
+                      >
+                        <div style={{ height: `${waH}%` }} className="bg-emerald-600 hover:brightness-105 transition-all"></div>
+                        <div style={{ height: `${fbH}%` }} className="bg-blue-600 hover:brightness-105 transition-all"></div>
+                        <div style={{ height: `${webH}%` }} className="bg-[#70294D] hover:brightness-105 transition-all"></div>
+                        <div style={{ height: `${igH}%` }} className="bg-purple-600 hover:brightness-105 transition-all"></div>
+                      </div>
+                    ) : (
+                      <div 
+                        className={`w-full max-w-[42px] h-2 rounded-full transition-all duration-200 ${
+                          isHovered ? 'bg-gray-300' : 'bg-gray-100'
+                        }`}
+                        title="Sin actividad registrada este día"
+                      />
+                    )}
 
                     {/* Etiqueta del Día */}
                     <span className={`text-[11px] font-bold mt-3 transition-colors ${
@@ -311,7 +321,7 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
-            <span>Promedio diario: {Math.round(stats.totalInteractions / 7)} conversaciones</span>
+            <span>Total registrado: {stats.totalInteractions} mensajes</span>
             <button 
               onClick={() => navigate('/admin/chats')} 
               className="font-bold text-[#70294D] hover:underline flex items-center gap-1"
