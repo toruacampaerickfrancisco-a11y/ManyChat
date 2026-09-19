@@ -28,7 +28,7 @@ export default function Sidebar() {
     { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['ADMIN', 'CLIENT'] },
     { to: '/admin/catalog', icon: GraduationCap, label: 'Cursos', roles: ['ADMIN', 'CLIENT'] },
     { to: '/admin/leads', icon: Users, label: 'Leads', roles: ['ADMIN'] },
-    { to: '/admin/chats', icon: MessageSquare, label: 'Chats IA', roles: ['ADMIN'] },
+    { to: '/admin/chats', icon: MessageSquare, label: 'Webhooks & Mensajería', roles: ['ADMIN'] },
     { to: '/admin/settings', icon: Settings, label: 'Configuración', roles: ['ADMIN'] },
   ];
 
