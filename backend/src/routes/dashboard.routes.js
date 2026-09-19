@@ -3,5 +3,6 @@ const router = express.Router();
 const dashboardController = require('../controllers/dashboard.controller');
 
 router.get('/dashboard/stats', dashboardController.getDashboardStats);
+router.post('/dashboard/visit', dashboardController.recordPageView);
 
 module.exports = router;

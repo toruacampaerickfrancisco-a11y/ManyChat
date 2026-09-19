@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import SplashScreen from './components/SplashScreen';
 import Sidebar from './components/Sidebar';
@@ -64,6 +65,13 @@ function ProtectedRoute({ children, allowedRoles = ['ADMIN', 'CLIENT'] }) {
 }
 
 function App() {
+  useEffect(() => {
+    // Registrar visita pública si no es ruta de administración
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
+      fetch('/api/dashboard/visit', { method: 'POST' }).catch(() => {});
+    }
+  }, []);
+
   return (
     <Router>
       <SplashScreen />
