@@ -168,6 +168,8 @@ async function getDashboardStats(req, res) {
     console.error('[Dashboard Stats Error]', error);
     res.status(500).json({ success: false, error: error.message });
   }
+}
+
 async function recordPageView(req, res) {
   try {
     inMemoryPageViews += 1;
