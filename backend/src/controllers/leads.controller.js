@@ -16,19 +16,6 @@ let inMemoryLeads = [
       { id: 3, message: '¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n1️⃣ Cursos pregrabados\n2️⃣ Cursos en tiempo real por Teams\n3️⃣ Cursos presenciales\n4️⃣ Cotización de proyectos', sender: 'ai', timestamp: new Date() }
     ],
     updatedAt: new Date()
-  },
-  {
-    id: 2,
-    name: 'Ing. Carlos Mendoza',
-    platform: 'whatsapp',
-    phone_or_id: '526621234567',
-    email: 'carlos.mendoza@constructora.mx',
-    status: 'EN_CONTACTO',
-    bot_paused: false,
-    conversations: [
-      { id: 1, message: 'Hola, buenas tardes. Me interesa información sobre el curso de Concurso de Obra para Líneas de Distribución.', sender: 'user', timestamp: new Date() }
-    ],
-    updatedAt: new Date()
   }
 ];
 

@@ -128,46 +128,57 @@ async function startWhatsAppSession() {
       if (type !== 'notify') return;
 
       for (const msg of messages) {
-        if (!msg.key.fromMe && msg.message) {
-          const from = msg.key.remoteJid;
-          if (!from || from === 'status@broadcast' || from.includes('@broadcast') || from.includes('@g.us')) {
-            continue;
-          }
+        if (!msg.message) continue;
+        const from = msg.key.remoteJid;
+        if (!from || from === 'status@broadcast' || from.includes('@broadcast') || from.includes('@g.us')) {
+          continue;
+        }
 
-          const senderName = msg.pushName || 'Usuario WhatsApp';
-          let text = '';
-          const m = msg.message;
+        const phone = from.split('@')[0];
+        const isFromMe = Boolean(msg.key.fromMe);
+        const senderName = msg.pushName || (isFromMe ? 'CLIPOP' : 'Usuario WhatsApp');
+        let text = '';
+        const m = msg.message;
 
-          if (m.conversation) {
-            text = m.conversation;
-          } else if (m.extendedTextMessage?.text) {
-            text = m.extendedTextMessage.text;
-          } else if (m.imageMessage?.caption) {
-            text = m.imageMessage.caption;
-          } else if (m.videoMessage?.caption) {
-            text = m.videoMessage.caption;
-          } else if (m.buttonsResponseMessage?.selectedButtonId) {
-            text = m.buttonsResponseMessage.selectedButtonId;
-          } else if (m.listResponseMessage?.singleSelectReply?.selectedRowId) {
-            text = m.listResponseMessage.singleSelectReply.selectedRowId;
-          } else if (m.templateButtonReplyMessage?.selectedId) {
-            text = m.templateButtonReplyMessage.selectedId;
-          } else if (m.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson) {
-            try {
-              const params = JSON.parse(m.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson);
-              text = params.id || params.title || '';
-            } catch (e) {}
-          }
+        if (m.conversation) {
+          text = m.conversation;
+        } else if (m.extendedTextMessage?.text) {
+          text = m.extendedTextMessage.text;
+        } else if (m.imageMessage?.caption) {
+          text = m.imageMessage.caption;
+        } else if (m.videoMessage?.caption) {
+          text = m.videoMessage.caption;
+        } else if (m.buttonsResponseMessage?.selectedButtonId) {
+          text = m.buttonsResponseMessage.selectedButtonId;
+        } else if (m.listResponseMessage?.singleSelectReply?.selectedRowId) {
+          text = m.listResponseMessage.singleSelectReply.selectedRowId;
+        } else if (m.templateButtonReplyMessage?.selectedId) {
+          text = m.templateButtonReplyMessage.selectedId;
+        } else if (m.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson) {
+          try {
+            const params = JSON.parse(m.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson);
+            text = params.id || params.title || '';
+          } catch (e) {}
+        }
 
-          text = (text || '').trim();
+        text = (text || '').trim();
+        if (!text) continue;
 
-          if (text && messageHandler) {
-            console.log(`[WhatsApp Mensaje Entrada] De: ${senderName} (${from}) | Mensaje: "${text}"`);
-            try {
-              await messageHandler({ from, senderName, text, sock });
-            } catch (err) {
-              console.error('[WhatsApp Message Handler Error]', err);
-            }
+        if (isFromMe) {
+          // Si el asesor escribe desde WhatsApp Web o teléfono físico:
+          try {
+            const { recordAiResponseMessage } = require('./src/controllers/leads.controller');
+            recordAiResponseMessage({ phoneOrId: phone, text, sender: 'human' }).catch(() => {});
+          } catch (e) {}
+          continue;
+        }
+
+        if (text && messageHandler) {
+          console.log(`[WhatsApp Mensaje Entrada] De: ${senderName} (${from}) | Mensaje: "${text}"`);
+          try {
+            await messageHandler({ from, senderName, text, sock });
+          } catch (err) {
+            console.error('[WhatsApp Message Handler Error]', err);
           }
         }
       }
