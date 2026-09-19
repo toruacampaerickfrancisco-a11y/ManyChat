@@ -79,6 +79,9 @@ export default function Chats() {
   const navigate = useNavigate();
   const [leads, setLeads] = useState([]);
   const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const selectedLeadIdRef = useRef(null);
+  selectedLeadIdRef.current = selectedLeadId;
+
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
@@ -94,7 +97,9 @@ export default function Chats() {
         if (Array.isArray(data)) {
           setLeads(data);
           if (data.length > 0) {
-            if (selectFirst || !selectedLeadId) {
+            if (selectFirst && selectedLeadIdRef.current === null) {
+              setSelectedLeadId(data[0].id);
+            } else if (selectedLeadIdRef.current === null) {
               setSelectedLeadId(data[0].id);
             }
           }

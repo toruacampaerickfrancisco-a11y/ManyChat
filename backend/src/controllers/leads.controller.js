@@ -77,6 +77,7 @@ async function syncMetaConversations() {
         lead.updatedAt = new Date(conv.updated_time);
       }
     }
+    inMemoryLeads.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
   } catch (err) {
     console.warn('[Sync Meta Conversations Warning]', err.message);
   }
@@ -105,6 +106,7 @@ async function getLeads(req, res) {
   } catch (error) {
     console.warn('[Leads Controller Warning]', error.message);
   }
+  inMemoryLeads.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
   res.json(inMemoryLeads);
 }
 
@@ -202,7 +204,18 @@ async function addHumanMessage(req, res) {
       isDelivered = await sendMetaGraphMessage(lead.phone_or_id, message, platform);
     } else if (platform === 'whatsapp') {
       console.log(`[Human Agent Message] Enviando a WhatsApp: ${lead.phone_or_id}...`);
-      isDelivered = await sendMetaGraphMessage(lead.phone_or_id, message, 'whatsapp');
+      try {
+        const whatsappService = require('../services/baileysService');
+        const userJid = lead.phone_or_id.includes('@s.whatsapp.net') ? lead.phone_or_id : `${lead.phone_or_id}@s.whatsapp.net`;
+        if (whatsappService && typeof whatsappService.isWhatsAppConnected === 'function' && whatsappService.isWhatsAppConnected()) {
+          await whatsappService.sendWhatsAppDirectMessage(userJid, message);
+          isDelivered = true;
+        } else {
+          isDelivered = await sendMetaGraphMessage(lead.phone_or_id, message, 'whatsapp');
+        }
+      } catch (waErr) {
+        isDelivered = await sendMetaGraphMessage(lead.phone_or_id, message, 'whatsapp');
+      }
     }
   } catch (metaErr) {
     console.error('[Meta Live Send Error]', metaErr.message);
