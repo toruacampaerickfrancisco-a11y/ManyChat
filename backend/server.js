@@ -66,6 +66,8 @@ function scheduleInactivityTimers(userJid, senderName = '') {
 }
 
 // --- MANEJADOR DE MENSAJES DE WHATSAPP (Baileys) ---
+const { recordIncomingLeadMessage, recordAiResponseMessage } = require('./src/controllers/leads.controller');
+
 whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, imageBuffer }) => {
   const phone = from.split('@')[0];
   let userMessage = text || '';
@@ -87,37 +89,22 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
 
   if (!userMessage) return;
 
-  // 2. Registro / Actualización de Lead en Base de Datos
+  // 2. Registro / Actualización de Lead en Base de Datos y Memoria
   let lead = null;
   try {
-    if (prisma) {
-      lead = await prisma.lead.upsert({
-        where: { phone_or_id: phone },
-        update: { name: senderName || undefined, prefers_audio: isVoice },
-        create: {
-          platform: 'whatsapp',
-          phone_or_id: phone,
-          name: senderName,
-          prefers_audio: isVoice
-        }
-      });
-
-      await prisma.conversation.create({
-        data: {
-          leadId: lead.id,
-          message: userMessage,
-          sender: 'user',
-          media_type: isVoice ? 'audio' : 'text'
-        }
-      });
-    }
+    lead = await recordIncomingLeadMessage({
+      platform: 'whatsapp',
+      phoneOrId: phone,
+      name: senderName || `WhatsApp ${phone}`,
+      text: userMessage
+    });
   } catch (dbErr) {
     console.warn('[WhatsApp DB Lead Warning]', dbErr.message);
   }
 
   // Si el bot está en pausa humana, no responder automáticamente
   if (lead && lead.bot_paused) {
-    console.log(`[WhatsApp Bot] Lead #${lead.id} está pausado para atención humana.`);
+    console.log(`[WhatsApp Bot] Lead #${lead.id || lead.phone_or_id} está pausado para atención humana.`);
     return;
   }
 
@@ -149,17 +136,8 @@ whatsappService.setMessageHandler(async ({ from, senderName, text, audioBuffer, 
     // Programar temporizadores de seguimiento por inactividad
     scheduleInactivityTimers(from, senderName);
 
-    if (prisma && lead) {
-      try {
-        await prisma.conversation.create({
-          data: {
-            leadId: lead.id,
-            message: response.text,
-            sender: 'ai'
-          }
-        });
-      } catch (err) {}
-    }
+    // Guardar respuesta de IA en historial
+    await recordAiResponseMessage({ phoneOrId: phone, text: response.text });
   }
 });
 
