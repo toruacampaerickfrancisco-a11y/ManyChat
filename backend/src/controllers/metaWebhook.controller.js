@@ -1,7 +1,8 @@
 const config = require('../config/env');
 const { prisma } = require('../config/database');
 const agentOrchestrator = require('../agent/agentCore');
-const { sendMetaGraphMessage } = require('../services/metaGraphService');
+const { sendMetaGraphMessage, getMetaUserProfile } = require('../services/metaGraphService');
+const { recordIncomingLeadMessage, recordAiResponseMessage } = require('./leads.controller');
 
 // Caché TTL en memoria para deduplicar mensajes de Meta
 const processedMids = new Map();
@@ -119,35 +120,29 @@ async function processMetaMessageAsync({ senderPsid, text, platform, senderName 
   if (!text) return;
 
   const cleanText = text.trim().toLowerCase();
+  const effectivePlatform = platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger');
 
-  let lead = null;
-  try {
-    if (prisma) {
-      lead = await prisma.lead.upsert({
-        where: { phone_or_id: senderPsid },
-        update: { name: senderName || undefined },
-        create: {
-          platform: platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger'),
-          phone_or_id: senderPsid,
-          name: senderName || `Usuario ${platform}`
-        }
-      });
-
-      await prisma.conversation.create({
-        data: {
-          leadId: lead.id,
-          message: text,
-          sender: 'user'
-        }
-      });
-    }
-  } catch (dbErr) {
-    console.warn('[Meta DB Lead Warning]', dbErr.message);
+  // Intentar consultar el nombre real del usuario de Facebook / Instagram si no está presente
+  if (!senderName && (effectivePlatform === 'messenger' || effectivePlatform === 'instagram')) {
+    try {
+      const profile = await getMetaUserProfile(senderPsid);
+      if (profile) {
+        senderName = profile.name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+      }
+    } catch (e) {}
   }
+
+  // Registrar mensaje entrante en BD y Memoria garantizada
+  const lead = await recordIncomingLeadMessage({
+    platform: effectivePlatform,
+    phoneOrId: senderPsid,
+    name: senderName || (effectivePlatform === 'messenger' ? 'Erick TC' : `Usuario ${effectivePlatform}`),
+    text
+  });
 
   // Verificar si el bot está pausado para este lead
   if (lead && lead.bot_paused) {
-    console.log(`[Meta Bot] Bot pausado para el lead #${lead.id}. Mensaje listo para operador humano.`);
+    console.log(`[Meta Bot] Bot pausado para el lead #${lead.id || lead.phone_or_id}. Mensaje listo para operador humano.`);
     return;
   }
 
@@ -168,28 +163,16 @@ async function processMetaMessageAsync({ senderPsid, text, platform, senderName 
   // 2. Procesar con el Agente de IA Omnicanal (Menús y Reglas Oficiales de CLIPOP)
   const agentResponse = await agentOrchestrator.processMessage({
     leadId: lead ? lead.id : null,
-    platform: platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger'),
+    platform: effectivePlatform,
     phoneOrId: senderPsid,
-    senderName,
+    senderName: senderName || lead?.name || '',
     userMessage: effectiveMessage
   });
 
   if (agentResponse && agentResponse.text) {
-    console.log(`[Meta Agent Response] Enviando respuesta a ${senderPsid} (${platform}): "${agentResponse.text.substring(0, 60)}..."`);
-    await sendMetaGraphMessage(senderPsid, agentResponse.text, platform);
-
-    // Guardar respuesta de IA en historial
-    if (prisma && lead) {
-      try {
-        await prisma.conversation.create({
-          data: {
-            leadId: lead.id,
-            message: agentResponse.text,
-            sender: 'ai'
-          }
-        });
-      } catch (err) {}
-    }
+    console.log(`[Meta Agent Response] Enviando respuesta a ${senderPsid} (${effectivePlatform}): "${agentResponse.text.substring(0, 60)}..."`);
+    await sendMetaGraphMessage(senderPsid, agentResponse.text, effectivePlatform);
+    await recordAiResponseMessage({ phoneOrId: senderPsid, text: agentResponse.text });
   }
 }
 

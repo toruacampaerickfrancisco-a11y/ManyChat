@@ -169,6 +169,19 @@ async function addHumanMessage(req, res) {
           updatedAt: new Date()
         }
       });
+      // Sincronizar también en memoria
+      const memLead = inMemoryLeads.find(l => l.id === leadId || String(l.phone_or_id) === String(lead.phone_or_id));
+      if (memLead) {
+        memLead.conversations = memLead.conversations || [];
+        memLead.conversations.push({
+          id: conv.id,
+          message,
+          sender: 'human',
+          timestamp: conv.timestamp || new Date()
+        });
+        memLead.bot_paused = true;
+        memLead.updatedAt = new Date();
+      }
       return res.json({ success: true, conversation: conv, delivered: isDelivered });
     }
   } catch (e) {
@@ -183,10 +196,107 @@ async function addHumanMessage(req, res) {
   return res.json({ success: true, conversation: conv, delivered: isDelivered });
 }
 
+async function recordIncomingLeadMessage({ platform, phoneOrId, name, text }) {
+  let lead = null;
+  const cleanPhone = String(phoneOrId);
+
+  // 1. Prisma
+  if (prisma) {
+    try {
+      lead = await prisma.lead.upsert({
+        where: { phone_or_id: cleanPhone },
+        update: {
+          name: name || undefined,
+          updatedAt: new Date()
+        },
+        create: {
+          platform: platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger'),
+          phone_or_id: cleanPhone,
+          name: name || `Usuario ${platform}`,
+          status: 'NUEVO'
+        }
+      });
+
+      await prisma.conversation.create({
+        data: {
+          leadId: lead.id,
+          message: text,
+          sender: 'user',
+          timestamp: new Date()
+        }
+      });
+    } catch (err) {
+      console.warn('[Prisma recordIncoming Warning]', err.message);
+    }
+  }
+
+  // 2. Sincronización continua en memoria
+  let memLead = inMemoryLeads.find(l => String(l.phone_or_id) === cleanPhone);
+  if (!memLead) {
+    memLead = {
+      id: lead ? lead.id : Date.now(),
+      platform: platform === 'whatsapp' ? 'whatsapp' : (platform === 'instagram' ? 'instagram' : 'messenger'),
+      phone_or_id: cleanPhone,
+      name: name || `Usuario ${platform}`,
+      email: '',
+      status: 'NUEVO',
+      bot_paused: false,
+      conversations: [],
+      updatedAt: new Date()
+    };
+    inMemoryLeads.unshift(memLead);
+  } else {
+    if (name) memLead.name = name;
+  }
+  memLead.conversations = memLead.conversations || [];
+  memLead.conversations.push({
+    id: Date.now(),
+    message: text,
+    sender: 'user',
+    timestamp: new Date()
+  });
+  memLead.updatedAt = new Date();
+
+  return lead || memLead;
+}
+
+async function recordAiResponseMessage({ phoneOrId, text }) {
+  const cleanPhone = String(phoneOrId);
+  if (prisma) {
+    try {
+      const lead = await prisma.lead.findUnique({ where: { phone_or_id: cleanPhone } });
+      if (lead) {
+        await prisma.conversation.create({
+          data: {
+            leadId: lead.id,
+            message: text,
+            sender: 'ai',
+            timestamp: new Date()
+          }
+        });
+      }
+    } catch (err) {}
+  }
+
+  let memLead = inMemoryLeads.find(l => String(l.phone_or_id) === cleanPhone);
+  if (memLead) {
+    memLead.conversations = memLead.conversations || [];
+    memLead.conversations.push({
+      id: Date.now(),
+      message: text,
+      sender: 'ai',
+      timestamp: new Date()
+    });
+    memLead.updatedAt = new Date();
+  }
+}
+
 module.exports = {
   getLeads,
   getLeadById,
   togglePause,
   changeStatus,
-  addHumanMessage
+  addHumanMessage,
+  recordIncomingLeadMessage,
+  recordAiResponseMessage
 };

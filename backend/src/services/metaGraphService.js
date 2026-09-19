@@ -120,8 +120,23 @@ async function sendWhatsAppInteractiveMessage(toPhone, interactivePayload) {
   }
 }
 
+async function getMetaUserProfile(psid) {
+  const token = await getMetaAccessToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(`https://graph.facebook.com/v21.0/${psid}?fields=first_name,last_name,name&access_token=${token}`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.warn('[Meta Profile Fetch Error]', e.message);
+  }
+  return null;
+}
+
 module.exports = {
   sendMetaGraphMessage,
-  sendWhatsAppInteractiveMessage
+  sendWhatsAppInteractiveMessage,
+  getMetaUserProfile
 };
 
