@@ -175,6 +175,24 @@ export default function Chats() {
     setInputText('');
     setSending(true);
 
+    // Actualización optimista inmediata en la UI para feedback instantáneo
+    const optimisticMsg = {
+      id: 'opt_' + Date.now(),
+      message: messageText,
+      sender: 'human',
+      timestamp: new Date().toISOString()
+    };
+    setLeads(prev => prev.map(l => {
+      if (l.id === selectedLeadId) {
+        return {
+          ...l,
+          bot_paused: true,
+          conversations: [...(l.conversations || []), optimisticMsg]
+        };
+      }
+      return l;
+    }));
+
     try {
       const res = await fetch(`/api/leads/${selectedLeadId}/conversations`, {
         method: 'POST',
@@ -254,6 +272,31 @@ export default function Chats() {
         >
           <RefreshCw className="w-3.5 h-3.5 text-gray-500" /> Actualizar
         </button>
+      </div>
+
+      {/* Meta Asset Selection & Integration Status Banner (pages_show_list, pages_messaging, pages_manage_metadata) */}
+      <div className="mb-4 bg-gradient-to-r from-blue-50 via-white to-teal-50 border border-blue-200/90 rounded-xl p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-xs">
+            f
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-gray-900 text-sm">Activo Meta Seleccionado: CLIPOP (Página Oficial de Facebook)</span>
+              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Conectado a Meta Graph API v21.0
+              </span>
+            </div>
+            <div className="text-gray-500 text-[11px] font-mono mt-0.5 flex flex-wrap gap-x-4">
+              <span><strong>App ID:</strong> 1098269179424331</span>
+              <span><strong>Canal:</strong> Facebook Messenger (En vivo)</span>
+              <span><strong>Webhooks:</strong> messages, messaging_postbacks</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg text-[11px] text-blue-900 font-medium">
+          <span>🎯 Permisos en uso: <strong>pages_show_list</strong>, <strong>pages_messaging</strong>, <strong>pages_manage_metadata</strong>, <strong>pages_read_engagement</strong></span>
+        </div>
       </div>
 
       {/* Main Grid */}
@@ -492,7 +535,7 @@ export default function Chats() {
                   disabled={!inputText.trim() || sending}
                   className="bg-[#1a4a49] hover:bg-[#153e3d] text-white px-5 py-2.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
                 >
-                  <Send className="w-3.5 h-3.5" /> Enviar
+                  <Send className="w-3.5 h-3.5" /> {sending ? 'Enviando a Meta...' : 'Enviar'}
                 </button>
               </form>
             </>

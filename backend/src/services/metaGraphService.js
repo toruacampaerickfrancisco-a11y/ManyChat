@@ -1,16 +1,31 @@
 const config = require('../config/env');
+const { prisma } = require('../config/database');
+
+async function getMetaAccessToken() {
+  if (config.META_ACCESS_TOKEN && config.META_ACCESS_TOKEN.trim() !== '') {
+    return config.META_ACCESS_TOKEN.trim();
+  }
+  try {
+    if (prisma) {
+      const setting = await prisma.setting.findUnique({ where: { key: 'meta_access_token' } });
+      if (setting && setting.value) return setting.value.trim();
+    }
+  } catch (e) {}
+  return '';
+}
 
 async function sendMetaGraphMessage(recipientId, messageText, platform = 'messenger') {
   const isWhatsApp = platform === 'whatsapp' || (/^\+?[0-9]{8,15}$/.test(String(recipientId).replace(/[^0-9]/g, '')) && !String(recipientId).includes('_'));
+  const accessToken = await getMetaAccessToken();
 
-  if (isWhatsApp && config.WHATSAPP_PHONE_NUMBER_ID && config.META_ACCESS_TOKEN) {
+  if (isWhatsApp && config.WHATSAPP_PHONE_NUMBER_ID && accessToken) {
     try {
       const cleanPhone = String(recipientId).replace(/[^0-9]/g, '');
       const url = `https://graph.facebook.com/v21.0/${config.WHATSAPP_PHONE_NUMBER_ID}/messages`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${config.META_ACCESS_TOKEN}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -36,14 +51,14 @@ async function sendMetaGraphMessage(recipientId, messageText, platform = 'messen
     }
   }
 
-  // Messenger / Instagram
-  if (!config.META_ACCESS_TOKEN) {
+  // Messenger / Facebook Page / Instagram
+  if (!accessToken) {
     console.warn('[Meta Graph Service] META_ACCESS_TOKEN no configurado.');
     return false;
   }
 
   try {
-    const url = `https://graph.facebook.com/v21.0/me/messages?access_token=${config.META_ACCESS_TOKEN}`;
+    const url = `https://graph.facebook.com/v21.0/me/messages?access_token=${accessToken}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

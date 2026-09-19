@@ -9,7 +9,7 @@ const HOTMART_COURSE = {
   id: 'hotmart-masterclass',
   titulo: 'Curso de Análisis de Precios Unitarios. OPUS y Neodata, Proyectos de la Vida Real, CFE',
   tag: 'HOTMART MASTERCLASS / OPUS Y NEODATA / CFE',
-  descripcion: 'Aprende a desarrollar precios unitarios desde cero, dominando los softwares líderes: Opus y Neodata. Enfocado en proyectos reales y licitaciones de CFE con clases personalizadas uno a uno por Teams y más de 40 horas de capacitación profesional intensiva.',
+  descripcion: 'Aprende a desarrollar precios unitarios desde cero, dominando los softwares líderes: Opus y Neodata. Enfocado en proyectos reales y licitaciones de CFE. Despues de llevar este curso estaras listo para registrar tu empresa ya sea como persona fisica o moral y ofrecer tus servicios a CFE..',
   enlace: 'https://go.hotmart.com/K93054265G',
   imagen: '/curso_hotmart_opus_neodata.jpg',
   rating: '5.0',
