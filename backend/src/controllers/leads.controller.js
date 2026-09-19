@@ -1,10 +1,24 @@
 const { prisma } = require('../config/database');
-const { sendMetaGraphMessage } = require('../services/metaGraphService');
+const { getMetaAccessToken, sendMetaGraphMessage } = require('../services/metaGraphService');
 
-// Memoria fallback si la base de datos no está disponible
+// Memoria fallback inicializada con las conversaciones oficiales
 let inMemoryLeads = [
   {
     id: 1,
+    name: 'Erick TC',
+    platform: 'messenger',
+    phone_or_id: '27506377415723137',
+    email: '27506377415723137@facebook.com',
+    status: 'EN_CONTACTO',
+    bot_paused: false,
+    conversations: [
+      { id: 2, message: 'Hola', sender: 'user', timestamp: new Date() },
+      { id: 3, message: '¡Hola! Soy Nikola, tu asistente ¿En qué te puedo ayudar hoy?\n\n1️⃣ Cursos pregrabados\n2️⃣ Cursos en tiempo real por Teams\n3️⃣ Cursos presenciales\n4️⃣ Cotización de proyectos', sender: 'ai', timestamp: new Date() }
+    ],
+    updatedAt: new Date()
+  },
+  {
+    id: 2,
     name: 'Ing. Carlos Mendoza',
     platform: 'whatsapp',
     phone_or_id: '526621234567',
@@ -15,23 +29,65 @@ let inMemoryLeads = [
       { id: 1, message: 'Hola, buenas tardes. Me interesa información sobre el curso de Concurso de Obra para Líneas de Distribución.', sender: 'user', timestamp: new Date() }
     ],
     updatedAt: new Date()
-  },
-  {
-    id: 2,
-    name: 'Usuario Meta Messenger (Prueba)',
-    platform: 'messenger',
-    phone_or_id: '100234567890123',
-    email: 'test_messenger@clipop.com.mx',
-    status: 'EN_CONTACTO',
-    bot_paused: false,
-    conversations: [
-      { id: 2, message: 'Hola, me gustaría información de los cursos de precios unitarios con OPUS 2025.', sender: 'user', timestamp: new Date() }
-    ],
-    updatedAt: new Date()
   }
 ];
 
+// Sincronizar conversaciones reales de Facebook Graph API automáticamente
+async function syncMetaConversations() {
+  try {
+    const token = await getMetaAccessToken();
+    if (!token) return;
+
+    const res = await fetch(`https://graph.facebook.com/v21.0/me/conversations?fields=id,snippet,updated_time,participants,messages{id,message,from,created_time}&access_token=${token}`);
+    if (!res.ok) return;
+
+    const json = await res.json();
+    if (!json.data || !Array.isArray(json.data)) return;
+
+    for (const conv of json.data) {
+      const otherParticipant = conv.participants?.data?.find(p => p.name !== 'Clipop');
+      if (!otherParticipant) continue;
+
+      const psid = String(otherParticipant.id);
+      const name = otherParticipant.name || 'Usuario Facebook';
+      const messages = (conv.messages?.data || []).slice().reverse().map((m, idx) => ({
+        id: m.id || idx,
+        message: m.message,
+        sender: m.from?.name === 'Clipop' ? (m.message.includes('Nikola') ? 'ai' : 'human') : 'user',
+        timestamp: new Date(m.created_time)
+      })).filter(m => m.message && m.message.trim() !== '');
+
+      let lead = inMemoryLeads.find(l => String(l.phone_or_id) === psid);
+      if (!lead) {
+        lead = {
+          id: inMemoryLeads.length + 10,
+          name,
+          platform: 'messenger',
+          phone_or_id: psid,
+          email: otherParticipant.email || '',
+          status: 'EN_CONTACTO',
+          bot_paused: false,
+          conversations: messages,
+          updatedAt: new Date(conv.updated_time)
+        };
+        inMemoryLeads.unshift(lead);
+      } else {
+        lead.name = name;
+        if (messages.length > 0) lead.conversations = messages;
+        lead.updatedAt = new Date(conv.updated_time);
+      }
+    }
+  } catch (err) {
+    console.warn('[Sync Meta Conversations Warning]', err.message);
+  }
+}
+
+// Iniciar sincronización de conversaciones reales al arrancar el backend
+syncMetaConversations().catch(() => {});
+
 async function getLeads(req, res) {
+  // Sincronizar en segundo plano conversaciones reales de Facebook
+  syncMetaConversations().catch(() => {});
   try {
     if (prisma) {
       const leads = await prisma.lead.findMany({
@@ -42,7 +98,9 @@ async function getLeads(req, res) {
         },
         orderBy: { updatedAt: 'desc' }
       });
-      return res.json(leads);
+      if (leads && leads.length > 0) {
+        return res.json(leads);
+      }
     }
   } catch (error) {
     console.warn('[Leads Controller Warning]', error.message);

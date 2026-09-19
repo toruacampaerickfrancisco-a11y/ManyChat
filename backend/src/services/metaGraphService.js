@@ -135,6 +135,7 @@ async function getMetaUserProfile(psid) {
 }
 
 module.exports = {
+  getMetaAccessToken,
   sendMetaGraphMessage,
   sendWhatsAppInteractiveMessage,
   getMetaUserProfile
